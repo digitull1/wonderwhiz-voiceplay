@@ -54,8 +54,9 @@ export const useUserProgress = () => {
     setupSubscription();
   }, []);
 
-  const updateUserProgress = async (pointsToAdd: number) => {
+  const updateUserProgress = async (pointsToAdd: number): Promise<void> => {
     try {
+      console.log('Updating user progress with points:', pointsToAdd);
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         console.log('No user found');
@@ -132,8 +133,6 @@ export const useUserProgress = () => {
           });
         }
       }
-
-      return data;
     } catch (error) {
       console.error('Error updating progress:', error);
       toast({
