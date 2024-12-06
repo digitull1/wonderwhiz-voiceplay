@@ -12,7 +12,6 @@ export const useUserProgress = () => {
     last_interaction_date: new Date().toISOString()
   });
 
-  // Subscribe to real-time updates
   useEffect(() => {
     const setupSubscription = async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -58,7 +57,10 @@ export const useUserProgress = () => {
   const updateUserProgress = async (pointsToAdd: number) => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      if (!user) {
+        console.log('No user found');
+        return;
+      }
 
       // First, get current progress
       const { data: currentProgress } = await supabase
@@ -67,15 +69,21 @@ export const useUserProgress = () => {
         .eq('user_id', user.id)
         .single();
 
-      if (!currentProgress) return;
+      if (!currentProgress) {
+        console.log('No current progress found');
+        return;
+      }
 
       const newPoints = currentProgress.points + pointsToAdd;
       
       // Calculate points needed for next level
-      const { data: pointsNeeded } = await supabase
+      const { data: pointsData } = await supabase
         .rpc('calculate_next_level_points', {
           current_level: currentProgress.level
         });
+
+      const pointsNeeded = pointsData || 100; // Fallback to 100 if null
+      console.log('Points needed for next level:', pointsNeeded);
 
       // Check if user should level up
       const shouldLevelUp = newPoints >= pointsNeeded;
@@ -92,12 +100,14 @@ export const useUserProgress = () => {
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error updating progress:', error);
+        throw error;
+      }
 
       if (data) {
         setUserProgress(data);
         
-        // Show different toasts based on achievements
         if (shouldLevelUp) {
           toast({
             title: "🎉 LEVEL UP! 🎉",
@@ -105,10 +115,10 @@ export const useUserProgress = () => {
             className: "bg-gradient-to-r from-primary to-purple-600 text-white",
           });
         } else {
-          const pointsToNextLevel = pointsNeeded - newPoints;
+          const remainingPoints = pointsNeeded - newPoints;
           toast({
             title: "⭐ Points earned!",
-            description: `+${pointsToAdd} points! ${pointsToNextLevel} more to level ${currentProgress.level + 1}!`,
+            description: `+${pointsToAdd} points! ${remainingPoints} more to level ${currentProgress.level + 1}!`,
             className: "bg-gradient-to-r from-secondary to-green-500 text-white",
           });
         }
