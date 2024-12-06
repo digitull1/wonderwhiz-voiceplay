@@ -13,7 +13,8 @@ serve(async (req) => {
   }
 
   try {
-    console.log('Request received:', {
+    // Log the raw request for debugging
+    console.log('Received request:', {
       method: req.method,
       headers: Object.fromEntries(req.headers.entries())
     });
@@ -22,7 +23,13 @@ serve(async (req) => {
     const rawBody = await req.text();
     console.log('Raw request body:', rawBody);
 
-    // Try to parse the JSON body
+    // Validate Content-Type
+    const contentType = req.headers.get('content-type');
+    if (!contentType?.includes('application/json')) {
+      throw new Error('Content-Type must be application/json');
+    }
+
+    // Parse JSON body with error handling
     let body;
     try {
       body = JSON.parse(rawBody);
