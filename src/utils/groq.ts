@@ -1,9 +1,9 @@
 const GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
 
 export const getGroqResponse = async (message: string) => {
-  const apiKey = localStorage.getItem("groqApiKey");
+  const apiKey = import.meta.env.VITE_GROQ_API_KEY;
   if (!apiKey) {
-    throw new Error("Please configure your Groq API key first");
+    throw new Error("Please configure your Groq API key in the .env file");
   }
 
   const response = await fetch(GROQ_API_URL, {
@@ -17,7 +17,7 @@ export const getGroqResponse = async (message: string) => {
       messages: [
         {
           role: "system",
-          content: "You are WonderWhiz, an educational AI assistant for children. Keep responses engaging, age-appropriate, and educational. Use emojis and simple language.",
+          content: "You are WonderWhiz, an educational AI assistant for children aged 8-12. Keep responses engaging, age-appropriate, and educational. Use emojis and simple language. Always maintain an enthusiastic and friendly tone.",
         },
         { role: "user", content: message },
       ],

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ChatMessage } from "@/components/ChatMessage";
 import { TopicBlocks } from "@/components/TopicBlocks";
 import { VoiceInput } from "@/components/VoiceInput";
@@ -18,8 +18,23 @@ const Index = () => {
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [currentTopic, setCurrentTopic] = useState("general");
+  const [currentTopic, setCurrentTopic] = useState("space");
   const { toast } = useToast();
+
+  const detectTopic = (message: string) => {
+    const topics = {
+      space: ["space", "planet", "star", "galaxy", "astronaut", "rocket", "alien"],
+      biology: ["body", "cell", "dna", "brain", "heart", "animal", "plant"],
+      earth: ["earth", "volcano", "ocean", "mountain", "weather", "dinosaur"],
+    };
+
+    for (const [topic, keywords] of Object.entries(topics)) {
+      if (keywords.some(keyword => message.toLowerCase().includes(keyword))) {
+        return topic;
+      }
+    }
+    return currentTopic;
+  };
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
@@ -32,22 +47,30 @@ const Index = () => {
     try {
       const response = await getGroqResponse(userMessage);
       setMessages(prev => [...prev, { text: response, isAi: true }]);
-      
-      // Update current topic based on user's message
-      if (userMessage.toLowerCase().includes("space")) setCurrentTopic("space");
-      else if (userMessage.toLowerCase().includes("dna") || userMessage.toLowerCase().includes("life")) setCurrentTopic("biology");
-      else if (userMessage.toLowerCase().includes("earth") || userMessage.toLowerCase().includes("volcano")) setCurrentTopic("earth");
-      
+      setCurrentTopic(detectTopic(userMessage));
     } catch (error) {
       console.error('Error getting response:', error);
       toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to get response",
+        title: "Oops!",
+        description: "Something went wrong. Let's try that again!",
         variant: "destructive",
       });
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const handleTopicSelect = async (topic: string) => {
+    const topicQuestions = {
+      black_hole_interior: "What's inside a black hole?",
+      alien_life: "Are there aliens in space?",
+      stellar_death: "How do stars die?",
+      // Add more mappings as needed
+    };
+
+    const question = topicQuestions[topic as keyof typeof topicQuestions] || `Tell me about ${topic.replace(/_/g, " ")}`;
+    setInput(question);
+    await handleSend();
   };
 
   const handleVoiceInput = (text: string) => {
@@ -61,11 +84,11 @@ const Index = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col">
+    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 flex flex-col">
       <div className="flex-1 container max-w-4xl mx-auto py-8 px-4">
-        <div className="bg-white rounded-2xl shadow-lg p-6 h-[calc(100vh-4rem)] flex flex-col">
+        <div className="bg-white rounded-2xl shadow-xl p-6 h-[calc(100vh-4rem)] flex flex-col">
           <ApiKeyInput />
-          <div className="flex-1 overflow-y-auto space-y-4 mb-4">
+          <div className="flex-1 overflow-y-auto space-y-4 mb-4 px-2">
             {messages.map((message, index) => (
               <ChatMessage
                 key={index}
@@ -76,12 +99,12 @@ const Index = () => {
             ))}
           </div>
           
-          <div className="space-y-4">
-            <TopicBlocks currentTopic={currentTopic} />
+          <div className="space-y-6">
+            <TopicBlocks currentTopic={currentTopic} onTopicSelect={handleTopicSelect} />
             
             <div className="flex gap-2">
               <Input
-                placeholder={isLoading ? "Getting response..." : "Ask me anything..."}
+                placeholder={isLoading ? "Thinking..." : "Ask me anything about " + currentTopic + "..."}
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={(e) => e.key === "Enter" && handleSend()}
@@ -89,7 +112,7 @@ const Index = () => {
                 disabled={isLoading}
               />
               <VoiceInput onVoiceInput={handleVoiceInput} />
-              <Button onClick={handleSend} disabled={isLoading}>
+              <Button onClick={handleSend} disabled={isLoading} className="bg-primary hover:bg-primary/90">
                 <Send className={`w-4 h-4 ${isLoading ? 'animate-pulse' : ''}`} />
               </Button>
             </div>
