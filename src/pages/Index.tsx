@@ -5,6 +5,7 @@ import { motion } from "framer-motion";
 import { ChatHeader } from "@/components/ChatHeader";
 import { ChatContainer } from "@/components/ChatContainer";
 import { ChatInput } from "@/components/ChatInput";
+import { supabase } from "@/integrations/supabase/client";
 
 interface Block {
   title: string;
