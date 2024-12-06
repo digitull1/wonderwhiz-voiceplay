@@ -18,9 +18,14 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ isAi, message, onListe
       transition={{ duration: 0.3 }}
     >
       {isAi && (
-        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center mr-3 shadow-lg">
-          <span className="text-white text-lg">🤖</span>
-        </div>
+        <motion.div 
+          className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center mr-3 shadow-lg"
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ type: "spring", stiffness: 260, damping: 20 }}
+        >
+          <span className="text-white text-lg">✨</span>
+        </motion.div>
       )}
       <motion.div
         className={`max-w-[80%] p-4 rounded-2xl shadow-lg ${
@@ -28,9 +33,9 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ isAi, message, onListe
             ? "bg-gradient-to-br from-primary/90 to-purple-600/90 text-white"
             : "bg-gradient-to-br from-secondary/90 to-green-600/90 text-white"
         }`}
-        initial={{ scale: 0.95 }}
-        animate={{ scale: 1 }}
-        transition={{ duration: 0.2 }}
+        initial={{ scale: 0.95, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        transition={{ type: "spring", stiffness: 200, damping: 20 }}
       >
         <p className="text-sm md:text-base leading-relaxed">{message}</p>
         {isAi && (
