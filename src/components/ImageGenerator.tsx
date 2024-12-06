@@ -9,6 +9,7 @@ import {
   TooltipTrigger,
 } from "./ui/tooltip";
 import { useToast } from "./ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ImageGeneratorProps {
   prompt: string;
@@ -22,20 +23,15 @@ export const ImageGenerator = ({ prompt }: ImageGeneratorProps) => {
   const generateImage = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch("/api/generate-image", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ prompt }),
+      const { data, error } = await supabase.functions.invoke('generate-image', {
+        body: { prompt }
       });
 
-      if (!response.ok) {
-        throw new Error("Failed to generate image");
+      if (error) {
+        throw error;
       }
 
-      const data = await response.json();
-      setImageUrl(data.imageUrl);
+      setImageUrl(data.image);
       toast({
         title: "Image generated!",
         description: "Your magical creation is ready ✨",
