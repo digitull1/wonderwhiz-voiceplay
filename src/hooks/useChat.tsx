@@ -1,27 +1,9 @@
 import { useState } from "react";
 import { getGroqResponse } from "@/utils/groq";
 import { useToast } from "@/components/ui/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-
-interface Block {
-  title: string;
-  description: string;
-  metadata: {
-    topic: string;
-  };
-  color?: string;
-}
-
-interface Message {
-  text: string;
-  isAi: boolean;
-  blocks?: Block[];
-}
-
-interface UserProfile {
-  name: string;
-  age: number;
-}
+import { Message, UserProfile, Block } from "@/types/chat";
+import { useBlockGeneration } from "./useBlockGeneration";
+import { useUserProgress } from "./useUserProgress";
 
 export const useChat = () => {
   const [messages, setMessages] = useState<Message[]>([
@@ -36,65 +18,8 @@ export const useChat = () => {
   const [currentTopic, setCurrentTopic] = useState("space");
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const { toast } = useToast();
-
-  const updateUserProgress = async (points: number) => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const { data, error } = await supabase
-        .from('user_progress')
-        .update({ 
-          points: points,
-          last_interaction_date: new Date().toISOString()
-        })
-        .eq('user_id', user.id)
-        .select()
-        .single();
-
-      if (error) throw error;
-
-      toast({
-        title: "Points earned! 🎉",
-        description: `You've earned ${points} points!`,
-        className: "bg-primary text-white",
-      });
-
-      return data;
-    } catch (error) {
-      console.error('Error updating progress:', error);
-    }
-  };
-
-  const generateDynamicBlocks = async (response: string, topic: string) => {
-    console.log("Generating blocks for topic:", topic);
-    try {
-      const { data, error } = await supabase.functions.invoke('generate-blocks', {
-        body: {
-          query: response,
-          context: topic,
-          age_group: userProfile ? `${userProfile.age}-${userProfile.age + 2}` : "8-12",
-          name: userProfile?.name
-        }
-      });
-
-      if (error) throw error;
-
-      console.log("Generated blocks data:", data);
-      if (data?.choices?.[0]?.message?.content) {
-        const parsedData = typeof data.choices[0].message.content === 'string' 
-          ? JSON.parse(data.choices[0].message.content) 
-          : data.choices[0].message.content;
-
-        console.log("Parsed blocks:", parsedData.blocks);
-        return parsedData.blocks;
-      }
-      return [];
-    } catch (error) {
-      console.error('Error generating blocks:', error);
-      return [];
-    }
-  };
+  const { generateDynamicBlocks } = useBlockGeneration(userProfile);
+  const { updateUserProgress } = useUserProgress();
 
   const handleNameInput = (name: string) => {
     setUserProfile(prev => ({ ...prev, name } as UserProfile));
@@ -179,15 +104,8 @@ export const useChat = () => {
       };
       
       setMessages(prev => [...prev, aiMessage]);
+      await updateUserProgress(10);
       
-      // Update user progress
-      await updateUserProgress(10); // Award points for interaction
-      
-      toast({
-        title: "New knowledge unlocked! 🎉",
-        description: "Keep exploring to earn more rewards!",
-        className: "bg-primary text-white",
-      });
     } catch (error: any) {
       console.error('Error getting response:', error);
       toast({

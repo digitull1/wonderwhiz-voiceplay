@@ -3,12 +3,14 @@ import { Button } from "./ui/button";
 import { motion } from "framer-motion";
 import { Sparkles, Star, Zap, Trophy, Award } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { UserProgress } from "@/types/chat";
 
 export const ChatHeader = () => {
-  const [userProgress, setUserProgress] = useState({
+  const [userProgress, setUserProgress] = useState<UserProgress>({
     points: 0,
     level: 1,
-    streak_days: 0
+    streak_days: 0,
+    last_interaction_date: new Date().toISOString()
   });
 
   useEffect(() => {
@@ -23,7 +25,12 @@ export const ChatHeader = () => {
         .single();
 
       if (data) {
-        setUserProgress(data);
+        setUserProgress({
+          points: data.points,
+          level: data.level,
+          streak_days: data.streak_days,
+          last_interaction_date: data.last_interaction_date
+        });
       }
     };
 
