@@ -20,6 +20,7 @@ export const EnhancedBlockCard = ({
   const DESCRIPTION_LIMIT = 111;
 
   const truncateText = (text: string, limit: number) => {
+    if (!text) return "";
     if (text.length <= limit) return text;
     return text.substring(0, limit - 3) + "...";
   };
@@ -52,7 +53,7 @@ export const EnhancedBlockCard = ({
         <h3 className={cn(
           "font-bold text-left transition-all duration-300",
           "leading-tight line-clamp-2",
-          block.title.length > TITLE_LIMIT - 10 ? "text-lg" : "text-xl"
+          block.title?.length > TITLE_LIMIT - 10 ? "text-lg" : "text-xl"
         )}>
           {truncatedTitle}
         </h3>
@@ -60,7 +61,7 @@ export const EnhancedBlockCard = ({
         <p className={cn(
           "text-left opacity-90 transition-all duration-300",
           "leading-relaxed line-clamp-3",
-          block.description.length > DESCRIPTION_LIMIT - 20 ? "text-sm" : "text-base"
+          block.description?.length > DESCRIPTION_LIMIT - 20 ? "text-sm" : "text-base"
         )}>
           {truncatedDescription}
         </p>

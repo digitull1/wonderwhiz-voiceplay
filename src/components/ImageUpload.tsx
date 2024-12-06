@@ -34,11 +34,13 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
     }
 
     setIsLoading(true);
+    console.log('Starting image upload and analysis...');
+
     try {
       const reader = new FileReader();
       reader.onload = async (e) => {
         const base64Image = e.target?.result as string;
-        console.log('Sending image for analysis...');
+        console.log('Image converted to base64, sending for analysis...');
         
         const { data, error } = await supabase.functions.invoke('analyze-image', {
           body: { 
@@ -53,6 +55,10 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
         }
         
         console.log('Analysis response:', data);
+        if (!data?.choices?.[0]?.message?.content) {
+          throw new Error('Invalid response format from analysis');
+        }
+
         const response = data.choices[0].message.content;
         onImageAnalyzed(response);
         
@@ -61,11 +67,12 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
           description: "Let me tell you what I see!",
         });
       };
+
       reader.readAsDataURL(file);
     } catch (error) {
       console.error('Error analyzing image:', error);
       toast({
-        title: "Error",
+        title: "Oops!",
         description: "Failed to analyze image. Please try again!",
         variant: "destructive"
       });

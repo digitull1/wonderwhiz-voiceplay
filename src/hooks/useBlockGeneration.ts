@@ -26,8 +26,21 @@ export const useBlockGeneration = (userProfile: UserProfile | null) => {
           ? JSON.parse(data.choices[0].message.content) 
           : data.choices[0].message.content;
 
-        console.log("Parsed blocks:", parsedData.blocks);
-        return parsedData.blocks || [];
+        // Add logging to track block generation
+        console.log("Generated blocks:", parsedData.blocks);
+        
+        // Ensure all blocks have required properties and proper formatting
+        const formattedBlocks = (parsedData.blocks || []).map((block: Block) => ({
+          ...block,
+          title: block.title?.substring(0, 39) || "",
+          description: block.description?.substring(0, 111) || "",
+          metadata: {
+            ...block.metadata,
+            topic: block.metadata?.topic || topic
+          }
+        }));
+
+        return formattedBlocks;
       }
       return [];
     } catch (error) {

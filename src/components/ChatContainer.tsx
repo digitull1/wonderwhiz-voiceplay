@@ -25,19 +25,25 @@ export const ChatContainer = ({
   onQuizAnswer 
 }: ChatContainerProps) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
-    if (messagesEndRef.current) {
-      const container = messagesEndRef.current.parentElement;
-      if (container) {
-        const scrollHeight = container.scrollHeight;
-        const currentScroll = container.scrollTop;
-        const clientHeight = container.clientHeight;
-        
-        // Only auto-scroll if user is already near bottom
-        if (scrollHeight - currentScroll - clientHeight < 300) {
-          messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-        }
+    if (messagesEndRef.current && containerRef.current) {
+      const container = containerRef.current;
+      const scrollHeight = container.scrollHeight;
+      const currentScroll = container.scrollTop;
+      const clientHeight = container.clientHeight;
+      const scrollThreshold = 300; // pixels from bottom
+      
+      // Only auto-scroll if user is already near bottom or if it's a new AI message
+      const shouldScroll = scrollHeight - currentScroll - clientHeight < scrollThreshold ||
+                          (messages.length > 0 && messages[messages.length - 1].isAi);
+      
+      if (shouldScroll) {
+        messagesEndRef.current.scrollIntoView({ 
+          behavior: "smooth",
+          block: "end"
+        });
       }
     }
   };
@@ -54,7 +60,10 @@ export const ChatContainer = ({
   });
 
   return (
-    <div className="flex-1 overflow-y-auto space-y-4 mb-4 px-2 scrollbar-thin scrollbar-thumb-primary scrollbar-track-transparent">
+    <div 
+      ref={containerRef}
+      className="flex-1 overflow-y-auto space-y-4 mb-4 px-2 scrollbar-thin scrollbar-thumb-primary scrollbar-track-transparent"
+    >
       {filteredMessages.map((message, index) => (
         <ChatMessage
           key={index}
