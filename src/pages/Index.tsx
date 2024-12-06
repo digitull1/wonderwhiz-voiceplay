@@ -19,38 +19,21 @@ const Index = () => {
   const [currentTopic, setCurrentTopic] = useState("space");
   const { toast } = useToast();
 
-  const detectTopic = (message: string) => {
-    const topics = {
-      space: ["space", "planet", "star", "galaxy", "astronaut", "rocket", "alien"],
-      biology: ["body", "cell", "dna", "brain", "heart", "animal", "plant"],
-      earth: ["earth", "volcano", "ocean", "mountain", "weather", "dinosaur"],
-    };
-
-    for (const [topic, keywords] of Object.entries(topics)) {
-      if (keywords.some(keyword => message.toLowerCase().includes(keyword))) {
-        return topic;
-      }
-    }
-    return currentTopic;
-  };
-
-  const handleSend = async () => {
-    if (!input.trim() || isLoading) return;
+  const sendMessage = async (messageText: string) => {
+    if (!messageText.trim() || isLoading) return;
     
-    const userMessage = input.trim();
-    setMessages(prev => [...prev, { text: userMessage, isAi: false }]);
+    setMessages(prev => [...prev, { text: messageText, isAi: false }]);
     setInput("");
     setIsLoading(true);
 
     try {
-      const response = await getGroqResponse(userMessage);
+      const response = await getGroqResponse(messageText);
       setMessages(prev => [...prev, { text: response, isAi: true }]);
-      setCurrentTopic(detectTopic(userMessage));
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error getting response:', error);
       toast({
         title: "Oops!",
-        description: "Something went wrong. Let's try that again!",
+        description: error.message || "Something went wrong. Let's try that again!",
         variant: "destructive",
       });
     } finally {
@@ -58,16 +41,25 @@ const Index = () => {
     }
   };
 
+  const handleSend = () => {
+    sendMessage(input);
+  };
+
   const handleTopicSelect = async (topic: string) => {
-    const topicQuestions = {
-      black_hole_interior: "What's inside a black hole?",
-      alien_life: "Are there aliens in space?",
-      stellar_death: "How do stars die?",
+    const topicPrompts: { [key: string]: string } = {
+      black_hole_interior: "Can you explain what's inside a black hole in a way that's easy for kids to understand?",
+      alien_life: "Tell me about the possibility of finding alien life in space!",
+      stellar_death: "What happens when stars die? Tell me the exciting story!",
+      dna_secrets: "What's DNA and why is it so important for our bodies?",
+      dream_science: "Why do we dream when we sleep? What's happening in our brains?",
+      brain_function: "How does our brain work to help us think and remember things?",
+      volcano_secrets: "What makes volcanoes erupt and why are they so fascinating?",
+      ocean_exploration: "What amazing creatures live in the deep ocean?",
+      dinosaur_era: "Tell me about the most interesting dinosaurs that lived on Earth!"
     };
 
-    const question = topicQuestions[topic as keyof typeof topicQuestions] || `Tell me about ${topic.replace(/_/g, " ")}`;
-    setInput(question);
-    await handleSend();
+    const prompt = topicPrompts[topic] || `Tell me something fascinating about ${topic.replace(/_/g, " ")}!`;
+    await sendMessage(prompt);
   };
 
   const handleVoiceInput = (text: string) => {
