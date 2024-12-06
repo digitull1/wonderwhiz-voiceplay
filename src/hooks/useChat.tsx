@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { getGroqResponse } from "@/utils/groq";
 import { useToast } from "@/components/ui/use-toast";
 import { Message, UserProfile, Block } from "@/types/chat";
 import { useBlockGeneration } from "./useBlockGeneration";
 import { useUserProgress } from "./useUserProgress";
+import { supabase } from "@/integrations/supabase/client";
 
 export const useChat = () => {
   const [messages, setMessages] = useState<Message[]>([
@@ -19,7 +20,7 @@ export const useChat = () => {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const { toast } = useToast();
   const { generateDynamicBlocks } = useBlockGeneration(userProfile);
-  const { updateUserProgress } = useUserProgress();
+  const { userProgress, updateUserProgress } = useUserProgress();
 
   const handleNameInput = (name: string) => {
     setUserProfile(prev => ({ ...prev, name } as UserProfile));
@@ -41,7 +42,6 @@ export const useChat = () => {
       { text: age.toString(), isAi: false }
     ]);
 
-    // Generate dynamic welcome blocks
     try {
       const welcomeResponse = `Welcome to WonderWhiz! Let's explore amazing topics together!`;
       const blocks = await generateDynamicBlocks(welcomeResponse, "welcome");
@@ -51,6 +51,15 @@ export const useChat = () => {
         isAi: true,
         blocks: blocks
       }]);
+
+      // Award points for completing profile
+      await updateUserProgress(10);
+      
+      toast({
+        title: "Profile Complete! 🎉",
+        description: "You've earned 10 points for starting your journey!",
+        className: "bg-primary text-white",
+      });
     } catch (error) {
       console.error('Error generating welcome blocks:', error);
       toast({
@@ -102,7 +111,15 @@ export const useChat = () => {
       };
       
       setMessages(prev => [...prev, aiMessage]);
-      await updateUserProgress(10);
+      
+      // Award points for interaction
+      await updateUserProgress(5);
+      
+      toast({
+        title: "Points Earned! 🌟",
+        description: "You've earned 5 points for exploring and learning!",
+        className: "bg-primary text-white",
+      });
       
     } catch (error: any) {
       console.error('Error getting response:', error);
@@ -130,6 +147,7 @@ export const useChat = () => {
     setInput,
     isLoading,
     currentTopic,
+    userProgress,
     handleListen: () => {}, // Placeholder for voice feature
     handleBlockClick: (block: Block) => {
       setCurrentTopic(block.metadata.topic);

@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChatHeader } from "@/components/ChatHeader";
 import { ChatContainer } from "@/components/ChatContainer";
 import { ChatInput } from "@/components/ChatInput";
+import { PointsDisplay } from "@/components/PointsDisplay";
 import { useChat } from "@/hooks/useChat";
 import { Sparkles, Stars } from "lucide-react";
 
@@ -13,6 +14,7 @@ const Index = () => {
     setInput,
     isLoading,
     currentTopic,
+    userProgress,
     handleListen,
     handleBlockClick,
     sendMessage,
@@ -70,6 +72,15 @@ const Index = () => {
             }}
           >
             <ChatHeader />
+            {userProgress && (
+              <div className="mb-4">
+                <PointsDisplay 
+                  points={userProgress.points}
+                  level={userProgress.level}
+                  streakDays={userProgress.streak_days}
+                />
+              </div>
+            )}
             <ChatContainer 
               messages={messages} 
               handleListen={handleListen}
