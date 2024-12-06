@@ -21,6 +21,33 @@ export const useChat = () => {
   const { toast } = useToast();
   const { userProgress, updateUserProgress } = useUserProgress();
 
+  const generateDynamicBlocks = async (response: string, topic: string): Promise<Block[]> => {
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-blocks', {
+        body: {
+          query: response,
+          context: topic,
+          age_group: userProfile ? `${userProfile.age}-${userProfile.age + 2}` : "8-12",
+          name: userProfile?.name
+        }
+      });
+
+      if (error) throw error;
+
+      if (data?.choices?.[0]?.message?.content) {
+        const parsedData = typeof data.choices[0].message.content === 'string' 
+          ? JSON.parse(data.choices[0].message.content) 
+          : data.choices[0].message.content;
+
+        return parsedData.blocks || [];
+      }
+      return [];
+    } catch (error) {
+      console.error('Error generating blocks:', error);
+      return [];
+    }
+  };
+
   const sendMessage = async (messageText: string) => {
     if (!messageText.trim() || isLoading) return;
     
@@ -39,7 +66,9 @@ export const useChat = () => {
         ]);
         return;
       }
-      await handleAgeInput(age, setUserProfile, setMessages, updateUserProgress);
+      await handleAgeInput(age, setUserProfile, setMessages, async (points: number) => {
+        await updateUserProgress(points);
+      });
       return;
     }
 
@@ -84,7 +113,6 @@ export const useChat = () => {
 
   const handleBlockClick = async (block: Block) => {
     setCurrentTopic(block.metadata.topic);
-    // Send both title and description to provide full context
     const prompt = `Tell me about "${block.title}": ${block.description}`;
     await sendMessage(prompt);
   };
