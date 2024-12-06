@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -54,72 +56,40 @@
     @apply border-border;
   }
   body {
-    @apply bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 text-foreground;
+    @apply bg-gradient-primary text-foreground font-sans;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
 }
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-  border-radius: 4px;
+  @apply w-2 h-2;
 }
 
 ::-webkit-scrollbar-track {
-  background: transparent;
-  border-radius: 4px;
+  @apply bg-transparent rounded-full;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #FF6B6B;
-  border-radius: 4px;
-  border: 2px solid transparent;
-  background-clip: padding-box;
+  @apply bg-primary/50 rounded-full border-2 border-transparent bg-clip-padding hover:bg-primary/70;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: #ff5252;
+/* Interactive elements */
+.hover-scale {
+  @apply transition-transform duration-200 hover:scale-105;
 }
 
-/* Fun animations for interactive elements */
-.hover-bounce {
-  transition: transform 0.2s;
+.glass-card {
+  @apply backdrop-blur-sm bg-white/80 border border-white/20 shadow-lg;
 }
 
-.hover-bounce:hover {
-  transform: translateY(-5px);
+/* Animations */
+.fade-in {
+  @apply animate-fade-in;
 }
 
-.sparkle {
-  position: relative;
-}
-
-.sparkle::before {
-  content: "✨";
-  position: absolute;
-  animation: sparkle 1.5s ease-in-out infinite;
-  opacity: 0;
-}
-
-@keyframes sparkle {
-  0% { transform: scale(0) rotate(0deg); opacity: 0; }
-  50% { transform: scale(1.2) rotate(180deg); opacity: 1; }
-  100% { transform: scale(0) rotate(360deg); opacity: 0; }
-}
-
-/* Button hover effects */
-.button-pop {
-  transition: all 0.2s ease;
-}
-
-.button-pop:hover {
-  transform: scale(1.05);
-  box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-}
-
-.button-pop:active {
-  transform: scale(0.95);
+.slide-up {
+  @apply animate-slide-up;
 }
 
 /* Chat message animations */
@@ -140,21 +110,10 @@
 
 /* Rainbow gradient text */
 .rainbow-text {
-  background: linear-gradient(
-    45deg,
-    #FF6B6B,
-    #4ECDC4,
-    #FFD93D,
-    #FF6B6B
-  );
-  background-size: 300% 300%;
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-  animation: rainbow 4s ease infinite;
+  @apply bg-gradient-to-r from-primary via-block-pink to-block-blue bg-clip-text text-transparent animate-gradient;
 }
 
-@keyframes rainbow {
+@keyframes gradient {
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
   100% { background-position: 0% 50%; }

@@ -25,7 +25,7 @@ export default {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: {
-          DEFAULT: "#FF6B6B",  // Playful coral red
+          DEFAULT: "#FF6B6B",  // Coral pink
           foreground: "#ffffff",
         },
         secondary: {
@@ -36,21 +36,27 @@ export default {
           DEFAULT: "#FFD93D",  // Sunny yellow
           foreground: "#000000",
         },
-        success: {
-          DEFAULT: "#95E1D3",  // Soft mint
-          foreground: "#ffffff",
+        chat: {
+          user: "#C7F6D5",     // Light green for user messages
+          ai: "#F4E7FE",       // Soft purple for AI messages
         },
-        info: {
-          DEFAULT: "#A8E6CF",  // Light sage
-          foreground: "#ffffff",
-        },
-        warning: {
-          DEFAULT: "#FFB347",  // Warm orange
-          foreground: "#ffffff",
-        },
+        block: {
+          orange: "#FFAB4C",   // Vibrant orange
+          blue: "#4CABFF",     // Bright blue
+          pink: "#FF74D6",     // Cheerful pink
+        }
       },
       fontFamily: {
-        sans: ['Comic Sans MS', 'Chalkboard SE', 'sans-serif'],
+        sans: ['Poppins', 'system-ui', 'sans-serif'],
+      },
+      fontSize: {
+        'title': '24px',
+        'subtitle': '20px',
+        'body': '16px',
+        'small': '14px',
+      },
+      lineHeight: {
+        'relaxed': '1.5',
       },
       keyframes: {
         "accordion-down": {
@@ -74,6 +80,14 @@ export default {
           "0%, 100%": { transform: "rotate(-3deg)" },
           "50%": { transform: "rotate(3deg)" },
         },
+        "slide-in": {
+          "0%": { transform: "translateX(100%)" },
+          "100%": { transform: "translateX(0)" },
+        },
+        "slide-out": {
+          "0%": { transform: "translateX(0)" },
+          "100%": { transform: "translateX(-100%)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -81,6 +95,11 @@ export default {
         "pulse-ring": "pulse-ring 1.25s cubic-bezier(0.24, 0, 0.38, 1) infinite",
         "bounce-slow": "bounce 3s ease-in-out infinite",
         "wiggle": "wiggle 1s ease-in-out infinite",
+        "slide-in": "slide-in 0.3s ease-out",
+        "slide-out": "slide-out 0.3s ease-out",
+      },
+      backgroundImage: {
+        'gradient-primary': 'linear-gradient(135deg, #EDE7F6 0%, #D7EFF7 100%)',
       },
     },
   },
