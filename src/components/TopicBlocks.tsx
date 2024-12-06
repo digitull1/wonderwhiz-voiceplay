@@ -5,38 +5,119 @@ import { Button } from "./ui/button";
 import { ScrollArea, ScrollBar } from "./ui/scroll-area";
 import { useToast } from "./ui/use-toast";
 
-export const TopicBlocks = () => {
+interface TopicBlocksProps {
+  currentTopic?: string;
+}
+
+export const TopicBlocks: React.FC<TopicBlocksProps> = ({ currentTopic = "space" }) => {
   const { toast } = useToast();
   const scrollRef = React.useRef<HTMLDivElement>(null);
 
-  const topics = [
-    {
-      icon: <Rocket className="w-6 h-6 text-white" />,
-      title: "Discover Black Holes! 🌌",
-      description: "Journey into the most mysterious objects in space",
-      color: "bg-primary text-white",
-      onClick: () => handleTopicClick("space"),
-    },
-    {
-      icon: <Microscope className="w-6 h-6 text-white" />,
-      title: "Amazing DNA Facts! 🧬",
-      description: "Unlock the secrets of life itself",
-      color: "bg-accent text-white",
-      onClick: () => handleTopicClick("science"),
-    },
-    {
-      icon: <Globe className="w-6 h-6 text-white" />,
-      title: "Explore Volcanoes! 🌋",
-      description: "Discover Earth's most powerful forces",
-      color: "bg-secondary text-white",
-      onClick: () => handleTopicClick("nature"),
-    },
-  ];
+  const generateTopicBlocks = (topic: string) => {
+    switch (topic.toLowerCase()) {
+      case "space":
+        return [
+          {
+            icon: <Rocket className="w-6 h-6 text-white" />,
+            title: "What's Inside a Black Hole? 🕳️",
+            description: "Discover the mysteries at the center",
+            color: "bg-primary text-white",
+            onClick: () => handleTopicClick("black_hole_interior"),
+          },
+          {
+            icon: <Rocket className="w-6 h-6 text-white" />,
+            title: "How Do Stars Die? 💫",
+            description: "The explosive end of stellar life",
+            color: "bg-accent text-white",
+            onClick: () => handleTopicClick("stellar_death"),
+          },
+          {
+            icon: <Rocket className="w-6 h-6 text-white" />,
+            title: "Are We Alone? 👽",
+            description: "The search for alien life",
+            color: "bg-secondary text-white",
+            onClick: () => handleTopicClick("alien_life"),
+          },
+        ];
+      case "biology":
+        return [
+          {
+            icon: <Microscope className="w-6 h-6 text-white" />,
+            title: "How Does DNA Work? 🧬",
+            description: "Your body's instruction manual",
+            color: "bg-primary text-white",
+            onClick: () => handleTopicClick("dna_function"),
+          },
+          {
+            icon: <Microscope className="w-6 h-6 text-white" />,
+            title: "Why Do We Sleep? 😴",
+            description: "The science of rest",
+            color: "bg-accent text-white",
+            onClick: () => handleTopicClick("sleep_science"),
+          },
+          {
+            icon: <Microscope className="w-6 h-6 text-white" />,
+            title: "How Do Vaccines Work? 💉",
+            description: "Your body's defense system",
+            color: "bg-secondary text-white",
+            onClick: () => handleTopicClick("vaccine_science"),
+          },
+        ];
+      case "earth":
+        return [
+          {
+            icon: <Globe className="w-6 h-6 text-white" />,
+            title: "Why Do Volcanoes Erupt? 🌋",
+            description: "Earth's explosive nature",
+            color: "bg-primary text-white",
+            onClick: () => handleTopicClick("volcano_eruption"),
+          },
+          {
+            icon: <Globe className="w-6 h-6 text-white" />,
+            title: "What Causes Earthquakes? 🌍",
+            description: "When the ground shakes",
+            color: "bg-accent text-white",
+            onClick: () => handleTopicClick("earthquake_science"),
+          },
+          {
+            icon: <Globe className="w-6 h-6 text-white" />,
+            title: "How Do Tsunamis Form? 🌊",
+            description: "Giant waves explained",
+            color: "bg-secondary text-white",
+            onClick: () => handleTopicClick("tsunami_formation"),
+          },
+        ];
+      default:
+        return [
+          {
+            icon: <Rocket className="w-6 h-6 text-white" />,
+            title: "Explore Space! 🌌",
+            description: "Journey to the stars",
+            color: "bg-primary text-white",
+            onClick: () => handleTopicClick("space"),
+          },
+          {
+            icon: <Microscope className="w-6 h-6 text-white" />,
+            title: "Discover Biology! 🔬",
+            description: "Learn about life",
+            color: "bg-accent text-white",
+            onClick: () => handleTopicClick("biology"),
+          },
+          {
+            icon: <Globe className="w-6 h-6 text-white" />,
+            title: "Earth Science! 🌍",
+            description: "Our planet's secrets",
+            color: "bg-secondary text-white",
+            onClick: () => handleTopicClick("earth"),
+          },
+        ];
+    }
+  };
 
   const handleTopicClick = (topic: string) => {
     toast({
       title: "Topic Selected!",
-      description: `Let's explore ${topic}! What would you like to know?`,
+      description: `Let's explore ${topic.replace(/_/g, " ")}! What would you like to know?`,
     });
   };
 
@@ -49,6 +130,8 @@ export const TopicBlocks = () => {
       });
     }
   };
+
+  const topics = generateTopicBlocks(currentTopic);
 
   return (
     <div className="relative group">

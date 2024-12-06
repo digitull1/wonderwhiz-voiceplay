@@ -18,6 +18,7 @@ const Index = () => {
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [currentTopic, setCurrentTopic] = useState("general");
   const { toast } = useToast();
 
   const handleSend = async () => {
@@ -31,6 +32,12 @@ const Index = () => {
     try {
       const response = await getGroqResponse(userMessage);
       setMessages(prev => [...prev, { text: response, isAi: true }]);
+      
+      // Update current topic based on user's message
+      if (userMessage.toLowerCase().includes("space")) setCurrentTopic("space");
+      else if (userMessage.toLowerCase().includes("dna") || userMessage.toLowerCase().includes("life")) setCurrentTopic("biology");
+      else if (userMessage.toLowerCase().includes("earth") || userMessage.toLowerCase().includes("volcano")) setCurrentTopic("earth");
+      
     } catch (error) {
       console.error('Error getting response:', error);
       toast({
@@ -70,7 +77,7 @@ const Index = () => {
           </div>
           
           <div className="space-y-4">
-            <TopicBlocks />
+            <TopicBlocks currentTopic={currentTopic} />
             
             <div className="flex gap-2">
               <Input
