@@ -80,9 +80,9 @@ export const useUserProgress = () => {
       const { data: pointsData } = await supabase
         .rpc('calculate_next_level_points', {
           current_level: currentProgress.level
-        });
+        }) as { data: number | null };
 
-      const pointsNeeded = pointsData || 100; // Fallback to 100 if null
+      const pointsNeeded = pointsData ?? 100; // Fallback to 100 if null
       console.log('Points needed for next level:', pointsNeeded);
 
       // Check if user should level up

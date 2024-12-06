@@ -98,7 +98,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      calculate_next_level_points: {
+        Args: {
+          current_level: number
+        }
+        Returns: number
+      }
     }
     Enums: {
       gender_type: "boy" | "girl" | "other"
