@@ -1,15 +1,7 @@
 import React from "react";
 import { ChatMessage } from "./ChatMessage";
-import { motion } from "framer-motion";
-
-interface Block {
-  title: string;
-  description: string;
-  metadata: {
-    topic: string;
-  };
-  color?: string;
-}
+import { QuizCard } from "./quiz/QuizCard";
+import { Block, QuizState } from "@/types/chat";
 
 interface Message {
   text: string;
@@ -21,9 +13,17 @@ interface ChatContainerProps {
   messages: Message[];
   handleListen: () => void;
   onBlockClick?: (block: Block) => void;
+  quizState?: QuizState;
+  onQuizAnswer?: (isCorrect: boolean) => void;
 }
 
-export const ChatContainer = ({ messages, handleListen, onBlockClick }: ChatContainerProps) => {
+export const ChatContainer = ({ 
+  messages, 
+  handleListen, 
+  onBlockClick,
+  quizState,
+  onQuizAnswer 
+}: ChatContainerProps) => {
   // Filter out messages that are just block titles
   const filteredMessages = messages.filter((message, index) => {
     if (index === 0) return true; // Always keep the first message
@@ -44,6 +44,13 @@ export const ChatContainer = ({ messages, handleListen, onBlockClick }: ChatCont
           onBlockClick={onBlockClick}
         />
       ))}
+      
+      {quizState?.isActive && quizState.currentQuestion && (
+        <QuizCard
+          question={quizState.currentQuestion}
+          onAnswer={onQuizAnswer || (() => {})}
+        />
+      )}
     </div>
   );
 };

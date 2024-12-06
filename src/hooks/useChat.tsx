@@ -26,14 +26,13 @@ export const useChat = () => {
   const { generateDynamicBlocks } = useBlockGeneration(userProfile);
   const { handleImageAnalysis, isAnalyzing } = useImageAnalysis();
   
-  // Wrap the updateUserProgress to return void
   const updateUserProgress = async (points: number): Promise<void> => {
     await rawUpdateProgress(points);
   };
   
   const { quizState, handleQuizAnswer, updateBlocksExplored } = useQuiz(updateUserProgress);
 
-  const sendMessage = async (messageText: string) => {
+  const sendMessage = async (messageText: string, skipUserMessage: boolean = false) => {
     if (!messageText.trim() || isLoading) return;
     
     if (!userProfile?.name) {
@@ -55,7 +54,9 @@ export const useChat = () => {
       return;
     }
 
-    setMessages(prev => [...prev, { text: messageText, isAi: false }]);
+    if (!skipUserMessage) {
+      setMessages(prev => [...prev, { text: messageText, isAi: false }]);
+    }
     setInput("");
     setIsLoading(true);
 
@@ -93,12 +94,13 @@ export const useChat = () => {
   };
 
   const handleBlockClick = async (block: Block) => {
-    // Add null check and default topic
     const topic = block?.metadata?.topic || currentTopic;
-    console.log('Block clicked:', block); // Add logging for debugging
+    console.log('Block clicked:', block);
     setCurrentTopic(topic);
     updateBlocksExplored(topic);
-    await sendMessage(`Tell me about "${block?.title || 'this topic'}"`);
+    
+    // Skip adding the "Tell me about" message and directly get the response
+    await sendMessage(`Tell me about "${block?.title || 'this topic'}"`, true);
   };
 
   return {

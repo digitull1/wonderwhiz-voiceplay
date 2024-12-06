@@ -16,6 +16,8 @@ const Index = () => {
     userProgress,
     handleListen,
     handleBlockClick,
+    handleQuizAnswer,
+    quizState,
     sendMessage,
     handleImageAnalysis
   } = useChat();
@@ -79,7 +81,6 @@ const Index = () => {
           </motion.div>
         </div>
 
-        {/* Enhanced main container with improved glass morphism */}
         <div className="flex-1 container max-w-4xl mx-auto py-8 px-4 relative z-10">
           <motion.div 
             className="bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl p-6 h-[calc(100vh-4rem)] 
@@ -102,6 +103,8 @@ const Index = () => {
               messages={messages} 
               handleListen={handleListen}
               onBlockClick={handleBlockClick}
+              quizState={quizState}
+              onQuizAnswer={handleQuizAnswer}
             />
             <ChatInput 
               input={input}
