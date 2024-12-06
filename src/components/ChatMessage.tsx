@@ -1,6 +1,7 @@
 import React from "react";
 import { Button } from "./ui/button";
-import { Mic, Volume2 } from "lucide-react";
+import { Volume2 } from "lucide-react";
+import { motion } from "framer-motion";
 
 interface ChatMessageProps {
   isAi?: boolean;
@@ -10,32 +11,40 @@ interface ChatMessageProps {
 
 export const ChatMessage: React.FC<ChatMessageProps> = ({ isAi, message, onListen }) => {
   return (
-    <div className={`flex ${isAi ? "justify-start" : "justify-end"} mb-4`}>
+    <motion.div 
+      className={`flex ${isAi ? "justify-start" : "justify-end"} mb-4`}
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+    >
       {isAi && (
-        <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center mr-2">
-          <span className="text-white text-sm">🤖</span>
+        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary to-purple-600 flex items-center justify-center mr-3 shadow-lg">
+          <span className="text-white text-lg">🤖</span>
         </div>
       )}
-      <div
-        className={`max-w-[80%] p-4 rounded-2xl ${
+      <motion.div
+        className={`max-w-[80%] p-4 rounded-2xl shadow-lg ${
           isAi
-            ? "bg-primary text-primary-foreground"
-            : "bg-secondary text-secondary-foreground"
+            ? "bg-gradient-to-br from-primary/90 to-purple-600/90 text-white"
+            : "bg-gradient-to-br from-secondary/90 to-green-600/90 text-white"
         }`}
+        initial={{ scale: 0.95 }}
+        animate={{ scale: 1 }}
+        transition={{ duration: 0.2 }}
       >
-        <p className="text-sm md:text-base">{message}</p>
+        <p className="text-sm md:text-base leading-relaxed">{message}</p>
         {isAi && (
           <Button
             variant="ghost"
             size="sm"
-            className="mt-2 text-primary-foreground hover:text-primary-foreground/80"
+            className="mt-2 text-white hover:text-white/80 hover:bg-white/10"
             onClick={onListen}
           >
             <Volume2 className="w-4 h-4 mr-2" />
             Listen
           </Button>
         )}
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 };

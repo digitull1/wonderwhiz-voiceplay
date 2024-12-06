@@ -12,6 +12,7 @@ import { Auth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
 import { ProfileForm } from "@/components/ProfileForm";
+import { motion } from "framer-motion";
 
 const Index = () => {
   const [messages, setMessages] = useState([
@@ -144,19 +145,32 @@ const Index = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 flex flex-col">
       <div className="flex-1 container max-w-4xl mx-auto py-8 px-4">
-        <div className="bg-white rounded-2xl shadow-xl p-6 h-[calc(100vh-4rem)] flex flex-col">
-          <div className="flex justify-between items-center mb-4">
-            <ApiKeyInput />
-            <Button
-              variant="outline"
-              onClick={() => supabase.auth.signOut()}
-              className="ml-2"
-            >
-              Sign Out
-            </Button>
+        <motion.div 
+          className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-xl p-6 h-[calc(100vh-4rem)] flex flex-col"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <div className="flex justify-between items-center mb-6">
+            <div className="flex items-center gap-2">
+              <span className="text-2xl">✨</span>
+              <h1 className="text-xl font-bold bg-gradient-to-r from-primary to-purple-600 text-transparent bg-clip-text">
+                WonderWhiz
+              </h1>
+            </div>
+            <div className="flex items-center gap-2">
+              <ApiKeyInput />
+              <Button
+                variant="outline"
+                onClick={() => supabase.auth.signOut()}
+                className="ml-2"
+              >
+                Sign Out
+              </Button>
+            </div>
           </div>
           
-          <div className="flex-1 overflow-y-auto space-y-4 mb-4 px-2">
+          <div className="flex-1 overflow-y-auto space-y-4 mb-4 px-2 scrollbar-thin scrollbar-thumb-primary scrollbar-track-transparent">
             {messages.map((message, index) => (
               <ChatMessage
                 key={index}
@@ -170,22 +184,31 @@ const Index = () => {
           <div className="space-y-6">
             <TopicBlocks currentTopic={currentTopic} onTopicSelect={handleTopicSelect} />
             
-            <div className="flex gap-2">
+            <motion.div 
+              className="flex gap-2"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: 0.2 }}
+            >
               <Input
                 placeholder={isLoading ? "Thinking..." : "Ask me anything about " + currentTopic + "..."}
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={(e) => e.key === "Enter" && handleSend()}
-                className="flex-1"
+                className="flex-1 bg-white/80 backdrop-blur-sm"
                 disabled={isLoading}
               />
               <VoiceInput onVoiceInput={handleVoiceInput} />
-              <Button onClick={handleSend} disabled={isLoading} className="bg-primary hover:bg-primary/90">
-                <Send className={`w-4 h-4 ${isLoading ? 'animate-pulse' : ''}`} />
+              <Button 
+                onClick={handleSend} 
+                disabled={isLoading} 
+                className="bg-primary hover:bg-primary/90 text-white"
+              >
+                <Send className={`w-4 h-4 ${isLoading ? "animate-pulse" : ""}`} />
               </Button>
-            </div>
+            </motion.div>
           </div>
-        </div>
+        </motion.div>
       </div>
     </div>
   );
