@@ -1,3 +1,16 @@
+interface SpeechGrammar {
+  src: string;
+  weight: number;
+}
+
+interface SpeechGrammarList {
+  readonly length: number;
+  addFromString(string: string, weight?: number): void;
+  addFromURI(src: string, weight?: number): void;
+  item(index: number): SpeechGrammar;
+  [index: number]: SpeechGrammar;
+}
+
 interface SpeechRecognitionErrorEvent extends Event {
   error: string;
   message: string;
