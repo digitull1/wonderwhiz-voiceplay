@@ -15,9 +15,11 @@ serve(async (req) => {
     const { query, context, age_group, name } = await req.json()
     console.log("Generating blocks for:", { query, context, age_group, name });
 
-    const apiKey = Deno.env.get('GROQ_API_KEY');
+    // Try both secret names for backward compatibility
+    const apiKey = Deno.env.get('GROQ_API_KEY') || Deno.env.get('Groq');
     if (!apiKey) {
-      throw new Error('GROQ_API_KEY is not set');
+      console.error('Neither GROQ_API_KEY nor Groq secret is set');
+      throw new Error('Groq API key not configured');
     }
 
     const prompt = `
@@ -42,6 +44,8 @@ serve(async (req) => {
       Make sure each block title is super engaging and fun, using emojis and exciting language!
       Think of it like creating trading cards that kids will want to collect.
     `
+
+    console.log("Sending request to Groq API with prompt:", prompt);
 
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
