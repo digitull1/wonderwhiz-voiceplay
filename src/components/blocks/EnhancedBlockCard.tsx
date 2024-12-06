@@ -16,17 +16,24 @@ export const EnhancedBlockCard = ({
   onClick, 
   gradient 
 }: EnhancedBlockCardProps) => {
-  const TITLE_LIMIT = 39;
-  const DESCRIPTION_LIMIT = 111;
+  const CONTENT_LIMIT = 75;
 
-  const truncateText = (text: string, limit: number) => {
+  const truncateContent = (text: string) => {
     if (!text) return "";
-    if (text.length <= limit) return text;
-    return text.substring(0, limit - 3) + "...";
+    if (text.length <= CONTENT_LIMIT) return text;
+    return text.substring(0, CONTENT_LIMIT - 3) + "...";
   };
 
-  const truncatedTitle = truncateText(block.title, TITLE_LIMIT);
-  const truncatedDescription = truncateText(block.description, DESCRIPTION_LIMIT);
+  // Get topic-based gradient
+  const getTopicGradient = (topic: string) => {
+    const topics: Record<string, string> = {
+      science: "from-[#4CABFF] to-[#5EC4FF]",
+      history: "from-[#FFAB4C] to-[#FF6B6B]",
+      space: "from-[#F4E7FE] to-[#DABFFF]",
+      default: "from-[#4ECDC4] to-[#6EE7E7]"
+    };
+    return topics[topic.toLowerCase()] || topics.default;
+  };
 
   return (
     <motion.button
@@ -41,31 +48,22 @@ export const EnhancedBlockCard = ({
       whileTap={{ scale: 0.98 }}
       onClick={onClick}
       className={cn(
-        "flex flex-col items-start p-6 rounded-xl",
-        "w-[320px] min-w-[320px] h-[180px]",
+        "flex items-center justify-center p-6 rounded-xl",
+        "w-[400px] min-w-[400px] h-[120px]",
         "transition-all duration-300 relative overflow-hidden",
         "text-white snap-center group",
         "hover:shadow-xl hover:ring-2 hover:ring-white/20",
-        gradient
+        "bg-gradient-to-br",
+        getTopicGradient(block.metadata?.topic || 'default')
       )}
     >
-      <div className="relative z-10 h-full flex flex-col justify-between space-y-4 w-full">
-        <h3 className={cn(
-          "font-bold text-left transition-all duration-300",
-          "leading-tight line-clamp-2",
-          block.title?.length > TITLE_LIMIT - 10 ? "text-lg" : "text-xl"
-        )}>
-          {truncatedTitle}
-        </h3>
-        
-        <p className={cn(
-          "text-left opacity-90 transition-all duration-300",
-          "leading-relaxed line-clamp-3",
-          block.description?.length > DESCRIPTION_LIMIT - 20 ? "text-sm" : "text-base"
-        )}>
-          {truncatedDescription}
-        </p>
-      </div>
+      <p className={cn(
+        "font-bold text-center transition-all duration-300",
+        "text-[20px] leading-tight font-poppins tracking-wide",
+        "px-4"
+      )}>
+        {truncateContent(block.title)}
+      </p>
 
       <div className="absolute bottom-0 right-0 w-32 h-32 opacity-20 
         bg-white rounded-tl-full transform translate-x-8 translate-y-8 

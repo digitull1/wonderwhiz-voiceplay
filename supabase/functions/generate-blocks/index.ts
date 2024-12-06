@@ -24,18 +24,18 @@ serve(async (req) => {
     const prompt = `
       Based on this chat message: "${query}" and the current topic "${context}",
       generate 3 engaging, educational blocks for a ${age_group} year old ${name ? `named ${name}` : 'child'}.
-      Each block should:
-      1. Start with a relevant emoji
-      2. Have a clickbait-style "Did you know?" title that makes kids curious
-      3. Include a one-sentence teaser that makes them want to learn more
-      4. End with an exciting question that prompts them to click
+      Each block should be a single line of clickbait-style content that:
+      1. Starts with "Did you know" or an exciting question
+      2. Contains one fascinating fact that makes kids curious
+      3. Ends with a call to action or question
+      4. Is EXACTLY 75 characters or less
+      5. Includes ONE relevant emoji at the end
       
       Format the response as a JSON object with this structure:
       {
         "blocks": [
           {
-            "title": "🌟 Did you know [fascinating fact]?",
-            "description": "One engaging teaser sentence + exciting question",
+            "title": "Single line of clickbait content (75 chars max)",
             "metadata": {
               "topic": "specific_subtopic"
             }
@@ -43,7 +43,7 @@ serve(async (req) => {
         ]
       }
 
-      Make each block title and description super engaging and fun!
+      Make each block super engaging and fun!
       Think of them like trading cards that kids will want to collect.
       Keep the language simple and exciting for the target age group.
     `
@@ -65,9 +65,9 @@ serve(async (req) => {
             Your responses should:
             1. Be concise and engaging
             2. Use simple language for kids
-            3. Include relevant emojis (but not too many)
-            4. Break up text into short paragraphs
-            5. End with a natural question that makes them curious to learn more`
+            3. Include ONE relevant emoji at the end of each block
+            4. Never exceed 75 characters per block
+            5. Make kids curious to learn more`
           },
           {
             role: "user",

@@ -11,7 +11,7 @@ export const useBlockGeneration = (userProfile: UserProfile | null) => {
           context: topic,
           age_group: userProfile ? `${userProfile.age}-${userProfile.age + 2}` : "8-12",
           name: userProfile?.name,
-          previous_response: response // Include previous response for context
+          previous_response: response
         }
       });
 
@@ -26,14 +26,12 @@ export const useBlockGeneration = (userProfile: UserProfile | null) => {
           ? JSON.parse(data.choices[0].message.content) 
           : data.choices[0].message.content;
 
-        // Add logging to track block generation
         console.log("Generated blocks:", parsedData.blocks);
         
-        // Ensure all blocks have required properties and proper formatting
+        // Format blocks to use single-line content
         const formattedBlocks = (parsedData.blocks || []).map((block: Block) => ({
           ...block,
-          title: block.title?.substring(0, 39) || "",
-          description: block.description?.substring(0, 111) || "",
+          title: block.title?.substring(0, 75) || "", // Use title for the single-line content
           metadata: {
             ...block.metadata,
             topic: block.metadata?.topic || topic

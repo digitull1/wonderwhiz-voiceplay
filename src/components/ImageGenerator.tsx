@@ -1,8 +1,9 @@
-import React, { useState } from "react";
-import { useToast } from "./ui/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import { ImageGenerationButton } from "./image/ImageGenerationButton";
-import { GeneratedImage } from "./image/GeneratedImage";
+import React, { useState } from 'react';
+import { Button } from './ui/button';
+import { Loader2, Image as ImageIcon } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from './ui/use-toast';
+import { GeneratedImage } from './image/GeneratedImage';
 
 interface ImageGeneratorProps {
   prompt: string;
@@ -12,67 +13,56 @@ export const ImageGenerator = ({ prompt }: ImageGeneratorProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const { toast } = useToast();
-  const [retryCount, setRetryCount] = useState(0);
-  const MAX_RETRIES = 3;
 
   const generateImage = async () => {
     setIsLoading(true);
     try {
-      const cleanPrompt = prompt.trim();
-      if (!cleanPrompt) throw new Error("Empty prompt");
-
-      console.log("Starting image generation with prompt:", cleanPrompt);
-      const requestBody = JSON.stringify({ prompt: cleanPrompt });
-      console.log("Sending request with body:", requestBody);
-
+      console.log('Generating image for prompt:', prompt);
       const { data, error } = await supabase.functions.invoke('generate-image', {
-        body: requestBody
+        body: { prompt }
       });
 
-      console.log("Response from generate-image:", { data, error });
-
-      if (error) throw error;
-      if (!data?.image) throw new Error("No image data in response");
-
-      setImageUrl(data.image);
-      setRetryCount(0);
-      toast({
-        title: "Image generated!",
-        description: "Your magical creation is ready ✨",
-      });
-    } catch (error: any) {
-      console.error("Error generating image:", error);
-      
-      // Check if it's a rate limit error
-      const isRateLimit = error.message?.includes("Max requests") || 
-                         error.message?.includes("rate limit");
-      
-      if (isRateLimit && retryCount < MAX_RETRIES) {
-        console.log(`Rate limit hit. Retrying... Attempt ${retryCount + 1} of ${MAX_RETRIES}`);
-        setRetryCount(prev => prev + 1);
-        // Exponential backoff: wait longer between each retry
-        setTimeout(() => generateImage(), 1000 * (retryCount + 1));
-        return;
+      if (error) {
+        console.error('Error generating image:', error);
+        throw error;
       }
 
+      if (data?.image) {
+        console.log('Image generated successfully');
+        setImageUrl(data.image);
+      }
+    } catch (error) {
+      console.error('Failed to generate image:', error);
       toast({
-        title: "Oops!",
-        description: isRateLimit 
-          ? "The image generator is a bit tired. Please wait a minute and try again! 🎨"
-          : "Couldn't create the image right now. Please try again!",
+        title: "Image Generation Failed",
+        description: "Sorry, I couldn't create an image this time. Try again!",
         variant: "destructive"
       });
     } finally {
-      if (retryCount >= MAX_RETRIES) {
-        setIsLoading(false);
-        setRetryCount(0);
-      }
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="mt-4 space-y-4">
-      <ImageGenerationButton onClick={generateImage} isLoading={isLoading} />
+    <div className="flex flex-col gap-4 w-full max-w-md">
+      <Button
+        onClick={generateImage}
+        disabled={isLoading}
+        className="bg-secondary hover:bg-secondary/90 text-white"
+      >
+        {isLoading ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Generating...
+          </>
+        ) : (
+          <>
+            <ImageIcon className="mr-2 h-4 w-4" />
+            Generate Image
+          </>
+        )}
+      </Button>
+      
       {imageUrl && <GeneratedImage imageUrl={imageUrl} />}
     </div>
   );
