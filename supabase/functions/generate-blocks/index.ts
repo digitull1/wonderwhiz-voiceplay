@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.7.1'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -13,8 +12,8 @@ serve(async (req) => {
 
   try {
     const { query, context, age_group, name } = await req.json()
+    console.log("Generating blocks for:", { query, context, age_group, name });
 
-    // Format the prompt to generate concise, engaging blocks
     const prompt = `
       Based on this chat message: "${query}" and the current topic "${context}",
       generate 3 engaging, educational blocks for a ${age_group} year old ${name ? `named ${name}` : 'child'}.

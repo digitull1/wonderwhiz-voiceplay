@@ -37,33 +37,33 @@ export const useChat = () => {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const { toast } = useToast();
 
-  const getLastAiMessage = (msgs: Message[]): Message | undefined => {
-    for (let i = msgs.length - 1; i >= 0; i--) {
-      if (msgs[i].isAi) {
-        return msgs[i];
+  const generateDynamicBlocks = async (response: string, topic: string) => {
+    try {
+      console.log("Generating blocks for topic:", topic);
+      const { data } = await supabase.functions.invoke('generate-blocks', {
+        body: {
+          query: response,
+          context: topic,
+          age_group: userProfile ? `${userProfile.age}-${userProfile.age + 2}` : "8-12",
+          name: userProfile?.name
+        }
+      });
+
+      console.log("Generated blocks data:", data);
+
+      if (data?.choices?.[0]?.message?.content) {
+        const parsedData = typeof data.choices[0].message.content === 'string' 
+          ? JSON.parse(data.choices[0].message.content) 
+          : data.choices[0].message.content;
+
+        console.log("Parsed blocks:", parsedData.blocks);
+        return parsedData.blocks;
       }
+      return [];
+    } catch (error) {
+      console.error('Error generating blocks:', error);
+      return [];
     }
-    return undefined;
-  };
-
-  const handleListen = () => {
-    const lastAiMessage = getLastAiMessage(messages);
-    if (!lastAiMessage) return;
-
-    const utterance = new SpeechSynthesisUtterance(lastAiMessage.text);
-    utterance.rate = 0.9;
-    utterance.pitch = 1;
-    speechSynthesis.speak(utterance);
-
-    toast({
-      title: "Reading message...",
-      description: "Click anywhere to stop",
-    });
-  };
-
-  const handleBlockClick = async (block: Block) => {
-    setCurrentTopic(block.metadata.topic);
-    await sendMessage(`Tell me about ${block.title}!`);
   };
 
   const handleNameInput = (name: string) => {
@@ -108,34 +108,6 @@ export const useChat = () => {
     ]);
   };
 
-  const generateDynamicBlocks = async (response: string, topic: string) => {
-    try {
-      const { data } = await supabase.functions.invoke('generate-blocks', {
-        body: {
-          query: response,
-          context: topic,
-          age_group: userProfile ? `${userProfile.age}-${userProfile.age + 2}` : "8-12",
-          name: userProfile?.name
-        }
-      });
-
-      if (data?.choices?.[0]?.message?.content) {
-        const parsedData = typeof data.choices[0].message.content === 'string' 
-          ? JSON.parse(data.choices[0].message.content) 
-          : data.choices[0].message.content;
-
-        return parsedData.blocks.map((block: Block) => ({
-          ...block,
-          description: block.description.split('.')[0] + '.' // Keep only first sentence
-        }));
-      }
-      return [];
-    } catch (error) {
-      console.error('Error generating blocks:', error);
-      return [];
-    }
-  };
-
   const sendMessage = async (messageText: string) => {
     if (!messageText.trim() || isLoading) return;
     
@@ -163,15 +135,26 @@ export const useChat = () => {
     setIsLoading(true);
 
     try {
+      console.log("Sending message:", messageText);
       const response = await getGroqResponse(messageText);
-      const aiMessage = { text: response, isAi: true, blocks: [] };
+      console.log("Received response:", response);
       
       const blocks = await generateDynamicBlocks(response, currentTopic);
-      if (blocks) {
-        aiMessage.blocks = blocks;
-      }
+      console.log("Generated blocks:", blocks);
+      
+      const aiMessage = { 
+        text: response, 
+        isAi: true, 
+        blocks: blocks 
+      };
       
       setMessages(prev => [...prev, aiMessage]);
+      
+      toast({
+        title: "New knowledge unlocked! 🎉",
+        description: "Keep exploring to earn more rewards!",
+        className: "bg-primary text-white",
+      });
     } catch (error: any) {
       console.error('Error getting response:', error);
       toast({
@@ -198,8 +181,11 @@ export const useChat = () => {
     setInput,
     isLoading,
     currentTopic,
-    handleListen,
-    handleBlockClick,
+    handleListen: () => {}, // Placeholder for voice feature
+    handleBlockClick: (block: Block) => {
+      setCurrentTopic(block.metadata.topic);
+      sendMessage(`Tell me about ${block.title}!`);
+    },
     sendMessage,
     handleImageAnalysis
   };

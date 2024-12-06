@@ -1,1 +1,4 @@
 project_id = "tyyucvvapqwzjkqcgjwb"
+
+[functions.generate-blocks]
+verify_jwt = false
