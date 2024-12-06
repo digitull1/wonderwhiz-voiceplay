@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { Button } from "./ui/button";
 import { Mic, MicOff } from "lucide-react";
-import { useToast } from "./ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
+import { supabase } from "@/integrations/supabase/client";
 
 interface VoiceInputProps {
   onVoiceInput: (text: string) => void;
@@ -10,70 +11,84 @@ interface VoiceInputProps {
 
 export const VoiceInput: React.FC<VoiceInputProps> = ({ onVoiceInput }) => {
   const [isListening, setIsListening] = useState(false);
-  const [recognition, setRecognition] = useState<SpeechRecognition | null>(null);
+  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
   const { toast } = useToast();
 
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (SpeechRecognition) {
-        const recognition = new SpeechRecognition();
-        recognition.continuous = true;
-        recognition.interimResults = true;
-        recognition.lang = "en-US";
-        setRecognition(recognition);
-      }
-    }
-  }, []);
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const recorder = new MediaRecorder(stream);
+      const audioChunks: Blob[] = [];
 
-  const handleResult = useCallback((event: SpeechRecognitionEvent) => {
-    const transcript = Array.from(event.results)
-      .map(result => result[0].transcript)
-      .join("");
+      recorder.ondataavailable = (event) => {
+        audioChunks.push(event.data);
+      };
 
-    if (event.results[0].isFinal) {
-      onVoiceInput(transcript);
-      if (recognition) {
-        recognition.stop();
-        setIsListening(false);
-      }
-    }
-  }, [onVoiceInput, recognition]);
+      recorder.onstop = async () => {
+        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+        const reader = new FileReader();
+        
+        reader.onload = async () => {
+          try {
+            const base64Audio = reader.result as string;
+            
+            const { data, error } = await supabase.functions.invoke('transcribe-audio', {
+              body: { audioData: base64Audio }
+            });
 
-  const handleError = useCallback((event: SpeechRecognitionErrorEvent) => {
-    console.error("Speech recognition error:", event.error);
-    toast({
-      title: "Oops!",
-      description: "There was an error with voice recognition. Please try again.",
-      variant: "destructive",
-    });
-    setIsListening(false);
-  }, [toast]);
+            if (error) throw error;
+            
+            if (data.text) {
+              onVoiceInput(data.text);
+            }
+          } catch (error) {
+            console.error('Transcription error:', error);
+            toast({
+              title: "Transcription Error",
+              description: "Failed to transcribe audio. Please try again.",
+              variant: "destructive",
+            });
+          }
+        };
 
-  useEffect(() => {
-    if (recognition) {
-      recognition.onresult = handleResult;
-      recognition.onerror = handleError;
-    }
-  }, [recognition, handleResult, handleError]);
+        reader.readAsDataURL(audioBlob);
+      };
 
-  const toggleListening = () => {
-    if (!recognition) {
+      setMediaRecorder(recorder);
+      recorder.start();
+      setIsListening(true);
+      
       toast({
-        title: "Not Supported",
-        description: "Speech recognition is not supported in your browser.",
+        title: "🎙️ Listening...",
+        description: "Speak clearly into your microphone",
+      });
+      
+    } catch (error) {
+      console.error('Error accessing microphone:', error);
+      toast({
+        title: "Microphone Error",
+        description: "Could not access your microphone. Please check permissions.",
         variant: "destructive",
       });
-      return;
     }
-
-    if (isListening) {
-      recognition.stop();
-    } else {
-      recognition.start();
-    }
-    setIsListening(!isListening);
   };
+
+  const stopRecording = () => {
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+      mediaRecorder.stop();
+      mediaRecorder.stream.getTracks().forEach(track => track.stop());
+    }
+    setIsListening(false);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+        mediaRecorder.stop();
+        mediaRecorder.stream.getTracks().forEach(track => track.stop());
+      }
+    };
+  }, [mediaRecorder]);
 
   return (
     <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
@@ -83,7 +98,7 @@ export const VoiceInput: React.FC<VoiceInputProps> = ({ onVoiceInput }) => {
         className={`relative ${
           isListening ? "bg-primary text-white" : "hover:bg-primary/10"
         }`}
-        onClick={toggleListening}
+        onClick={isListening ? stopRecording : startRecording}
       >
         {isListening ? (
           <motion.div
