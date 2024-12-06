@@ -13,6 +13,7 @@ interface Block {
   metadata: {
     topic: string;
   };
+  color?: string; // Make color optional since it's added after API response
 }
 
 interface TopicBlocksProps {
@@ -32,6 +33,17 @@ export const TopicBlocks: React.FC<TopicBlocksProps> = ({
   const [depth, setDepth] = useState(1);
   const [scrollPosition, setScrollPosition] = useState(0);
 
+  const getRandomGradient = () => {
+    const gradients = [
+      "bg-gradient-to-br from-purple-600 to-blue-700",
+      "bg-gradient-to-br from-blue-500 to-purple-600",
+      "bg-gradient-to-br from-indigo-600 to-purple-700",
+      "bg-gradient-to-br from-green-500 to-emerald-700",
+      "bg-gradient-to-br from-orange-500 to-red-700"
+    ];
+    return gradients[Math.floor(Math.random() * gradients.length)];
+  };
+
   const fetchDynamicBlocks = async (query: string, topicContext: string) => {
     setIsLoading(true);
     try {
@@ -50,7 +62,7 @@ export const TopicBlocks: React.FC<TopicBlocksProps> = ({
         ? JSON.parse(data.choices[0].message.content) 
         : data.choices[0].message.content;
 
-      setBlocks(parsedData.blocks.map((block: any) => ({
+      setBlocks(parsedData.blocks.map((block: Block) => ({
         ...block,
         description: "Click to explore more!",
         color: getRandomGradient()
@@ -66,37 +78,6 @@ export const TopicBlocks: React.FC<TopicBlocksProps> = ({
     } finally {
       setIsLoading(false);
     }
-  };
-
-  useEffect(() => {
-    if (lastMessage) {
-      fetchDynamicBlocks(lastMessage, currentTopic);
-    } else {
-      setBlocks(generateFallbackBlocks(currentTopic));
-    }
-  }, [lastMessage, currentTopic]);
-
-  const handleTopicClick = async (block: Block) => {
-    onTopicSelect(block.metadata.topic);
-    setDepth(prev => prev + 1);
-    await fetchDynamicBlocks(block.title, block.metadata.topic);
-    
-    toast({
-      title: "New Adventure!",
-      description: `Let's explore ${block.title}!`,
-      className: "bg-primary text-white",
-    });
-  };
-
-  const getRandomGradient = () => {
-    const gradients = [
-      "bg-gradient-to-br from-purple-600 to-blue-700",
-      "bg-gradient-to-br from-blue-500 to-purple-600",
-      "bg-gradient-to-br from-indigo-600 to-purple-700",
-      "bg-gradient-to-br from-green-500 to-emerald-700",
-      "bg-gradient-to-br from-orange-500 to-red-700"
-    ];
-    return gradients[Math.floor(Math.random() * gradients.length)];
   };
 
   const generateFallbackBlocks = (topic: string) => {
@@ -166,6 +147,26 @@ export const TopicBlocks: React.FC<TopicBlocksProps> = ({
     return baseBlocks[topic as keyof typeof baseBlocks] || baseBlocks.space;
   };
 
+  useEffect(() => {
+    if (lastMessage) {
+      fetchDynamicBlocks(lastMessage, currentTopic);
+    } else {
+      setBlocks(generateFallbackBlocks(currentTopic));
+    }
+  }, [lastMessage, currentTopic]);
+
+  const handleTopicClick = async (block: Block) => {
+    onTopicSelect(block.metadata.topic);
+    setDepth(prev => prev + 1);
+    await fetchDynamicBlocks(block.title, block.metadata.topic);
+    
+    toast({
+      title: "New Adventure!",
+      description: `Let's explore ${block.title}!`,
+      className: "bg-primary text-white",
+    });
+  };
+
   const handleScroll = (direction: 'left' | 'right') => {
     const container = document.querySelector('.blocks-container');
     if (container) {
@@ -206,7 +207,7 @@ export const TopicBlocks: React.FC<TopicBlocksProps> = ({
               <TopicBlock
                 title={block.title}
                 description={block.description}
-                color={block.color}
+                color={block.color || getRandomGradient()}
                 onClick={() => handleTopicClick(block)}
               />
             </motion.div>
