@@ -4,7 +4,7 @@ import { ChatHeader } from "@/components/ChatHeader";
 import { ChatContainer } from "@/components/ChatContainer";
 import { ChatInput } from "@/components/ChatInput";
 import { useChat } from "@/hooks/useChat";
-import { Sparkles, Stars, Shapes } from "lucide-react";
+import { Sparkles, Stars, Shapes, Home, MessageSquare, User, Award } from "lucide-react";
 
 const Index = () => {
   const {
@@ -25,7 +25,7 @@ const Index = () => {
   return (
     <AnimatePresence>
       <motion.div 
-        className="min-h-screen bg-gradient-primary flex flex-col relative overflow-hidden"
+        className="min-h-screen bg-gradient-to-br from-app-background to-[#FFCDD2] flex flex-col relative overflow-hidden"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
@@ -81,9 +81,9 @@ const Index = () => {
           </motion.div>
         </div>
 
-        <div className="flex-1 container max-w-4xl mx-auto py-8 px-4 relative z-10">
+        <div className="flex-1 container max-w-4xl mx-auto py-4 px-4 relative z-10">
           <motion.div 
-            className="bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl p-6 h-[calc(100vh-4rem)] 
+            className="bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl p-4 h-[calc(100vh-2rem)] 
               flex flex-col border border-white/50 relative overflow-hidden"
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -118,7 +118,21 @@ const Index = () => {
           </motion.div>
         </div>
 
-        {/* Enhanced decorative gradient orbs with more complex animations */}
+        {/* Mobile Navigation Bar */}
+        <motion.nav 
+          className="fixed bottom-0 left-0 right-0 h-16 bg-white/90 backdrop-blur-xl border-t 
+            border-white/20 flex justify-around items-center px-6 z-50"
+          initial={{ y: 100 }}
+          animate={{ y: 0 }}
+          transition={{ delay: 0.3 }}
+        >
+          <NavButton icon={<Home className="w-6 h-6" />} label="Home" isActive={true} />
+          <NavButton icon={<MessageSquare className="w-6 h-6" />} label="Ask" />
+          <NavButton icon={<User className="w-6 h-6" />} label="Profile" />
+          <NavButton icon={<Award className="w-6 h-6" />} label="Rewards" />
+        </motion.nav>
+
+        {/* Enhanced decorative gradient orbs */}
         <motion.div 
           className="fixed -top-40 -left-40 w-[500px] h-[500px] bg-primary/30 rounded-full 
             filter blur-[100px] opacity-50"
@@ -153,5 +167,26 @@ const Index = () => {
     </AnimatePresence>
   );
 };
+
+// Navigation Button Component
+const NavButton = ({ 
+  icon, 
+  label, 
+  isActive = false 
+}: { 
+  icon: React.ReactNode; 
+  label: string; 
+  isActive?: boolean;
+}) => (
+  <motion.button
+    className={`flex flex-col items-center justify-center min-h-touch p-2 rounded-lg
+      transition-colors duration-300 ${isActive ? 'text-primary' : 'text-gray-500'}`}
+    whileHover={{ scale: 1.05 }}
+    whileTap={{ scale: 0.95 }}
+  >
+    {icon}
+    <span className="text-xs mt-1 font-medium">{label}</span>
+  </motion.button>
+);
 
 export default Index;

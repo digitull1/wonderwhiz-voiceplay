@@ -55,29 +55,46 @@ export default {
           intermediate: "#2563EB",
           advanced: "#8B5CF6",
           expert: "#F97316",
+        },
+        app: {
+          background: "#E8EAF6",
+          accent: "#4DD0E1",
+          cta: "#FFC107",
+          text: {
+            dark: "#333333",
+            light: "#FFFFFF",
+          }
         }
       },
       fontFamily: {
         sans: ['Poppins', 'system-ui', 'sans-serif'],
       },
       fontSize: {
-        'title': '24px',
+        'title': '22px',
         'subtitle': '20px',
         'body': '16px',
         'small': '14px',
         'block-title': '18px',
         'block-desc': '16px',
+        'cta': '20px',
       },
       spacing: {
         'safe-bottom': 'env(safe-area-inset-bottom)',
         'mobile-input': '90vw',
+        'block-height': '80vh',
       },
       height: {
         'screen-safe': 'calc(100vh - env(safe-area-inset-bottom))',
       },
+      minHeight: {
+        'touch': '48px',
+      },
       boxShadow: {
         'block': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
         'block-hover': '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+      },
+      lineHeight: {
+        'readable': '1.6',
       },
     },
   },
