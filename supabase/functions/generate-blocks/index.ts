@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import "https://deno.land/x/xhr@0.1.0/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -7,28 +8,16 @@ const corsHeaders = {
 
 const GROQ_API_KEY = Deno.env.get('Groq');
 
-interface BlockGenerationRequest {
-  query: string;
-  context: string;
-  age_group: string;
-  depth: number;
-}
-
 serve(async (req) => {
-  // Handle CORS
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { query, context, age_group, depth } = await req.json() as BlockGenerationRequest;
-
+    const { query, context, age_group, depth } = await req.json();
+    
     console.log('Generating blocks for:', { query, context, age_group, depth });
-
-    const systemPrompt = `You are an AI assistant helping generate engaging educational blocks for children. 
-    Based on the query and context, generate 3 relevant subtopics that would interest a child in the ${age_group} age group.
-    Each block should have an emoji and be presented in a fun, engaging way.
-    The response should be in JSON format with an array of blocks, each containing a title and metadata.`;
 
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
@@ -39,7 +28,13 @@ serve(async (req) => {
       body: JSON.stringify({
         model: "mixtral-8x7b-32768",
         messages: [
-          { role: "system", content: systemPrompt },
+          {
+            role: "system",
+            content: `You are an AI assistant helping generate engaging educational blocks for children. 
+            Based on the query and context, generate 3 relevant subtopics that would interest a child in the ${age_group} age group.
+            Each block should have an emoji and be presented in a fun, engaging way.
+            The response should be in JSON format with an array of blocks, each containing a title, description, and metadata.topic field.`
+          },
           { 
             role: "user", 
             content: `Generate blocks for query: "${query}" at depth level ${depth}. Context: ${context}`
@@ -67,7 +62,7 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: "Failed to generate blocks" }),
       { 
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" }
