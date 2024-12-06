@@ -41,9 +41,9 @@ export default {
           ai: "#F4E7FE",       // Soft purple for AI messages
         },
         block: {
-          orange: "#FFAB4C",   // Vibrant orange
-          blue: "#4CABFF",     // Bright blue
-          pink: "#FF74D6",     // Cheerful pink
+          orange: "#FF6B6B",   // Exciting facts
+          blue: "#4CABFF",     // Exploration
+          purple: "#F4E7FE",   // Mystery
         }
       },
       fontFamily: {

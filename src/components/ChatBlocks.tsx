@@ -41,65 +41,92 @@ export const ChatBlocks = ({ blocks, onBlockClick }: ChatBlocksProps) => {
 
   return (
     <div className="relative w-full">
-      {/* Navigation Buttons */}
+      {/* Navigation Buttons with improved visibility */}
       <Button
         variant="ghost"
-        className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white/80 
-          hover:bg-white/90 transition-all duration-300 rounded-full p-2"
+        className={cn(
+          "absolute left-0 top-1/2 -translate-y-1/2 z-10",
+          "bg-white/90 hover:bg-white shadow-lg",
+          "rounded-full p-3 transition-all duration-300",
+          "border border-gray-200",
+          "disabled:opacity-0"
+        )}
         onClick={() => handleScroll('left')}
+        disabled={!blocks.length}
       >
-        <ChevronLeft className="h-4 w-4" />
+        <ChevronLeft className="h-5 w-5 text-gray-700" />
       </Button>
 
       <Button
         variant="ghost"
-        className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white/80 
-          hover:bg-white/90 transition-all duration-300 rounded-full p-2"
+        className={cn(
+          "absolute right-0 top-1/2 -translate-y-1/2 z-10",
+          "bg-white/90 hover:bg-white shadow-lg",
+          "rounded-full p-3 transition-all duration-300",
+          "border border-gray-200",
+          "disabled:opacity-0"
+        )}
         onClick={() => handleScroll('right')}
+        disabled={!blocks.length}
       >
-        <ChevronRight className="h-4 w-4" />
+        <ChevronRight className="h-5 w-5 text-gray-700" />
       </Button>
 
-      {/* Blocks Container */}
+      {/* Blocks Container with improved spacing */}
       <div 
         ref={scrollContainerRef}
-        className="flex gap-4 overflow-x-auto pb-4 snap-x snap-mandatory hide-scrollbar"
+        className="flex gap-6 overflow-x-auto pb-6 pt-2 px-2 snap-x snap-mandatory hide-scrollbar"
         style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
       >
         {blocks.map((block, index) => (
           <motion.button
             key={`${block.title}-${index}`}
-            whileHover={{ scale: 1.05, boxShadow: "0 10px 30px -10px rgba(0,0,0,0.2)" }}
-            whileTap={{ scale: 0.95 }}
+            whileHover={{ 
+              scale: 1.03,
+              boxShadow: "0 10px 30px -10px rgba(0,0,0,0.2)"
+            }}
+            whileTap={{ scale: 0.98 }}
             className={cn(
-              "flex flex-col items-start p-6 rounded-xl w-[300px] min-w-[300px]",
-              "transition-all duration-300 relative overflow-hidden text-white snap-center",
+              "flex flex-col items-start p-6 rounded-xl",
+              "w-[320px] min-w-[320px] min-h-[180px]",
+              "transition-all duration-300 relative overflow-hidden",
+              "text-white snap-center group",
               "hover:shadow-xl hover:ring-2 hover:ring-white/20",
               `bg-gradient-to-br ${getBlockColor(index)}`
             )}
             onClick={() => onBlockClick(block)}
           >
-            <div className="relative z-10 h-full flex flex-col justify-between space-y-4">
-              {/* Title with max 40 characters */}
-              <h3 className="text-xl font-bold text-left">
+            <div className="relative z-10 h-full flex flex-col justify-between space-y-4 w-full">
+              {/* Title with dynamic text sizing */}
+              <h3 className={cn(
+                "font-bold text-left transition-all duration-300",
+                "text-xl leading-tight",
+                block.title.length > 30 ? "text-lg" : "text-xl"
+              )}>
                 {block.title.length > 40 
                   ? `${block.title.substring(0, 37)}...` 
                   : block.title}
               </h3>
               
-              {/* Description with max 150 characters */}
-              <p className="text-sm text-left opacity-90">
+              {/* Description with dynamic text sizing */}
+              <p className={cn(
+                "text-left opacity-90 transition-all duration-300",
+                "leading-relaxed",
+                block.description.length > 100 ? "text-sm" : "text-base"
+              )}>
                 {block.description.length > 150 
                   ? `${block.description.substring(0, 147)}...` 
                   : block.description}
               </p>
             </div>
 
-            {/* Decorative Elements */}
-            <div className="absolute bottom-0 right-0 w-24 h-24 opacity-20 
-              bg-white rounded-tl-full transform translate-x-6 translate-y-6" />
+            {/* Enhanced visual elements */}
+            <div className="absolute bottom-0 right-0 w-32 h-32 opacity-20 
+              bg-white rounded-tl-full transform translate-x-8 translate-y-8 
+              group-hover:scale-110 transition-transform duration-500" />
+            
             <motion.div 
-              className="absolute top-2 right-2"
+              className="absolute top-3 right-3 opacity-70 group-hover:opacity-100"
               animate={{ 
                 rotate: [0, 10, -10, 0],
                 scale: [1, 1.1, 1]
@@ -112,9 +139,25 @@ export const ChatBlocks = ({ blocks, onBlockClick }: ChatBlocksProps) => {
             >
               <span className="text-2xl">✨</span>
             </motion.div>
+
+            {/* Hover indicator */}
+            <div className="absolute inset-0 bg-white/0 group-hover:bg-white/5 
+              transition-colors duration-300" />
           </motion.button>
         ))}
       </div>
+
+      {/* Scroll progress dots */}
+      {blocks.length > 0 && (
+        <div className="flex justify-center gap-2 mt-4">
+          {Array.from({ length: Math.ceil(blocks.length / 3) }).map((_, i) => (
+            <div
+              key={i}
+              className="w-2 h-2 rounded-full bg-gray-300 transition-colors duration-300"
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 };
