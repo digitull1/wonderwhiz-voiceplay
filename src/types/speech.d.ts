@@ -41,3 +41,5 @@ declare global {
     webkitSpeechRecognition: SpeechRecognitionStatic;
   }
 }
+
+export {};
