@@ -4,12 +4,19 @@ import { Camera, Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useToast } from './ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { cn } from '@/lib/utils';  // Import cn utility for className merging
 
 interface ImageUploadProps {
   onImageAnalyzed: (response: string) => void;
+  children?: React.ReactNode;  // Optional children prop
+  className?: string;  // Optional className prop
 }
 
-export const ImageUpload: React.FC<ImageUploadProps> = ({ onImageAnalyzed }) => {
+export const ImageUpload: React.FC<ImageUploadProps> = ({ 
+  onImageAnalyzed, 
+  children, 
+  className 
+}) => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
@@ -60,7 +67,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({ onImageAnalyzed }) => 
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className="flex items-center gap-2"
+      className={cn("flex items-center gap-2", className)}  // Use cn utility to merge classes
     >
       <Button
         variant="outline"
@@ -72,7 +79,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({ onImageAnalyzed }) => 
         ) : (
           <Camera className="h-4 w-4" />
         )}
-        Upload a Picture! 📸
+        {children || "Upload a Picture! 📸"}
         <input
           type="file"
           accept="image/*"
