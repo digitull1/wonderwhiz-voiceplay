@@ -41,8 +41,17 @@ const Index = () => {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const { toast } = useToast();
 
+  const getLastAiMessage = (msgs: Message[]): Message | undefined => {
+    for (let i = msgs.length - 1; i >= 0; i--) {
+      if (msgs[i].isAi) {
+        return msgs[i];
+      }
+    }
+    return undefined;
+  };
+
   const handleListen = () => {
-    const lastAiMessage = messages.findLast(msg => msg.isAi);
+    const lastAiMessage = getLastAiMessage(messages);
     if (!lastAiMessage) return;
 
     const utterance = new SpeechSynthesisUtterance(lastAiMessage.text);
