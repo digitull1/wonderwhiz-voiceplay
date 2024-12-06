@@ -58,35 +58,56 @@ serve(async (req) => {
 
     // Call Hugging Face API
     const hf = new HfInference(Deno.env.get("HUGGING_FACE_ACCESS_TOKEN"))
-    const image = await hf.textToImage({
-      inputs: prompt,
-      model: "stabilityai/stable-diffusion-2",
-      parameters: {
-        negative_prompt: "blurry, bad quality, distorted",
-        num_inference_steps: 30,
-        guidance_scale: 7.5,
-      }
-    });
+    try {
+      const image = await hf.textToImage({
+        inputs: prompt,
+        model: "stabilityai/stable-diffusion-2",
+        parameters: {
+          negative_prompt: "blurry, bad quality, distorted",
+          num_inference_steps: 30,
+          guidance_scale: 7.5,
+        }
+      });
 
-    if (!image) {
-      throw new Error('No image generated from Hugging Face API');
+      if (!image) {
+        throw new Error('No image generated from Hugging Face API');
+      }
+
+      // Convert to base64
+      const arrayBuffer = await image.arrayBuffer();
+      const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+      console.log('Image generated successfully');
+
+      return new Response(
+        JSON.stringify({
+          image: `data:image/png;base64,${base64}`,
+          success: true
+        }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
+    } catch (error) {
+      console.error('Hugging Face API error:', error);
+      
+      // Check if it's a rate limit error
+      if (error.message?.includes('Max requests') || error.message?.includes('rate limit')) {
+        return new Response(
+          JSON.stringify({
+            error: 'Rate limit exceeded',
+            details: error.message,
+            success: false,
+            isRateLimit: true
+          }),
+          { 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 429 // Too Many Requests
+          }
+        );
+      }
+      
+      throw error; // Re-throw other errors to be caught by outer catch block
     }
-
-    // Convert to base64
-    const arrayBuffer = await image.arrayBuffer();
-    const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
-    console.log('Image generated successfully');
-
-    return new Response(
-      JSON.stringify({
-        image: `data:image/png;base64,${base64}`,
-        success: true
-      }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      }
-    );
-
   } catch (error) {
     console.error('Error in generate-image function:', error);
     return new Response(
