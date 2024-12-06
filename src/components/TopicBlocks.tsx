@@ -1,20 +1,11 @@
-import React, { useEffect, useState } from "react";
-import { TopicBlock } from "./TopicBlock";
+import React, { useEffect, useState, useRef } from "react";
 import { ScrollArea } from "./ui/scroll-area";
 import { useToast } from "./ui/use-toast";
 import { motion } from "framer-motion";
-import { ChevronLeft, ChevronRight } from "lucide-react";
-import { Button } from "./ui/button";
+import { Block } from "@/types/chat";
+import { BlockCard } from "./blocks/BlockCard";
+import { BlocksNavigation } from "./blocks/BlocksNavigation";
 import { supabase } from "@/integrations/supabase/client";
-
-interface Block {
-  title: string;
-  description: string;
-  metadata: {
-    topic: string;
-  };
-  color?: string; // Make color optional since it's added after API response
-}
 
 interface TopicBlocksProps {
   currentTopic: string;
@@ -32,6 +23,7 @@ export const TopicBlocks: React.FC<TopicBlocksProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [depth, setDepth] = useState(1);
   const [scrollPosition, setScrollPosition] = useState(0);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const getRandomGradient = () => {
     const gradients = [
@@ -74,120 +66,54 @@ export const TopicBlocks: React.FC<TopicBlocksProps> = ({
         description: "Had trouble generating new topics. Try again!",
         variant: "destructive"
       });
-      setBlocks(generateFallbackBlocks(currentTopic));
     } finally {
       setIsLoading(false);
     }
   };
 
-  const generateFallbackBlocks = (topic: string) => {
-    const baseBlocks = {
-      space: [
-        {
-          title: "What's Inside a Black Hole? 🕳️",
-          description: "Journey into the cosmic abyss",
-          metadata: { topic: "black_hole_interior" },
-          color: "bg-gradient-to-br from-purple-600 to-blue-700"
-        },
-        {
-          title: "Are We Alone in Space? 👽",
-          description: "The search for alien life",
-          metadata: { topic: "alien_life" },
-          color: "bg-gradient-to-br from-blue-500 to-purple-600"
-        },
-        {
-          title: "How Do Stars Die? ⭐",
-          description: "The explosive end of stellar life",
-          metadata: { topic: "stellar_death" },
-          color: "bg-gradient-to-br from-indigo-600 to-purple-700"
-        }
-      ],
-      biology: [
-        {
-          title: "Inside Your DNA! 🧬",
-          description: "Your body's instruction manual",
-          metadata: { topic: "dna_secrets" },
-          color: "bg-gradient-to-br from-green-500 to-emerald-700"
-        },
-        {
-          title: "Why Do We Dream? 💭",
-          description: "The mystery of sleep",
-          metadata: { topic: "dream_science" },
-          color: "bg-gradient-to-br from-emerald-500 to-green-700"
-        },
-        {
-          title: "Your Amazing Brain! 🧠",
-          description: "How thoughts happen",
-          metadata: { topic: "brain_function" },
-          color: "bg-gradient-to-br from-teal-500 to-green-700"
-        }
-      ],
-      earth: [
-        {
-          title: "Volcano Secrets! 🌋",
-          description: "Earth's fiery mountains",
-          metadata: { topic: "volcano_secrets" },
-          color: "bg-gradient-to-br from-orange-500 to-red-700"
-        },
-        {
-          title: "Ocean Mysteries! 🌊",
-          description: "Deep sea adventures",
-          metadata: { topic: "ocean_exploration" },
-          color: "bg-gradient-to-br from-blue-500 to-cyan-700"
-        },
-        {
-          title: "Dinosaur Time! 🦕",
-          description: "Ancient earth mysteries",
-          metadata: { topic: "dinosaur_era" },
-          color: "bg-gradient-to-br from-amber-500 to-orange-700"
-        }
-      ]
-    };
-
-    return baseBlocks[topic as keyof typeof baseBlocks] || baseBlocks.space;
+  const handleScroll = (direction: 'left' | 'right') => {
+    if (!containerRef.current) return;
+    
+    const scrollAmount = direction === 'left' ? -300 : 300;
+    containerRef.current.scrollBy({ 
+      left: scrollAmount, 
+      behavior: 'smooth' 
+    });
+    setScrollPosition(prev => prev + scrollAmount);
   };
 
-  useEffect(() => {
-    if (lastMessage) {
-      fetchDynamicBlocks(lastMessage, currentTopic);
-    } else {
-      setBlocks(generateFallbackBlocks(currentTopic));
-    }
-  }, [lastMessage, currentTopic]);
-
-  const handleTopicClick = async (block: Block) => {
+  const handleBlockClick = async (block: Block) => {
     onTopicSelect(block.metadata.topic);
     setDepth(prev => prev + 1);
-    await fetchDynamicBlocks(block.title, block.metadata.topic);
     
     toast({
       title: "New Adventure!",
       description: `Let's explore ${block.title}!`,
       className: "bg-primary text-white",
     });
+
+    await fetchDynamicBlocks(block.title, block.metadata.topic);
   };
 
-  const handleScroll = (direction: 'left' | 'right') => {
-    const container = document.querySelector('.blocks-container');
-    if (container) {
-      const scrollAmount = direction === 'left' ? -300 : 300;
-      container.scrollBy({ left: scrollAmount, behavior: 'smooth' });
-      setScrollPosition(container.scrollLeft + scrollAmount);
+  useEffect(() => {
+    if (lastMessage) {
+      fetchDynamicBlocks(lastMessage, currentTopic);
     }
-  };
+  }, [lastMessage, currentTopic]);
 
   return (
     <div className="relative w-full">
-      <Button 
-        variant="ghost" 
-        className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white/80 hover:bg-white/90"
-        onClick={() => handleScroll('left')}
-        disabled={scrollPosition <= 0}
-      >
-        <ChevronLeft className="h-4 w-4" />
-      </Button>
+      <BlocksNavigation 
+        onScroll={handleScroll}
+        canScrollLeft={scrollPosition > 0}
+        canScrollRight={containerRef.current ? 
+          scrollPosition < (blocks.length * 300) - containerRef.current.clientWidth : false}
+      />
 
-      <ScrollArea className="w-full py-4 overflow-x-auto blocks-container">
+      <ScrollArea 
+        className="w-full py-4 overflow-x-auto blocks-container" 
+        ref={containerRef}
+      >
         <motion.div 
           className="flex gap-4 pb-4 px-2 snap-x snap-mandatory"
           initial={{ opacity: 0, y: 20 }}
@@ -195,34 +121,16 @@ export const TopicBlocks: React.FC<TopicBlocksProps> = ({
           transition={{ duration: 0.5 }}
         >
           {blocks.map((block, index) => (
-            <motion.div
+            <BlockCard
               key={`${block.title}-${index}`}
-              className="snap-center"
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: index * 0.1 }}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-            >
-              <TopicBlock
-                title={block.title}
-                description={block.description}
-                color={block.color || getRandomGradient()}
-                onClick={() => handleTopicClick(block)}
-              />
-            </motion.div>
+              block={block}
+              index={index}
+              onClick={() => handleBlockClick(block)}
+              color={block.color || getRandomGradient()}
+            />
           ))}
         </motion.div>
       </ScrollArea>
-
-      <Button 
-        variant="ghost" 
-        className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white/80 hover:bg-white/90"
-        onClick={() => handleScroll('right')}
-        disabled={scrollPosition >= (blocks.length * 300) - 300}
-      >
-        <ChevronRight className="h-4 w-4" />
-      </Button>
     </div>
   );
 };
