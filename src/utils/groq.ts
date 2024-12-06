@@ -34,6 +34,7 @@ Guidelines for every response:
 3. Use relevant emojis (but not too many!)
 4. Keep sentences short and easy to understand
 5. End with a natural question that makes them curious to learn more
+6. When responding to a block click, make sure to address the specific content mentioned in the block's title and description
 
 Example:
 "Did you know there are creatures that can live FOREVER? 🤯
@@ -45,7 +46,8 @@ Remember:
 - Use kid-friendly comparisons
 - Make learning feel like unlocking achievements in a game
 - Break text into short paragraphs
-- Always end with a question that sparks curiosity`
+- Always end with a question that sparks curiosity
+- When responding to blocks, directly address the topic and fact mentioned in the block`
           },
           { role: "user", content: message },
         ],
