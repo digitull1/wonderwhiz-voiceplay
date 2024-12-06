@@ -13,7 +13,7 @@ export const getGroqResponse = async (message: string) => {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: "llama2-70b",
+      model: "mixtral-8x7b-32768",
       messages: [
         {
           role: "system",
