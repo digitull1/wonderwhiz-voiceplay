@@ -42,7 +42,9 @@ export const useChat = () => {
         ]);
         return;
       }
-      await handleAgeInput(age, setUserProfile, setMessages, updateUserProgress);
+      await handleAgeInput(age, setUserProfile, setMessages, async (points: number) => {
+        await updateUserProgress(points);
+      });
       return;
     }
 
