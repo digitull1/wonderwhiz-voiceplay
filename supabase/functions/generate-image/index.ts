@@ -13,43 +13,73 @@ serve(async (req) => {
   }
 
   try {
-    // Validate content type
-    const contentType = req.headers.get('content-type')
-    if (!contentType?.includes('application/json')) {
-      console.error('Invalid content type:', contentType)
-      throw new Error('Content-Type must be application/json')
-    }
+    console.log('Request received:', {
+      method: req.method,
+      headers: Object.fromEntries(req.headers.entries())
+    });
 
-    // Safely parse JSON body
-    let body
+    // Get the raw request body first
+    const rawBody = await req.text();
+    console.log('Raw request body:', rawBody);
+
+    // Try to parse the JSON body
+    let body;
     try {
-      const text = await req.text()
-      console.log('Request body:', text) // Log raw request body
-      body = JSON.parse(text)
+      body = JSON.parse(rawBody);
     } catch (parseError) {
-      console.error('JSON parse error:', parseError)
-      throw new Error(`Invalid JSON body: ${parseError.message}`)
+      console.error('JSON parse error:', parseError);
+      return new Response(
+        JSON.stringify({
+          error: 'Invalid request format',
+          details: 'Request body must be valid JSON',
+          success: false
+        }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 400
+        }
+      );
     }
 
-    // Validate prompt
-    const { prompt } = body
+    // Validate the prompt
+    const { prompt } = body;
     if (!prompt || typeof prompt !== 'string') {
-      console.error('Invalid prompt:', prompt)
-      throw new Error('Prompt must be a non-empty string')
+      console.error('Invalid prompt:', prompt);
+      return new Response(
+        JSON.stringify({
+          error: 'Invalid prompt',
+          details: 'Prompt must be a non-empty string',
+          success: false
+        }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 400
+        }
+      );
     }
 
-    console.log('Using prompt:', prompt)
+    console.log('Processing prompt:', prompt);
 
     // Validate Hugging Face token
-    const token = Deno.env.get('HUGGING_FACE_ACCESS_TOKEN')
+    const token = Deno.env.get('HUGGING_FACE_ACCESS_TOKEN');
     if (!token) {
-      console.error('Hugging Face token not found')
-      throw new Error('Configuration error: Missing API token')
+      console.error('Hugging Face token not found');
+      return new Response(
+        JSON.stringify({
+          error: 'Configuration error',
+          details: 'Missing API token',
+          success: false
+        }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 500
+        }
+      );
     }
 
-    const hf = new HfInference(token)
+    const hf = new HfInference(token);
 
-    console.log('Calling Hugging Face API')
+    console.log('Calling Hugging Face API');
     const image = await hf.textToImage({
       inputs: prompt,
       model: 'stabilityai/stable-diffusion-2',
@@ -59,30 +89,30 @@ serve(async (req) => {
         width: 512,
         height: 512
       }
-    })
+    });
 
     if (!image) {
-      console.error('No image generated')
-      throw new Error('No image generated from API')
+      console.error('No image generated');
+      throw new Error('No image generated from API');
     }
 
-    console.log('Image generated, converting to base64')
+    console.log('Image generated, converting to base64');
     
     // Convert blob to base64 with error handling
     try {
-      const arrayBuffer = await image.arrayBuffer()
-      const uint8Array = new Uint8Array(arrayBuffer)
-      let binary = ''
-      const chunkSize = 0x8000
+      const arrayBuffer = await image.arrayBuffer();
+      const uint8Array = new Uint8Array(arrayBuffer);
+      let binary = '';
+      const chunkSize = 0x8000;
 
       // Process the array in smaller chunks
       for (let i = 0; i < uint8Array.length; i += chunkSize) {
-        const chunk = uint8Array.subarray(i, i + chunkSize)
-        binary += String.fromCharCode.apply(null, chunk)
+        const chunk = uint8Array.subarray(i, i + chunkSize);
+        binary += String.fromCharCode.apply(null, Array.from(chunk));
       }
 
-      const base64 = btoa(binary)
-      console.log('Successfully converted image to base64')
+      const base64 = btoa(binary);
+      console.log('Successfully converted image to base64');
 
       return new Response(
         JSON.stringify({
@@ -90,18 +120,25 @@ serve(async (req) => {
           success: true
         }),
         { 
-          headers: { 
-            ...corsHeaders, 
-            'Content-Type': 'application/json'
-          }
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
-      )
+      );
     } catch (conversionError) {
-      console.error('Error converting image:', conversionError)
-      throw new Error(`Base64 conversion failed: ${conversionError.message}`)
+      console.error('Error converting image:', conversionError);
+      return new Response(
+        JSON.stringify({
+          error: 'Image processing error',
+          details: conversionError.message,
+          success: false
+        }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 500
+        }
+      );
     }
   } catch (error) {
-    console.error('Error in generate-image function:', error)
+    console.error('Error in generate-image function:', error);
     return new Response(
       JSON.stringify({
         error: 'Failed to generate image',
@@ -112,6 +149,6 @@ serve(async (req) => {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500
       }
-    )
+    );
   }
 })
