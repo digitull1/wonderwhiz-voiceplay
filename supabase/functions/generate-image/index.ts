@@ -13,28 +13,48 @@ serve(async (req) => {
   }
 
   try {
-    console.log('Starting image generation process')
-    const { prompt } = await req.json()
-    
-    if (!prompt) {
-      console.error('No prompt provided')
-      throw new Error('No prompt provided')
+    // Validate content type
+    const contentType = req.headers.get('content-type')
+    if (!contentType?.includes('application/json')) {
+      console.error('Invalid content type:', contentType)
+      throw new Error('Content-Type must be application/json')
+    }
+
+    // Safely parse JSON body
+    let body
+    try {
+      const text = await req.text()
+      console.log('Request body:', text) // Log raw request body
+      body = JSON.parse(text)
+    } catch (parseError) {
+      console.error('JSON parse error:', parseError)
+      throw new Error(`Invalid JSON body: ${parseError.message}`)
+    }
+
+    // Validate prompt
+    const { prompt } = body
+    if (!prompt || typeof prompt !== 'string') {
+      console.error('Invalid prompt:', prompt)
+      throw new Error('Prompt must be a non-empty string')
     }
 
     console.log('Using prompt:', prompt)
-    const hf = new HfInference(Deno.env.get('HUGGING_FACE_ACCESS_TOKEN'))
-    
-    if (!Deno.env.get('HUGGING_FACE_ACCESS_TOKEN')) {
+
+    // Validate Hugging Face token
+    const token = Deno.env.get('HUGGING_FACE_ACCESS_TOKEN')
+    if (!token) {
       console.error('Hugging Face token not found')
       throw new Error('Configuration error: Missing API token')
     }
+
+    const hf = new HfInference(token)
 
     console.log('Calling Hugging Face API')
     const image = await hf.textToImage({
       inputs: prompt,
       model: 'stabilityai/stable-diffusion-2',
       parameters: {
-        num_inference_steps: 25, // Reduced for better stability
+        num_inference_steps: 25,
         guidance_scale: 7.5,
         width: 512,
         height: 512
