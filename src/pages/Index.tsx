@@ -8,6 +8,10 @@ import { Send } from "lucide-react";
 import { ApiKeyInput } from "@/components/ApiKeyInput";
 import { getGroqResponse } from "@/utils/groq";
 import { useToast } from "@/components/ui/use-toast";
+import { Auth } from "@supabase/auth-ui-react";
+import { ThemeSupa } from "@supabase/auth-ui-shared";
+import { supabase } from "@/integrations/supabase/client";
+import { ProfileForm } from "@/components/ProfileForm";
 
 const Index = () => {
   const [messages, setMessages] = useState([
@@ -19,7 +23,38 @@ const Index = () => {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [currentTopic, setCurrentTopic] = useState("space");
+  const [session, setSession] = useState<any>(null);
+  const [needsProfile, setNeedsProfile] = useState(false);
   const { toast } = useToast();
+
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      if (session) {
+        checkProfile();
+      }
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+      if (session) {
+        checkProfile();
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const checkProfile = async () => {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("age, gender")
+      .single();
+    
+    setNeedsProfile(!profile?.age || !profile?.gender);
+  };
 
   const detectTopic = (message: string) => {
     const topics = {
@@ -83,11 +118,44 @@ const Index = () => {
     synth.speak(utterance);
   };
 
+  if (!session) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 flex items-center justify-center p-4">
+        <div className="w-full max-w-md bg-white rounded-xl shadow-lg p-6">
+          <div className="text-center mb-6">
+            <h1 className="text-2xl font-bold mb-2">Welcome to WonderWhiz!</h1>
+            <p className="text-gray-500">Sign in to start your learning adventure</p>
+          </div>
+          <Auth
+            supabaseClient={supabase}
+            appearance={{ theme: ThemeSupa }}
+            providers={["google"]}
+            theme="light"
+          />
+        </div>
+      </div>
+    );
+  }
+
+  if (needsProfile) {
+    return <ProfileForm onComplete={() => setNeedsProfile(false)} />;
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 flex flex-col">
       <div className="flex-1 container max-w-4xl mx-auto py-8 px-4">
         <div className="bg-white rounded-2xl shadow-xl p-6 h-[calc(100vh-4rem)] flex flex-col">
-          <ApiKeyInput />
+          <div className="flex justify-between items-center mb-4">
+            <ApiKeyInput />
+            <Button
+              variant="outline"
+              onClick={() => supabase.auth.signOut()}
+              className="ml-2"
+            >
+              Sign Out
+            </Button>
+          </div>
+          
           <div className="flex-1 overflow-y-auto space-y-4 mb-4 px-2">
             {messages.map((message, index) => (
               <ChatMessage
