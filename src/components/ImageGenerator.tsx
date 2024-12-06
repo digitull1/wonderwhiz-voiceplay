@@ -27,7 +27,7 @@ export const ImageGenerator = ({ prompt }: ImageGeneratorProps) => {
     try {
       console.log("Starting image generation with prompt:", prompt);
       
-      // Ensure the prompt is properly formatted
+      // Clean and validate prompt
       const cleanPrompt = prompt.trim();
       if (!cleanPrompt) {
         throw new Error("Empty prompt");
