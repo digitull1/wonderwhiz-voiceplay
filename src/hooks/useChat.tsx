@@ -93,9 +93,12 @@ export const useChat = () => {
   };
 
   const handleBlockClick = async (block: Block) => {
-    setCurrentTopic(block.metadata.topic);
-    updateBlocksExplored(block.metadata.topic);
-    await sendMessage(`Tell me about "${block.title}"`);
+    // Add null check and default topic
+    const topic = block?.metadata?.topic || currentTopic;
+    console.log('Block clicked:', block); // Add logging for debugging
+    setCurrentTopic(topic);
+    updateBlocksExplored(topic);
+    await sendMessage(`Tell me about "${block?.title || 'this topic'}"`);
   };
 
   return {
