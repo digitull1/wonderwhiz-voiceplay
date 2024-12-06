@@ -1,9 +1,8 @@
 import React, { useState } from "react";
-import { Button } from "./ui/button";
-import { Image, Sparkles } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
 import { useToast } from "./ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { ImageGenerationButton } from "./image/ImageGenerationButton";
+import { GeneratedImage } from "./image/GeneratedImage";
 
 interface ImageGeneratorProps {
   prompt: string;
@@ -19,15 +18,10 @@ export const ImageGenerator = ({ prompt }: ImageGeneratorProps) => {
   const generateImage = async () => {
     setIsLoading(true);
     try {
-      // Clean and validate prompt
       const cleanPrompt = prompt.trim();
-      if (!cleanPrompt) {
-        throw new Error("Empty prompt");
-      }
+      if (!cleanPrompt) throw new Error("Empty prompt");
 
       console.log("Starting image generation with prompt:", cleanPrompt);
-      
-      // Prepare request body and stringify it
       const requestBody = JSON.stringify({ prompt: cleanPrompt });
       console.log("Sending request with body:", requestBody);
 
@@ -37,14 +31,8 @@ export const ImageGenerator = ({ prompt }: ImageGeneratorProps) => {
 
       console.log("Response from generate-image:", { data, error });
 
-      if (error) {
-        console.error("Supabase function error:", error);
-        throw error;
-      }
-
-      if (!data?.image) {
-        throw new Error("No image data in response");
-      }
+      if (error) throw error;
+      if (!data?.image) throw new Error("No image data in response");
 
       setImageUrl(data.image);
       setRetryCount(0);
@@ -77,53 +65,8 @@ export const ImageGenerator = ({ prompt }: ImageGeneratorProps) => {
 
   return (
     <div className="mt-4 space-y-4">
-      <motion.div
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
-      >
-        <Button
-          onClick={generateImage}
-          disabled={isLoading}
-          className="w-full bg-gradient-to-r from-primary to-purple-600 text-white"
-        >
-          <AnimatePresence mode="wait">
-            {isLoading ? (
-              <motion.div
-                key="loading"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="flex items-center gap-2"
-              >
-                <Sparkles className="w-4 h-4 animate-spin" />
-                Creating magic...
-              </motion.div>
-            ) : (
-              <motion.div
-                key="default"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0 }}
-                className="flex items-center gap-2"
-              >
-                <Image className="w-4 h-4" />
-                Generate Picture
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </Button>
-      </motion.div>
-
-      {imageUrl && (
-        <motion.img
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3 }}
-          src={imageUrl}
-          alt="Generated content"
-          className="w-full rounded-lg shadow-lg"
-        />
-      )}
+      <ImageGenerationButton onClick={generateImage} isLoading={isLoading} />
+      {imageUrl && <GeneratedImage imageUrl={imageUrl} />}
     </div>
   );
 };
