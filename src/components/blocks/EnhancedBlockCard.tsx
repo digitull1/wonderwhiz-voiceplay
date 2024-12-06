@@ -16,17 +16,16 @@ export const EnhancedBlockCard = ({
   onClick, 
   gradient 
 }: EnhancedBlockCardProps) => {
-  const titleLength = block.title.length;
-  const descriptionLength = block.description.length;
+  const TITLE_LIMIT = 39;
+  const DESCRIPTION_LIMIT = 111;
 
-  // Truncate title and description if they exceed limits
-  const truncatedTitle = titleLength > 39 
-    ? `${block.title.substring(0, 36)}...` 
-    : block.title;
+  const truncateText = (text: string, limit: number) => {
+    if (text.length <= limit) return text;
+    return text.substring(0, limit - 3) + "...";
+  };
 
-  const truncatedDescription = descriptionLength > 111
-    ? `${block.description.substring(0, 108)}...`
-    : block.description;
+  const truncatedTitle = truncateText(block.title, TITLE_LIMIT);
+  const truncatedDescription = truncateText(block.description, DESCRIPTION_LIMIT);
 
   return (
     <motion.button
@@ -53,7 +52,7 @@ export const EnhancedBlockCard = ({
         <h3 className={cn(
           "font-bold text-left transition-all duration-300",
           "leading-tight line-clamp-2",
-          titleLength > 30 ? "text-lg" : "text-xl"
+          block.title.length > TITLE_LIMIT - 10 ? "text-lg" : "text-xl"
         )}>
           {truncatedTitle}
         </h3>
@@ -61,7 +60,7 @@ export const EnhancedBlockCard = ({
         <p className={cn(
           "text-left opacity-90 transition-all duration-300",
           "leading-relaxed line-clamp-3",
-          descriptionLength > 90 ? "text-sm" : "text-base"
+          block.description.length > DESCRIPTION_LIMIT - 20 ? "text-sm" : "text-base"
         )}>
           {truncatedDescription}
         </p>

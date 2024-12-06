@@ -10,7 +10,8 @@ export const useBlockGeneration = (userProfile: UserProfile | null) => {
           query: response,
           context: topic,
           age_group: userProfile ? `${userProfile.age}-${userProfile.age + 2}` : "8-12",
-          name: userProfile?.name
+          name: userProfile?.name,
+          previous_response: response // Include previous response for context
         }
       });
 

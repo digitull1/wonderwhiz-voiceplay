@@ -38,15 +38,28 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
       const reader = new FileReader();
       reader.onload = async (e) => {
         const base64Image = e.target?.result as string;
+        console.log('Sending image for analysis...');
         
         const { data, error } = await supabase.functions.invoke('analyze-image', {
-          body: { image: base64Image }
+          body: { 
+            image: base64Image,
+            prompt: "What's in this image? Explain it in a fun, educational way that's perfect for kids! Add some emojis to make it engaging!"
+          }
         });
 
-        if (error) throw error;
+        if (error) {
+          console.error('Error analyzing image:', error);
+          throw error;
+        }
         
+        console.log('Analysis response:', data);
         const response = data.choices[0].message.content;
         onImageAnalyzed(response);
+        
+        toast({
+          title: "Image analyzed! 🎨",
+          description: "Let me tell you what I see!",
+        });
       };
       reader.readAsDataURL(file);
     } catch (error) {

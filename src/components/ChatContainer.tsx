@@ -27,18 +27,29 @@ export const ChatContainer = ({
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    if (messagesEndRef.current) {
+      const container = messagesEndRef.current.parentElement;
+      if (container) {
+        const scrollHeight = container.scrollHeight;
+        const currentScroll = container.scrollTop;
+        const clientHeight = container.clientHeight;
+        
+        // Only auto-scroll if user is already near bottom
+        if (scrollHeight - currentScroll - clientHeight < 300) {
+          messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+        }
+      }
+    }
   };
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages, quizState?.currentQuestion]); // Scroll when messages or quiz changes
+  }, [messages, quizState?.currentQuestion]);
 
   // Filter out messages that are just block titles
   const filteredMessages = messages.filter((message, index) => {
-    if (index === 0) return true; // Always keep the first message
+    if (index === 0) return true;
     const prevMessage = messages[index - 1];
-    // Skip messages that are just repeating block titles
     return !(prevMessage && !prevMessage.isAi && message.text.startsWith('Tell me about'));
   });
 

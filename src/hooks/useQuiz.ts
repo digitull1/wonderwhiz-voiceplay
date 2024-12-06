@@ -15,17 +15,32 @@ export const useQuiz = (updateUserProgress: (points: number) => Promise<void>) =
 
   const generateQuizQuestion = async (topic: string) => {
     try {
+      console.log('Generating quiz for topic:', topic);
       const { data: quizData, error } = await supabase.functions.invoke('generate-quiz', {
         body: { topic }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error generating quiz:', error);
+        throw error;
+      }
+
+      console.log('Quiz data received:', quizData);
+      
+      if (!quizData?.question) {
+        throw new Error('Invalid quiz data received');
+      }
 
       setQuizState(prev => ({
         ...prev,
         isActive: true,
         currentQuestion: quizData.question
       }));
+
+      toast({
+        title: "🎯 Quiz Time!",
+        description: "Let's test what you've learned!",
+      });
     } catch (error) {
       console.error('Error generating quiz:', error);
       toast({
@@ -68,9 +83,12 @@ export const useQuiz = (updateUserProgress: (points: number) => Promise<void>) =
   };
 
   const updateBlocksExplored = (topic: string) => {
+    console.log('Updating blocks explored for topic:', topic);
     setQuizState(prev => {
       const newBlocksExplored = prev.currentTopic === topic ? prev.blocksExplored + 1 : 1;
       const shouldTriggerQuiz = newBlocksExplored >= 4;
+      
+      console.log('Blocks explored:', newBlocksExplored, 'Should trigger quiz:', shouldTriggerQuiz);
       
       if (shouldTriggerQuiz) {
         generateQuizQuestion(topic);
