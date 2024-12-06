@@ -18,7 +18,7 @@ export const EnhancedBlockCard = ({
 }: EnhancedBlockCardProps) => {
   const CONTENT_LIMIT = 75;
 
-  const truncateContent = (text: string) => {
+  const truncateContent = (text: string | undefined) => {
     if (!text) return "";
     if (text.length <= CONTENT_LIMIT) return text;
     return text.substring(0, CONTENT_LIMIT - 3) + "...";
