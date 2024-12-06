@@ -23,6 +23,11 @@ export const ChatInput = ({
   currentTopic,
   onImageAnalyzed
 }: ChatInputProps) => {
+  const handleSubmit = () => {
+    handleSend();
+    setInput(""); // Clear input after sending
+  };
+
   return (
     <motion.div 
       className="flex flex-col gap-4 relative"
@@ -37,24 +42,30 @@ export const ChatInput = ({
               placeholder={isLoading ? "Thinking..." : `Ask me anything about ${currentTopic}...`}
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              onKeyPress={(e) => e.key === "Enter" && handleSend()}
-              className="w-full bg-white/90 backdrop-blur-sm border-2 border-primary/20 focus:border-primary/40 rounded-xl pl-12 pr-4 py-6 text-lg shadow-lg transition-all duration-200 placeholder:text-gray-400"
+              onKeyPress={(e) => e.key === "Enter" && handleSubmit()}
+              className="w-full bg-gradient-to-r from-purple-50 to-blue-50 backdrop-blur-sm border-2 border-primary/30 focus:border-primary/60 rounded-2xl pl-12 pr-4 py-6 text-lg shadow-lg transition-all duration-300 placeholder:text-primary/40 hover:shadow-xl hover:scale-[1.01] focus:scale-[1.01] focus:shadow-xl"
               disabled={isLoading}
             />
             <motion.div 
               className="absolute left-4 top-1/2 -translate-y-1/2"
-              animate={{ rotate: isLoading ? 360 : 0 }}
-              transition={{ duration: 2, repeat: isLoading ? Infinity : 0, ease: "linear" }}
+              animate={{ 
+                rotate: isLoading ? 360 : 0,
+                scale: [1, 1.2, 1]
+              }}
+              transition={{ 
+                rotate: { duration: 2, repeat: isLoading ? Infinity : 0, ease: "linear" },
+                scale: { duration: 1, repeat: Infinity, ease: "easeInOut" }
+              }}
             >
-              <Sparkles className="w-5 h-5 text-primary/60" />
+              <Sparkles className="w-5 h-5 text-primary" />
             </motion.div>
           </motion.div>
         </AnimatePresence>
 
         <Button 
-          onClick={handleSend} 
+          onClick={handleSubmit}
           disabled={isLoading} 
-          className="bg-primary hover:bg-primary/90 text-white px-6 rounded-xl shadow-lg transition-all duration-200 hover:scale-105 active:scale-95"
+          className="bg-primary hover:bg-primary/90 text-white px-6 rounded-xl shadow-lg transition-all duration-300 hover:scale-110 active:scale-95 disabled:opacity-50 disabled:hover:scale-100"
         >
           <Send className={`w-5 h-5 ${isLoading ? "animate-pulse" : ""}`} />
         </Button>
