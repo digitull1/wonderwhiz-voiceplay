@@ -5,7 +5,6 @@ import { motion } from "framer-motion";
 import { ChatHeader } from "@/components/ChatHeader";
 import { ChatContainer } from "@/components/ChatContainer";
 import { ChatInput } from "@/components/ChatInput";
-import { supabase } from "@/integrations/supabase/client";
 
 interface Block {
   title: string;
@@ -189,6 +188,14 @@ const Index = () => {
     }
   };
 
+  const handleImageAnalysis = (response: string) => {
+    setMessages(prev => [
+      ...prev,
+      { text: "I uploaded an image! 📸", isAi: false },
+      { text: response, isAi: true }
+    ]);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 flex flex-col">
       <div className="flex-1 container max-w-4xl mx-auto py-8 px-4">
@@ -211,6 +218,7 @@ const Index = () => {
             handleVoiceInput={() => {}}
             isLoading={isLoading}
             currentTopic={currentTopic}
+            onImageAnalyzed={handleImageAnalysis}
           />
         </motion.div>
       </div>
