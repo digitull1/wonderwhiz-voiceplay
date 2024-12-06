@@ -15,7 +15,6 @@ serve(async (req) => {
     const { query, context, age_group, name } = await req.json()
     console.log("Generating blocks for:", { query, context, age_group, name });
 
-    // Try both secret names for backward compatibility
     const apiKey = Deno.env.get('GROQ_API_KEY') || Deno.env.get('Groq');
     if (!apiKey) {
       console.error('Neither GROQ_API_KEY nor Groq secret is set');
@@ -25,15 +24,18 @@ serve(async (req) => {
     const prompt = `
       Based on this chat message: "${query}" and the current topic "${context}",
       generate 3 engaging, educational blocks for a ${age_group} year old ${name ? `named ${name}` : 'child'}.
-      Each block should have a fun emoji and a single-sentence description.
-      Focus on making the content exciting and age-appropriate.
+      Each block should:
+      1. Start with a relevant emoji
+      2. Have a clickbait-style "Did you know?" title that makes kids curious
+      3. Include a one-sentence teaser that makes them want to learn more
+      4. End with an exciting question that prompts them to click
       
       Format the response as a JSON object with this structure:
       {
         "blocks": [
           {
-            "title": "Fun, emoji-starting title",
-            "description": "One engaging sentence.",
+            "title": "🌟 Did you know [fascinating fact]?",
+            "description": "One engaging teaser sentence + exciting question",
             "metadata": {
               "topic": "specific_subtopic"
             }
@@ -41,8 +43,9 @@ serve(async (req) => {
         ]
       }
 
-      Make sure each block title is super engaging and fun, using emojis and exciting language!
-      Think of it like creating trading cards that kids will want to collect.
+      Make each block title and description super engaging and fun!
+      Think of them like trading cards that kids will want to collect.
+      Keep the language simple and exciting for the target age group.
     `
 
     console.log("Sending request to Groq API with prompt:", prompt);
@@ -58,7 +61,13 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: "You are an expert at creating engaging, educational content for children."
+            content: `You are WonderWhiz, an exciting AI tutor that makes learning feel like an adventure!
+            Your responses should:
+            1. Be concise and engaging
+            2. Use simple language for kids
+            3. Include relevant emojis (but not too many)
+            4. Break up text into short paragraphs
+            5. End with a natural question that makes them curious to learn more`
           },
           {
             role: "user",

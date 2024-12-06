@@ -1,6 +1,6 @@
 import React from "react";
 import { Button } from "./ui/button";
-import { Volume2, Sparkles, Star, Image } from "lucide-react";
+import { Volume2, Image } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChatBlocks } from "./ChatBlocks";
 import { ImageGenerator } from "./ImageGenerator";
@@ -41,8 +41,15 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
     exit: { opacity: 0, y: -20 }
   };
 
+  // Format message by adding line breaks after sentences and emojis
+  const formattedMessage = message
+    .split(/([.!?])\s+/)
+    .map((part, i, arr) => i < arr.length - 1 ? part + arr[i + 1] : part)
+    .filter((_, i) => i % 2 === 0)
+    .join('\n');
+
   const blockTransitionText = blocks?.length 
-    ? "Want to explore more? Check out these cool topics! ✨" 
+    ? "Want to explore more? Check these out! ✨" 
     : "";
 
   return (
@@ -54,16 +61,15 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
       exit="exit"
       transition={{ duration: 0.3 }}
     >
-      <AnimatePresence mode="wait">
+      <div className="flex items-start gap-3 max-w-[80%]">
         {isAi && (
           <motion.div 
-            className="w-12 h-12 rounded-full bg-gradient-to-br from-primary via-purple-500 
-              to-purple-600 flex items-center justify-center mr-3 shadow-lg relative"
+            className="w-10 h-10 rounded-full bg-gradient-to-br from-primary via-purple-500 
+              to-purple-600 flex items-center justify-center shadow-lg relative flex-shrink-0"
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ type: "spring", stiffness: 260, damping: 20 }}
           >
-            <Sparkles className="w-6 h-6 text-white animate-pulse" />
             <motion.div
               className="absolute inset-0 rounded-full bg-white/20"
               animate={{ scale: [1, 1.2, 1] }}
@@ -74,7 +80,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
 
         <motion.div
           className={cn(
-            "max-w-[80%] p-5 rounded-2xl shadow-lg relative overflow-hidden",
+            "space-y-4 p-5 rounded-2xl shadow-lg relative overflow-hidden",
             isAi
               ? "bg-gradient-to-br from-primary/90 via-purple-500/90 to-purple-600/90 text-white"
               : "bg-gradient-to-br from-secondary/90 via-green-500/90 to-green-600/90 text-white"
@@ -85,11 +91,13 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
           transition={{ type: "spring", stiffness: 200, damping: 20 }}
         >
           <div className="relative z-10">
-            <p className="text-sm md:text-base leading-relaxed whitespace-pre-wrap">{message}</p>
+            <p className="text-sm md:text-base leading-relaxed whitespace-pre-wrap">
+              {formattedMessage}
+            </p>
             
             {isAi && (
               <motion.div 
-                className="flex flex-col gap-3 mt-3"
+                className="flex flex-col gap-3 mt-4"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
@@ -128,7 +136,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3 }}
                   >
-                    <p className="text-sm mb-2 italic">
+                    <p className="text-sm mb-3 italic">
                       {blockTransitionText}
                     </p>
                     <ChatBlocks blocks={blocks} onBlockClick={onBlockClick} />
@@ -151,7 +159,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
             transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
           />
         </motion.div>
-      </AnimatePresence>
+      </div>
     </motion.div>
   );
 };
