@@ -25,25 +25,36 @@ export default {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: {
-          DEFAULT: "#FF6B6B",  // Coral pink
+          DEFAULT: "#8B5CF6",  // Updated to vibrant purple
           foreground: "#ffffff",
         },
         secondary: {
-          DEFAULT: "#4ECDC4",  // Bright turquoise
+          DEFAULT: "#0EA5E9",  // Updated to ocean blue
           foreground: "#ffffff",
         },
         accent: {
-          DEFAULT: "#FFD93D",  // Sunny yellow
-          foreground: "#000000",
+          DEFAULT: "#F97316",  // Updated to bright orange
+          foreground: "#ffffff",
         },
         chat: {
-          user: "#C7F6D5",     // Light green for user messages
-          ai: "#F4E7FE",       // Soft purple for AI messages
+          user: "#F2FCE2",     // Updated to soft green
+          ai: "#E5DEFF",       // Updated to soft purple
         },
         block: {
-          orange: "#FF6B6B",   // Exciting facts
-          blue: "#4CABFF",     // Exploration
-          purple: "#F4E7FE",   // Mystery
+          orange: "#F97316",   // Exciting facts
+          blue: "#0EA5E9",     // Exploration
+          purple: "#8B5CF6",   // Mystery
+        },
+        reward: {
+          bronze: "#CD7F32",
+          silver: "#C0C0C0",
+          gold: "#FFD700",
+        },
+        level: {
+          beginner: "#4ADE80",
+          intermediate: "#2563EB",
+          advanced: "#8B5CF6",
+          expert: "#F97316",
         }
       },
       fontFamily: {
