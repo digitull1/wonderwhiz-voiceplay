@@ -94,7 +94,7 @@ export const ChatMessage = ({
           animate={{ scale: 1, opacity: 1 }}
           transition={{ type: "spring", stiffness: 200, damping: 20 }}
         >
-          <p className="text-body leading-relaxed whitespace-pre-wrap relative z-10 tracking-wide">
+          <p className="text-body leading-relaxed whitespace-pre-wrap relative z-10 tracking-wide font-medium">
             {formattedMessage}
           </p>
           
@@ -109,7 +109,16 @@ export const ChatMessage = ({
                 onListen={onListen} 
                 messageText={message} 
               />
-              {shouldShowImageGen && <ImageGenerator prompt={message} />}
+              {shouldShowImageGen && (
+                <ImageGenerator 
+                  prompt={message} 
+                  onResponse={(response, newBlocks) => {
+                    if (blocks && onBlockClick && newBlocks) {
+                      onBlockClick(newBlocks[0]);
+                    }
+                  }} 
+                />
+              )}
               {blocks && blocks.length > 0 && onBlockClick && (
                 <RelatedBlocks blocks={blocks} onBlockClick={onBlockClick} />
               )}

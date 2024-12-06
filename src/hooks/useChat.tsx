@@ -66,9 +66,7 @@ export const useChat = () => {
     setIsLoading(true);
 
     try {
-      // Get previous context for better block generation
       const previousMessages = messages.slice(-3).map(m => m.text).join(" ");
-      
       const response = await getGroqResponse(messageText);
       const blocks = await generateDynamicBlocks(response, currentTopic, previousMessages);
       
@@ -78,7 +76,6 @@ export const useChat = () => {
         blocks 
       }]);
       
-      // Award points based on interaction type
       const points = getPointsForAction(
         messages.length > 3 ? 'long_conversation' : 'question'
       );
@@ -117,7 +114,6 @@ export const useChat = () => {
     setCurrentTopic(topic);
     updateBlocksExplored(topic);
     
-    // Award points for block exploration
     await updateUserProgress(getPointsForAction('block_exploration'));
     
     toast({
@@ -131,7 +127,6 @@ export const useChat = () => {
 
   const handleImageUploadSuccess = async (response: string) => {
     if (response) {
-      // Award points for image upload
       await updateUserProgress(getPointsForAction('image_upload'));
       
       toast({

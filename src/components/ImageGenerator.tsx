@@ -4,32 +4,54 @@ import { Loader2, Image as ImageIcon } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from './ui/use-toast';
 import { GeneratedImage } from './image/GeneratedImage';
+import { useBlockGeneration } from '@/hooks/useBlockGeneration';
 
 interface ImageGeneratorProps {
   prompt: string;
+  onResponse: (response: string, blocks?: any[]) => void;
 }
 
-export const ImageGenerator = ({ prompt }: ImageGeneratorProps) => {
+export const ImageGenerator = ({ prompt, onResponse }: ImageGeneratorProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
   const { toast } = useToast();
+  const { generateDynamicBlocks } = useBlockGeneration(null);
 
   const generateImage = async () => {
     setIsLoading(true);
     try {
       console.log('Generating image for prompt:', prompt);
-      const { data, error } = await supabase.functions.invoke('generate-image', {
+      const { data: imageData, error: imageError } = await supabase.functions.invoke('generate-image', {
         body: { prompt }
       });
 
-      if (error) {
-        console.error('Error generating image:', error);
-        throw error;
+      if (imageError) {
+        console.error('Error generating image:', imageError);
+        throw imageError;
       }
 
-      if (data?.image) {
+      if (imageData?.image) {
         console.log('Image generated successfully');
-        setImageUrl(data.image);
+        setImageUrl(imageData.image);
+
+        // Get image analysis with WonderWhiz style response
+        const { data: analysisData, error: analysisError } = await supabase.functions.invoke('analyze-image', {
+          body: { 
+            image: imageData.image,
+            prompt: "What's in this image? Explain it in a fun, educational way!"
+          }
+        });
+
+        if (analysisError) throw analysisError;
+
+        const response = analysisData.choices[0].message.content;
+        console.log('Image analysis response:', response);
+
+        // Generate contextual blocks based on the analysis
+        const blocks = await generateDynamicBlocks(response, "image analysis");
+        console.log('Generated blocks:', blocks);
+
+        onResponse(response, blocks);
       }
     } catch (error) {
       console.error('Failed to generate image:', error);
