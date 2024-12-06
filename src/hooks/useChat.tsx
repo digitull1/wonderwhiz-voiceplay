@@ -22,9 +22,15 @@ export const useChat = () => {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   
   const { toast } = useToast();
-  const { userProgress, updateUserProgress } = useUserProgress();
+  const { userProgress, updateUserProgress: rawUpdateProgress } = useUserProgress();
   const { generateDynamicBlocks } = useBlockGeneration(userProfile);
   const { handleImageAnalysis, isAnalyzing } = useImageAnalysis();
+  
+  // Wrap the updateUserProgress to return void
+  const updateUserProgress = async (points: number): Promise<void> => {
+    await rawUpdateProgress(points);
+  };
+  
   const { quizState, handleQuizAnswer, updateBlocksExplored } = useQuiz(updateUserProgress);
 
   const sendMessage = async (messageText: string) => {
