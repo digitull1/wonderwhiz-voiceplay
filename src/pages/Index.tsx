@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Send } from "lucide-react";
 import { ApiKeyInput } from "@/components/ApiKeyInput";
+import { getGroqResponse } from "@/utils/groq";
+import { useToast } from "@/components/ui/use-toast";
 
 const Index = () => {
   const [messages, setMessages] = useState([
@@ -15,23 +17,30 @@ const Index = () => {
     },
   ]);
   const [input, setInput] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
 
-  const handleSend = () => {
-    if (!input.trim()) return;
+  const handleSend = async () => {
+    if (!input.trim() || isLoading) return;
     
-    setMessages([...messages, { text: input, isAi: false }]);
+    const userMessage = input.trim();
+    setMessages(prev => [...prev, { text: userMessage, isAi: false }]);
     setInput("");
-    
-    // Simulate AI response
-    setTimeout(() => {
-      setMessages((prev) => [
-        ...prev,
-        {
-          text: "That's a great question! Let me help you learn about that. What specific aspect would you like to explore?",
-          isAi: true,
-        },
-      ]);
-    }, 1000);
+    setIsLoading(true);
+
+    try {
+      const response = await getGroqResponse(userMessage);
+      setMessages(prev => [...prev, { text: response, isAi: true }]);
+    } catch (error) {
+      console.error('Error getting response:', error);
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to get response",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleVoiceInput = (text: string) => {
@@ -39,8 +48,9 @@ const Index = () => {
   };
 
   const handleListen = () => {
-    // Implement text-to-speech here
-    console.log("Listen clicked");
+    const synth = window.speechSynthesis;
+    const utterance = new SpeechSynthesisUtterance(messages[messages.length - 1].text);
+    synth.speak(utterance);
   };
 
   return (
@@ -64,15 +74,16 @@ const Index = () => {
             
             <div className="flex gap-2">
               <Input
-                placeholder="Ask me anything..."
+                placeholder={isLoading ? "Getting response..." : "Ask me anything..."}
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
                 onKeyPress={(e) => e.key === "Enter" && handleSend()}
                 className="flex-1"
+                disabled={isLoading}
               />
               <VoiceInput onVoiceInput={handleVoiceInput} />
-              <Button onClick={handleSend}>
-                <Send className="w-4 h-4" />
+              <Button onClick={handleSend} disabled={isLoading}>
+                <Send className={`w-4 h-4 ${isLoading ? 'animate-pulse' : ''}`} />
               </Button>
             </div>
           </div>
