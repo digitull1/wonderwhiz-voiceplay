@@ -13,21 +13,21 @@ export type Database = {
         Row: {
           age: number
           created_at: string
-          gender: Database["public"]["Enums"]["gender_type"]
+          gender: string
           id: string
           updated_at: string
         }
         Insert: {
           age: number
           created_at?: string
-          gender: Database["public"]["Enums"]["gender_type"]
+          gender: string
           id: string
           updated_at?: string
         }
         Update: {
           age?: number
           created_at?: string
-          gender?: Database["public"]["Enums"]["gender_type"]
+          gender?: string
           id?: string
           updated_at?: string
         }
