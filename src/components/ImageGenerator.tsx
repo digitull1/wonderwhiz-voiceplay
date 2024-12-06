@@ -25,16 +25,20 @@ export const ImageGenerator = ({ prompt }: ImageGeneratorProps) => {
   const generateImage = async () => {
     setIsLoading(true);
     try {
-      console.log("Starting image generation with prompt:", prompt);
-      
       // Clean and validate prompt
       const cleanPrompt = prompt.trim();
       if (!cleanPrompt) {
         throw new Error("Empty prompt");
       }
 
+      console.log("Starting image generation with prompt:", cleanPrompt);
+      
+      // Prepare request body
+      const requestBody = { prompt: cleanPrompt };
+      console.log("Sending request with body:", requestBody);
+
       const { data, error } = await supabase.functions.invoke('generate-image', {
-        body: { prompt: cleanPrompt },
+        body: requestBody,
         headers: {
           'Content-Type': 'application/json',
         }
@@ -62,11 +66,10 @@ export const ImageGenerator = ({ prompt }: ImageGeneratorProps) => {
     } catch (error: any) {
       console.error("Error generating image:", error);
       
-      // Check if we should retry
       if (retryCount < MAX_RETRIES) {
         console.log(`Retrying... Attempt ${retryCount + 1} of ${MAX_RETRIES}`);
         setRetryCount(prev => prev + 1);
-        setTimeout(() => generateImage(), 1000 * (retryCount + 1)); // Exponential backoff
+        setTimeout(() => generateImage(), 1000 * (retryCount + 1));
         return;
       }
 

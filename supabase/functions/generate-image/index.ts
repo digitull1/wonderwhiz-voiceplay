@@ -17,7 +17,9 @@ serve(async (req) => {
     // Parse and validate request body
     let body;
     try {
-      body = await req.json();
+      const text = await req.text();
+      console.log('Raw request body:', text);
+      body = JSON.parse(text);
     } catch (error) {
       console.error('Error parsing request body:', error);
       return new Response(
@@ -32,6 +34,8 @@ serve(async (req) => {
         }
       );
     }
+
+    console.log('Parsed request body:', body);
 
     const { prompt } = body;
     if (!prompt || typeof prompt !== 'string') {
