@@ -16,6 +16,12 @@ interface ChatInputProps {
   onImageAnalyzed: (response: string) => void;
 }
 
+declare global {
+  interface Window {
+    webkitSpeechRecognition: typeof SpeechRecognition;
+  }
+}
+
 export const ChatInput = ({
   input,
   setInput,
@@ -44,7 +50,7 @@ export const ChatInput = ({
       return;
     }
 
-    const recognition = new webkitSpeechRecognition();
+    const recognition = new window.webkitSpeechRecognition();
     recognition.continuous = true;
     recognition.interimResults = true;
 
@@ -83,7 +89,10 @@ export const ChatInput = ({
 
   const stopListening = () => {
     setIsListening(false);
-    window.speechRecognition?.stop();
+    if ('webkitSpeechRecognition' in window) {
+      const recognition = new window.webkitSpeechRecognition();
+      recognition.stop();
+    }
   };
 
   return (

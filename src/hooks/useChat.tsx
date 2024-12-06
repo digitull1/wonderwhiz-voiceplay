@@ -2,11 +2,11 @@ import { useState, useEffect } from "react";
 import { getGroqResponse } from "@/utils/groq";
 import { useToast } from "@/hooks/use-toast";
 import { Message, UserProfile, Block } from "@/types/chat";
-import { QuizState, QuizQuestion } from "@/types/quiz";
+import { QuizState } from "@/types/quiz";
 import { handleNameInput, handleAgeInput } from "@/utils/profileUtils";
 import { useUserProgress } from "./useUserProgress";
-import { supabase } from "@/integrations/supabase/client";
 import { useBlockGeneration } from "./useBlockGeneration";
+import { useImageAnalysis } from "./useImageAnalysis";
 
 export const useChat = () => {
   const [messages, setMessages] = useState<Message[]>([
@@ -23,6 +23,7 @@ export const useChat = () => {
   const { toast } = useToast();
   const { userProgress, updateUserProgress } = useUserProgress();
   const { generateDynamicBlocks } = useBlockGeneration(userProfile);
+  const { handleImageAnalysis, isAnalyzing } = useImageAnalysis();
 
   const [quizState, setQuizState] = useState<QuizState>({
     isActive: false,
