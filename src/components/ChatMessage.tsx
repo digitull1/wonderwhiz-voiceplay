@@ -57,6 +57,16 @@ export const ChatMessage = ({
     .filter((_, i) => i % 2 === 0)
     .join('\n');
 
+  const handleListenClick = () => {
+    if (onListen) {
+      try {
+        onListen();
+      } catch (error) {
+        console.error("Error in text-to-speech:", error);
+      }
+    }
+  };
+
   return (
     <motion.div 
       className={`flex ${isAi ? "justify-start" : "justify-end"} mb-6`}
@@ -115,7 +125,7 @@ export const ChatMessage = ({
                           variant="ghost"
                           size="sm"
                           className="text-primary hover:text-primary/80 hover:bg-primary/10 group"
-                          onClick={onListen}
+                          onClick={handleListenClick}
                         >
                           <Volume2 className="w-4 h-4 mr-2 group-hover:animate-pulse" />
                           Listen

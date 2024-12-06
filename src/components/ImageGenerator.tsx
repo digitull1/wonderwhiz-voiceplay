@@ -27,8 +27,14 @@ export const ImageGenerator = ({ prompt }: ImageGeneratorProps) => {
     try {
       console.log("Starting image generation with prompt:", prompt);
       
+      // Ensure the prompt is properly formatted
+      const cleanPrompt = prompt.trim();
+      if (!cleanPrompt) {
+        throw new Error("Empty prompt");
+      }
+
       const { data, error } = await supabase.functions.invoke('generate-image', {
-        body: { prompt },
+        body: { prompt: cleanPrompt },
         headers: {
           'Content-Type': 'application/json',
         }
