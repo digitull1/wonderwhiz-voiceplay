@@ -12,8 +12,8 @@ serve(async (req) => {
   }
 
   try {
-    const { query, context, age_group, name } = await req.json()
-    console.log("Generating blocks for:", { query, context, age_group, name });
+    const { query, context, age_group, name, previous_response } = await req.json()
+    console.log("Generating blocks for:", { query, context, age_group, name, previous_response });
 
     const apiKey = Deno.env.get('GROQ_API_KEY') || Deno.env.get('Groq');
     if (!apiKey) {
@@ -23,22 +23,27 @@ serve(async (req) => {
 
     const prompt = `
       Based on this chat message: "${query}" and the current topic "${context}",
-      generate 3 engaging, educational blocks for a ${age_group} year old ${name ? `named ${name}` : 'child'}.
+      generate 3 engaging, educational blocks that are DIRECTLY RELATED to the current topic.
+      Previous response for context: "${previous_response}"
 
-      IMPORTANT FORMATTING RULES:
+      IMPORTANT FORMATTING AND CONTEXT RULES:
       1. Each block must be EXACTLY ONE LINE of clickbait-style content
       2. Each line MUST be EXACTLY 75 CHARACTERS or LESS (including spaces and emoji)
       3. Each line MUST:
          - Start with "Did you know" or an exciting question
-         - Include ONE fascinating fact
+         - Include ONE fascinating fact DIRECTLY RELATED to the current topic
          - End with ONE relevant emoji
          - Be engaging and fun for kids
          - Make them want to click to learn more
+      4. MAINTAIN TOPIC RELEVANCE:
+         - Each block must be a natural continuation of the current topic
+         - Focus on related subtopics that expand on the current discussion
+         - Ensure a logical connection between blocks
 
-      Example perfect blocks:
-      - "Did you know the blue whale's heart is as big as a car? Let's explore this giant! 🐋"
-      - "Want to discover why octopuses have three hearts? Click to find out! 🐙"
-      - "Can you believe there's a planet where it rains diamonds? Let's visit Neptune! ✨"
+      Example perfect blocks for "planets":
+      - "Did you know Mars has the biggest volcano in our solar system? Let's explore it! 🌋"
+      - "Want to see why Saturn's rings are disappearing? Time to blast off! 🚀"
+      - "Can you believe Venus spins backwards? Let's find out why! ⭐"
 
       Format the response as a JSON object with this structure:
       {
@@ -46,13 +51,16 @@ serve(async (req) => {
           {
             "title": "Single line of exactly 75 chars or less with emoji",
             "metadata": {
-              "topic": "specific_subtopic"
+              "topic": "specific_subtopic_related_to_context"
             }
           }
         ]
       }
 
-      CRITICAL: Double-check that each title is 75 characters or less INCLUDING the emoji!
+      CRITICAL: 
+      - Double-check that each title is 75 characters or less INCLUDING the emoji!
+      - Ensure each block is directly related to the current topic!
+      - Build upon the previous response to maintain conversation flow!
     `
 
     console.log("Sending request to Groq API with prompt:", prompt);
@@ -74,7 +82,9 @@ serve(async (req) => {
             2. Use simple language for kids
             3. Include ONE relevant emoji at the end
             4. Make kids curious to learn more
-            5. Follow the clickbait-style format perfectly`
+            5. Follow the clickbait-style format perfectly
+            6. MUST be directly related to the current topic
+            7. Build upon previous responses to maintain context`
           },
           {
             role: "user",
