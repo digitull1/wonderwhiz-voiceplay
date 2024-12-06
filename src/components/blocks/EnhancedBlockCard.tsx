@@ -19,6 +19,15 @@ export const EnhancedBlockCard = ({
   const titleLength = block.title.length;
   const descriptionLength = block.description.length;
 
+  // Truncate title and description if they exceed limits
+  const truncatedTitle = titleLength > 39 
+    ? `${block.title.substring(0, 36)}...` 
+    : block.title;
+
+  const truncatedDescription = descriptionLength > 111
+    ? `${block.description.substring(0, 108)}...`
+    : block.description;
+
   return (
     <motion.button
       initial={{ opacity: 0, y: 20 }}
@@ -46,19 +55,15 @@ export const EnhancedBlockCard = ({
           "leading-tight line-clamp-2",
           titleLength > 30 ? "text-lg" : "text-xl"
         )}>
-          {titleLength > 40 
-            ? `${block.title.substring(0, 37)}...` 
-            : block.title}
+          {truncatedTitle}
         </h3>
         
         <p className={cn(
           "text-left opacity-90 transition-all duration-300",
           "leading-relaxed line-clamp-3",
-          descriptionLength > 100 ? "text-sm" : "text-base"
+          descriptionLength > 90 ? "text-sm" : "text-base"
         )}>
-          {descriptionLength > 150 
-            ? `${block.description.substring(0, 147)}...` 
-            : block.description}
+          {truncatedDescription}
         </p>
       </div>
 
