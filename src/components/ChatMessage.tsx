@@ -75,7 +75,11 @@ export const ChatMessage = ({
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
             >
-              <MessageActions onListen={onListen} shouldShowImageGen={shouldShowImageGen} />
+              <MessageActions 
+                onListen={onListen} 
+                shouldShowImageGen={shouldShowImageGen} 
+                messageText={message}
+              />
               {shouldShowImageGen && <ImageGenerator prompt={message} />}
               {blocks && blocks.length > 0 && onBlockClick && (
                 <RelatedBlocks blocks={blocks} onBlockClick={onBlockClick} />
