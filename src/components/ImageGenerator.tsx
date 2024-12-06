@@ -43,16 +43,23 @@ export const ImageGenerator = ({ prompt }: ImageGeneratorProps) => {
     } catch (error: any) {
       console.error("Error generating image:", error);
       
-      if (retryCount < MAX_RETRIES) {
-        console.log(`Retrying... Attempt ${retryCount + 1} of ${MAX_RETRIES}`);
+      // Check if it's a rate limit error
+      const isRateLimit = error.message?.includes("Max requests") || 
+                         error.message?.includes("rate limit");
+      
+      if (isRateLimit && retryCount < MAX_RETRIES) {
+        console.log(`Rate limit hit. Retrying... Attempt ${retryCount + 1} of ${MAX_RETRIES}`);
         setRetryCount(prev => prev + 1);
+        // Exponential backoff: wait longer between each retry
         setTimeout(() => generateImage(), 1000 * (retryCount + 1));
         return;
       }
 
       toast({
         title: "Oops!",
-        description: "Couldn't create the image right now. Please try again!",
+        description: isRateLimit 
+          ? "The image generator is a bit tired. Please wait a minute and try again! 🎨"
+          : "Couldn't create the image right now. Please try again!",
         variant: "destructive"
       });
     } finally {
