@@ -46,6 +46,7 @@ const Index = () => {
   };
 
   const handleTopicSelect = async (topic: string) => {
+    setCurrentTopic(topic);
     const topicPrompts: { [key: string]: string } = {
       black_hole_interior: "Can you explain what's inside a black hole in a way that's easy for kids to understand?",
       alien_life: "Tell me about the possibility of finding alien life in space!",
@@ -72,6 +73,12 @@ const Index = () => {
     synth.speak(utterance);
   };
 
+  const getLastAiMessage = () => {
+    const reversedMessages = [...messages].reverse();
+    const lastAiMessage = reversedMessages.find(msg => msg.isAi);
+    return lastAiMessage?.text;
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 flex flex-col">
       <div className="flex-1 container max-w-4xl mx-auto py-8 px-4">
@@ -84,7 +91,11 @@ const Index = () => {
           <ChatHeader />
           <ChatContainer messages={messages} handleListen={handleListen} />
           <div className="space-y-6">
-            <TopicBlocks currentTopic={currentTopic} onTopicSelect={handleTopicSelect} />
+            <TopicBlocks 
+              currentTopic={currentTopic} 
+              onTopicSelect={handleTopicSelect}
+              lastMessage={getLastAiMessage()}
+            />
             <ChatInput 
               input={input}
               setInput={setInput}
