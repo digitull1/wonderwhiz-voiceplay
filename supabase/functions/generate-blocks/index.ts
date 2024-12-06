@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import "https://deno.land/x/xhr@0.1.0/mod.ts"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -32,6 +33,9 @@ serve(async (req) => {
           }
         ]
       }
+
+      Make sure each block title is super engaging and fun, using emojis and exciting language!
+      Think of it like creating trading cards that kids will want to collect.
     `
 
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {

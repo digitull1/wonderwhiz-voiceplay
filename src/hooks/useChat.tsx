@@ -37,10 +37,39 @@ export const useChat = () => {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const { toast } = useToast();
 
-  const generateDynamicBlocks = async (response: string, topic: string) => {
+  const updateUserProgress = async (points: number) => {
     try {
-      console.log("Generating blocks for topic:", topic);
-      const { data } = await supabase.functions.invoke('generate-blocks', {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from('user_progress')
+        .update({ 
+          points: points,
+          last_interaction_date: new Date().toISOString()
+        })
+        .eq('user_id', user.id)
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      toast({
+        title: "Points earned! 🎉",
+        description: `You've earned ${points} points!`,
+        className: "bg-primary text-white",
+      });
+
+      return data;
+    } catch (error) {
+      console.error('Error updating progress:', error);
+    }
+  };
+
+  const generateDynamicBlocks = async (response: string, topic: string) => {
+    console.log("Generating blocks for topic:", topic);
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-blocks', {
         body: {
           query: response,
           context: topic,
@@ -49,8 +78,9 @@ export const useChat = () => {
         }
       });
 
-      console.log("Generated blocks data:", data);
+      if (error) throw error;
 
+      console.log("Generated blocks data:", data);
       if (data?.choices?.[0]?.message?.content) {
         const parsedData = typeof data.choices[0].message.content === 'string' 
           ? JSON.parse(data.choices[0].message.content) 
@@ -149,6 +179,9 @@ export const useChat = () => {
       };
       
       setMessages(prev => [...prev, aiMessage]);
+      
+      // Update user progress
+      await updateUserProgress(10); // Award points for interaction
       
       toast({
         title: "New knowledge unlocked! 🎉",

@@ -1,12 +1,38 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Button } from "./ui/button";
 import { motion } from "framer-motion";
-import { Sparkles, Star, Zap } from "lucide-react";
+import { Sparkles, Star, Zap, Trophy, Award } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 export const ChatHeader = () => {
+  const [userProgress, setUserProgress] = useState({
+    points: 0,
+    level: 1,
+    streak_days: 0
+  });
+
+  useEffect(() => {
+    const fetchUserProgress = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data } = await supabase
+        .from('user_progress')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+
+      if (data) {
+        setUserProgress(data);
+      }
+    };
+
+    fetchUserProgress();
+  }, []);
+
   return (
     <motion.div 
-      className="flex justify-between items-center mb-6 bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-white/50 shadow-lg relative overflow-hidden"
+      className="flex justify-between items-center mb-6 bg-gradient-to-br from-white/90 to-purple-50/90 backdrop-blur-sm rounded-2xl p-6 border border-white/50 shadow-lg relative overflow-hidden"
       initial={{ opacity: 0, y: -20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
@@ -52,7 +78,7 @@ export const ChatHeader = () => {
           transition={{ type: "spring", delay: 0.4 }}
         >
           <Star className="w-4 h-4 text-primary" />
-          <span className="text-sm font-medium text-primary">Level 1</span>
+          <span className="text-sm font-medium text-primary">Level {userProgress.level}</span>
         </motion.div>
         <motion.div
           className="flex items-center gap-1 bg-secondary/10 px-3 py-1 rounded-full"
@@ -61,7 +87,16 @@ export const ChatHeader = () => {
           transition={{ type: "spring", delay: 0.5 }}
         >
           <Zap className="w-4 h-4 text-secondary" />
-          <span className="text-sm font-medium text-secondary">0 Points</span>
+          <span className="text-sm font-medium text-secondary">{userProgress.points} Points</span>
+        </motion.div>
+        <motion.div
+          className="flex items-center gap-1 bg-orange-500/10 px-3 py-1 rounded-full"
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ type: "spring", delay: 0.6 }}
+        >
+          <Trophy className="w-4 h-4 text-orange-500" />
+          <span className="text-sm font-medium text-orange-500">{userProgress.streak_days} Day Streak</span>
         </motion.div>
       </div>
 
