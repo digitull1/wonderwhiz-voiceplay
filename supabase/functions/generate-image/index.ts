@@ -20,9 +20,7 @@ serve(async (req) => {
     try {
       const text = await req.text();
       console.log('Raw request body:', text);
-      
-      // Check if the body is already parsed
-      body = typeof text === 'object' ? text : JSON.parse(text);
+      body = JSON.parse(text);
     } catch (error) {
       console.error('Error parsing request body:', error);
       return new Response(

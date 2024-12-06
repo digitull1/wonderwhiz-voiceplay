@@ -72,13 +72,18 @@ export const useChat = () => {
       };
       
       setMessages(prev => [...prev, aiMessage]);
-      await updateUserProgress(5);
       
-      toast({
-        title: "Points Earned! 🌟",
-        description: "You've earned 5 points for exploring and learning!",
-        className: "bg-primary text-white",
-      });
+      // Update user progress with points
+      const pointsToAdd = 5;
+      const updatedProgress = await updateUserProgress(pointsToAdd);
+      
+      if (updatedProgress) {
+        toast({
+          title: "Points Earned! 🌟",
+          description: `You've earned ${pointsToAdd} points for exploring and learning!`,
+          className: "bg-primary text-white",
+        });
+      }
       
     } catch (error: any) {
       console.error('Error in sendMessage:', error);

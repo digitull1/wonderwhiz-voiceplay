@@ -2,12 +2,6 @@ import React, { useState } from "react";
 import { Button } from "./ui/button";
 import { Image, Sparkles } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "./ui/tooltip";
 import { useToast } from "./ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
@@ -49,11 +43,9 @@ export const ImageGenerator = ({ prompt }: ImageGeneratorProps) => {
       }
 
       if (!data?.image) {
-        console.error("No image data in response:", data);
-        throw new Error("No image data received");
+        throw new Error("No image data in response");
       }
 
-      console.log("Image generation successful");
       setImageUrl(data.image);
       setRetryCount(0);
       toast({
@@ -72,8 +64,8 @@ export const ImageGenerator = ({ prompt }: ImageGeneratorProps) => {
 
       toast({
         title: "Oops!",
-        description: "Couldn't create the image right now. Please try again in a moment!",
-        variant: "destructive",
+        description: "Couldn't create the image right now. Please try again!",
+        variant: "destructive"
       });
     } finally {
       if (retryCount >= MAX_RETRIES) {
@@ -85,61 +77,42 @@ export const ImageGenerator = ({ prompt }: ImageGeneratorProps) => {
 
   return (
     <div className="mt-4 space-y-4">
-      <TooltipProvider>
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <motion.div
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-            >
-              <Button
-                onClick={generateImage}
-                disabled={isLoading}
-                className="w-full bg-primary hover:bg-primary/90 text-white font-medium py-2 px-4 rounded-lg shadow-lg transition-all duration-200 ease-in-out flex items-center justify-center gap-2 relative overflow-hidden group"
+      <motion.div
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
+      >
+        <Button
+          onClick={generateImage}
+          disabled={isLoading}
+          className="w-full bg-gradient-to-r from-primary to-purple-600 text-white"
+        >
+          <AnimatePresence mode="wait">
+            {isLoading ? (
+              <motion.div
+                key="loading"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="flex items-center gap-2"
               >
-                <AnimatePresence mode="wait">
-                  {isLoading ? (
-                    <motion.div
-                      key="loading"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      className="flex items-center gap-2"
-                    >
-                      <Sparkles className="w-5 h-5 animate-pulse" />
-                      {retryCount > 0 ? `Retrying... (${retryCount}/${MAX_RETRIES})` : "Creating magic..."}
-                    </motion.div>
-                  ) : (
-                    <motion.div
-                      key="default"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      exit={{ opacity: 0 }}
-                      className="flex items-center gap-2"
-                    >
-                      <Image className="w-5 h-5" />
-                      Generate Picture
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-                <motion.div
-                  className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0"
-                  initial={{ x: "-100%" }}
-                  animate={{ x: "100%" }}
-                  transition={{
-                    repeat: Infinity,
-                    duration: 2,
-                    ease: "linear",
-                  }}
-                />
-              </Button>
-            </motion.div>
-          </TooltipTrigger>
-          <TooltipContent>
-            <p>Click to create an amazing picture based on our chat!</p>
-          </TooltipContent>
-        </Tooltip>
-      </TooltipProvider>
+                <Sparkles className="w-4 h-4 animate-spin" />
+                Creating magic...
+              </motion.div>
+            ) : (
+              <motion.div
+                key="default"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="flex items-center gap-2"
+              >
+                <Image className="w-4 h-4" />
+                Generate Picture
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </Button>
+      </motion.div>
 
       {imageUrl && (
         <motion.img
