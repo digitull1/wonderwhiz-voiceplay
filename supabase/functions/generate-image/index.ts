@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
+import { HfInference } from 'https://esm.sh/@huggingface/inference@2.3.2'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -7,6 +7,7 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
@@ -15,30 +16,19 @@ serve(async (req) => {
     const { prompt } = await req.json()
     console.log('Generating image for prompt:', prompt)
 
-    const response = await fetch('https://api-inference.huggingface.co/models/runwayml/stable-diffusion-v1-5', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${Deno.env.get('HUGGING_FACE_TOKEN')}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({
-        inputs: prompt,
-        parameters: {
-          num_inference_steps: 30,
-          guidance_scale: 7.5
-        }
-      })
+    const hf = new HfInference(Deno.env.get('HUGGING_FACE_ACCESS_TOKEN'))
+
+    const image = await hf.textToImage({
+      inputs: prompt,
+      model: 'black-forest-labs/FLUX.1-schnell',
     })
 
-    if (!response.ok) {
-      throw new Error(`Failed to generate image: ${response.statusText}`)
-    }
-
-    const imageBlob = await response.blob()
-    const base64Image = `data:image/jpeg;base64,${btoa(String.fromCharCode(...new Uint8Array(await imageBlob.arrayBuffer())))}`
+    // Convert the blob to a base64 string
+    const arrayBuffer = await image.arrayBuffer()
+    const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)))
 
     return new Response(
-      JSON.stringify({ image: base64Image }),
+      JSON.stringify({ image: `data:image/png;base64,${base64}` }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   } catch (error) {
