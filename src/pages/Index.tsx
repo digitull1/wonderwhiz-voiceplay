@@ -41,6 +41,21 @@ const Index = () => {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const { toast } = useToast();
 
+  const handleListen = () => {
+    const lastAiMessage = messages.findLast(msg => msg.isAi);
+    if (!lastAiMessage) return;
+
+    const utterance = new SpeechSynthesisUtterance(lastAiMessage.text);
+    utterance.rate = 0.9;
+    utterance.pitch = 1;
+    speechSynthesis.speak(utterance);
+
+    toast({
+      title: "Reading message...",
+      description: "Click anywhere to stop",
+    });
+  };
+
   const handleBlockClick = async (block: Block) => {
     setCurrentTopic(block.metadata.topic);
     await sendMessage(`Tell me about ${block.title}!`);
@@ -155,7 +170,7 @@ const Index = () => {
 
         return parsedData.blocks.map((block: Block) => ({
           ...block,
-          description: "Click to explore more!"
+          description: block.description.split('.')[0] + '.' // Keep only first sentence
         }));
       }
       return [];
@@ -163,16 +178,6 @@ const Index = () => {
       console.error('Error generating blocks:', error);
       return [];
     }
-  };
-
-  // Add handleListen function
-  const handleListen = () => {
-    console.log("Text-to-speech functionality will be implemented later");
-    toast({
-      title: "Coming Soon!",
-      description: "Text-to-speech functionality will be available soon!",
-      variant: "default",
-    });
   };
 
   return (
