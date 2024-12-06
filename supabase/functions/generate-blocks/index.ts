@@ -24,18 +24,27 @@ serve(async (req) => {
     const prompt = `
       Based on this chat message: "${query}" and the current topic "${context}",
       generate 3 engaging, educational blocks for a ${age_group} year old ${name ? `named ${name}` : 'child'}.
-      Each block should be a single line of clickbait-style content that:
-      1. Starts with "Did you know" or an exciting question
-      2. Contains one fascinating fact that makes kids curious
-      3. Ends with a call to action or question
-      4. Is EXACTLY 75 characters or less
-      5. Includes ONE relevant emoji at the end
-      
+
+      IMPORTANT FORMATTING RULES:
+      1. Each block must be EXACTLY ONE LINE of clickbait-style content
+      2. Each line MUST be EXACTLY 75 CHARACTERS or LESS (including spaces and emoji)
+      3. Each line MUST:
+         - Start with "Did you know" or an exciting question
+         - Include ONE fascinating fact
+         - End with ONE relevant emoji
+         - Be engaging and fun for kids
+         - Make them want to click to learn more
+
+      Example perfect blocks:
+      - "Did you know the blue whale's heart is as big as a car? Let's explore this giant! 🐋"
+      - "Want to discover why octopuses have three hearts? Click to find out! 🐙"
+      - "Can you believe there's a planet where it rains diamonds? Let's visit Neptune! ✨"
+
       Format the response as a JSON object with this structure:
       {
         "blocks": [
           {
-            "title": "Single line of clickbait content (75 chars max)",
+            "title": "Single line of exactly 75 chars or less with emoji",
             "metadata": {
               "topic": "specific_subtopic"
             }
@@ -43,9 +52,7 @@ serve(async (req) => {
         ]
       }
 
-      Make each block super engaging and fun!
-      Think of them like trading cards that kids will want to collect.
-      Keep the language simple and exciting for the target age group.
+      CRITICAL: Double-check that each title is 75 characters or less INCLUDING the emoji!
     `
 
     console.log("Sending request to Groq API with prompt:", prompt);
@@ -62,12 +69,12 @@ serve(async (req) => {
           {
             role: "system",
             content: `You are WonderWhiz, an exciting AI tutor that makes learning feel like an adventure!
-            Your responses should:
-            1. Be concise and engaging
+            Your task is to generate EXACTLY 3 blocks of content that:
+            1. Are EXACTLY 75 characters or less (including spaces and emoji)
             2. Use simple language for kids
-            3. Include ONE relevant emoji at the end of each block
-            4. Never exceed 75 characters per block
-            5. Make kids curious to learn more`
+            3. Include ONE relevant emoji at the end
+            4. Make kids curious to learn more
+            5. Follow the clickbait-style format perfectly`
           },
           {
             role: "user",
