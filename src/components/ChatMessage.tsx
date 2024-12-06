@@ -37,11 +37,23 @@ export const ChatMessage = ({
     exit: { opacity: 0, y: -20 }
   };
 
+  // Format message to add proper spacing after emojis and punctuation
   const formattedMessage = message
-    .split(/([.!?])\s+/)
-    .map((part, i, arr) => i < arr.length - 1 ? part + arr[i + 1] : part)
+    .split(/([.!?])\s*/)
+    .map((part, i, arr) => {
+      // Add line break after sentences
+      if (i < arr.length - 1) {
+        return part + arr[i + 1] + '\n\n';
+      }
+      return part;
+    })
     .filter((_, i) => i % 2 === 0)
-    .join('\n');
+    .join('')
+    // Add space after emojis if there isn't one already
+    .replace(/(\p{Emoji}+)(?!\s)/gu, '$1 ')
+    // Remove extra line breaks
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
 
   return (
     <motion.div 
@@ -82,7 +94,7 @@ export const ChatMessage = ({
           animate={{ scale: 1, opacity: 1 }}
           transition={{ type: "spring", stiffness: 200, damping: 20 }}
         >
-          <p className="text-body leading-relaxed whitespace-pre-wrap relative z-10">
+          <p className="text-body leading-relaxed whitespace-pre-wrap relative z-10 tracking-wide">
             {formattedMessage}
           </p>
           
