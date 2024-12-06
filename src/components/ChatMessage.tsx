@@ -95,8 +95,7 @@ export const ChatMessage = ({
             >
               <MessageActions 
                 onListen={onListen} 
-                shouldShowImageGen={shouldShowImageGen} 
-                messageText={message}
+                messageText={message} 
               />
               {shouldShowImageGen && <ImageGenerator prompt={message} />}
               {blocks && blocks.length > 0 && onBlockClick && (
