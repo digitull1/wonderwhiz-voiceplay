@@ -5,6 +5,7 @@ import { VoiceInput } from "@/components/VoiceInput";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Send } from "lucide-react";
+import { ApiKeyInput } from "@/components/ApiKeyInput";
 
 const Index = () => {
   const [messages, setMessages] = useState([
@@ -46,6 +47,7 @@ const Index = () => {
     <div className="min-h-screen bg-gray-50 flex flex-col">
       <div className="flex-1 container max-w-4xl mx-auto py-8 px-4">
         <div className="bg-white rounded-2xl shadow-lg p-6 h-[calc(100vh-4rem)] flex flex-col">
+          <ApiKeyInput />
           <div className="flex-1 overflow-y-auto space-y-4 mb-4">
             {messages.map((message, index) => (
               <ChatMessage
