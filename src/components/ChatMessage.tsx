@@ -33,7 +33,10 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
   const shouldShowImageGen = message.toLowerCase().includes("look") || 
     message.toLowerCase().includes("see") || 
     message.toLowerCase().includes("picture") ||
-    message.toLowerCase().includes("image");
+    message.toLowerCase().includes("image") ||
+    message.toLowerCase().includes("dinosaur") ||
+    message.toLowerCase().includes("planet") ||
+    message.toLowerCase().includes("animal");
 
   const containerVariants = {
     hidden: { opacity: 0, y: 20 },
