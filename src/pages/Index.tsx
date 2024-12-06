@@ -4,7 +4,7 @@ import { ChatHeader } from "@/components/ChatHeader";
 import { ChatContainer } from "@/components/ChatContainer";
 import { ChatInput } from "@/components/ChatInput";
 import { useChat } from "@/hooks/useChat";
-import { Sparkles, Stars } from "lucide-react";
+import { Sparkles, Stars, Shapes } from "lucide-react";
 
 const Index = () => {
   const {
@@ -35,30 +35,51 @@ const Index = () => {
             animate={{ 
               rotate: 360,
               scale: [1, 1.2, 1],
+              y: [0, -20, 0]
             }}
             transition={{ 
               rotate: { duration: 20, repeat: Infinity, ease: "linear" },
-              scale: { duration: 2, repeat: Infinity, ease: "easeInOut" }
+              scale: { duration: 2, repeat: Infinity, ease: "easeInOut" },
+              y: { duration: 3, repeat: Infinity, ease: "easeInOut" }
             }}
           >
             <Sparkles className="w-32 h-32 animate-pulse" />
           </motion.div>
+          
           <motion.div
             className="absolute bottom-40 right-20 text-secondary/20"
             animate={{ 
               rotate: -360,
               scale: [1, 1.3, 1],
+              x: [0, 20, 0]
             }}
             transition={{ 
               rotate: { duration: 25, repeat: Infinity, ease: "linear" },
-              scale: { duration: 3, repeat: Infinity, ease: "easeInOut" }
+              scale: { duration: 3, repeat: Infinity, ease: "easeInOut" },
+              x: { duration: 4, repeat: Infinity, ease: "easeInOut" }
             }}
           >
             <Stars className="w-40 h-40 animate-pulse" />
           </motion.div>
+
+          <motion.div
+            className="absolute top-1/2 right-1/4 text-accent/20"
+            animate={{ 
+              rotate: 180,
+              scale: [1, 1.2, 1],
+              y: [0, 30, 0]
+            }}
+            transition={{ 
+              rotate: { duration: 15, repeat: Infinity, ease: "linear" },
+              scale: { duration: 4, repeat: Infinity, ease: "easeInOut" },
+              y: { duration: 5, repeat: Infinity, ease: "easeInOut" }
+            }}
+          >
+            <Shapes className="w-24 h-24 animate-pulse" />
+          </motion.div>
         </div>
 
-        {/* Enhanced main container with glass morphism */}
+        {/* Enhanced main container with improved glass morphism */}
         <div className="flex-1 container max-w-4xl mx-auto py-8 px-4 relative z-10">
           <motion.div 
             className="bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl p-6 h-[calc(100vh-4rem)] 
@@ -72,8 +93,9 @@ const Index = () => {
               damping: 20
             }}
           >
-            {/* Enhanced gradient overlay */}
-            <div className="absolute inset-0 bg-gradient-to-br from-white/5 to-primary/5 pointer-events-none" />
+            {/* Enhanced gradient overlays */}
+            <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-primary/5 to-secondary/5 pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-radial from-transparent via-transparent to-white/10 pointer-events-none" />
             
             <ChatHeader />
             <ChatContainer 
@@ -93,13 +115,15 @@ const Index = () => {
           </motion.div>
         </div>
 
-        {/* Enhanced decorative gradient orbs with animation */}
+        {/* Enhanced decorative gradient orbs with more complex animations */}
         <motion.div 
-          className="fixed top-0 left-0 w-[500px] h-[500px] bg-primary/30 rounded-full 
-            filter blur-[100px] opacity-50 -translate-x-1/2 -translate-y-1/2"
+          className="fixed -top-40 -left-40 w-[500px] h-[500px] bg-primary/30 rounded-full 
+            filter blur-[100px] opacity-50"
           animate={{
             scale: [1, 1.2, 1],
             opacity: [0.3, 0.5, 0.3],
+            x: [0, 20, 0],
+            y: [0, -20, 0],
           }}
           transition={{
             duration: 8,
@@ -108,11 +132,13 @@ const Index = () => {
           }}
         />
         <motion.div 
-          className="fixed bottom-0 right-0 w-[500px] h-[500px] bg-secondary/30 rounded-full 
-            filter blur-[100px] opacity-50 translate-x-1/2 translate-y-1/2"
+          className="fixed -bottom-40 -right-40 w-[500px] h-[500px] bg-secondary/30 rounded-full 
+            filter blur-[100px] opacity-50"
           animate={{
             scale: [1, 1.1, 1],
             opacity: [0.3, 0.4, 0.3],
+            x: [0, -20, 0],
+            y: [0, 20, 0],
           }}
           transition={{
             duration: 6,
