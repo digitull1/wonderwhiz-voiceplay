@@ -3,6 +3,7 @@ import { Button } from "./ui/button";
 import { Volume2, Sparkles, Star } from "lucide-react";
 import { motion } from "framer-motion";
 import { ChatBlocks } from "./ChatBlocks";
+import { ImageGenerator } from "./ImageGenerator";
 
 interface Block {
   title: string;
@@ -62,17 +63,22 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
       >
         <div className="relative z-10">
           <p className="text-sm md:text-base leading-relaxed">{message}</p>
-          {isAi && onListen && (
-            <Button
-              variant="ghost"
-              size="sm"
-              className="mt-3 text-white hover:text-white/80 hover:bg-white/10 group"
-              onClick={onListen}
-            >
-              <Volume2 className="w-4 h-4 mr-2 group-hover:animate-pulse" />
-              Listen
-              <Star className="w-4 h-4 ml-2 text-yellow-300 animate-pulse" />
-            </Button>
+          {isAi && (
+            <>
+              {onListen && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="mt-3 text-white hover:text-white/80 hover:bg-white/10 group"
+                  onClick={onListen}
+                >
+                  <Volume2 className="w-4 h-4 mr-2 group-hover:animate-pulse" />
+                  Listen
+                  <Star className="w-4 h-4 ml-2 text-yellow-300 animate-pulse" />
+                </Button>
+              )}
+              <ImageGenerator prompt={message} />
+            </>
           )}
           {blocks && blocks.length > 0 && onBlockClick && (
             <div className="mt-4">
