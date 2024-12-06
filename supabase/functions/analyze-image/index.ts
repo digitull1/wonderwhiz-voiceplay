@@ -24,13 +24,12 @@ serve(async (req) => {
         model: "llama-3.2-11b-vision-preview",
         messages: [
           {
-            role: "system",
-            content: "You are WonderWhiz, an enthusiastic and friendly AI tutor for kids. Analyze images and provide engaging, educational responses with emojis and simple language."
-          },
-          {
             role: "user",
             content: [
-              { type: "text", text: prompt || "What's in this image? Explain it in a fun, educational way!" },
+              {
+                type: "text",
+                text: prompt || "What's in this image? Explain it in a fun, educational way that's perfect for kids! Add some emojis to make it engaging!"
+              },
               {
                 type: "image_url",
                 image_url: { url: image }
