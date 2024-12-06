@@ -13,32 +13,39 @@ serve(async (req) => {
 
   try {
     const { prompt } = await req.json()
+    console.log('Generating image for prompt:', prompt)
 
-    const response = await fetch('https://api.openai.com/v1/images/generations', {
+    const response = await fetch('https://api-inference.huggingface.co/models/runwayml/stable-diffusion-v1-5', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
+        'Authorization': `Bearer ${Deno.env.get('HUGGING_FACE_TOKEN')}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: "dall-e-3",
-        prompt: `Create a kid-friendly, educational illustration of: ${prompt}`,
-        n: 1,
-        size: "1024x1024"
+        inputs: prompt,
+        parameters: {
+          num_inference_steps: 30,
+          guidance_scale: 7.5
+        }
       })
     })
 
-    const data = await response.json()
-    
+    if (!response.ok) {
+      throw new Error(`Failed to generate image: ${response.statusText}`)
+    }
+
+    const imageBlob = await response.blob()
+    const base64Image = `data:image/jpeg;base64,${btoa(String.fromCharCode(...new Uint8Array(await imageBlob.arrayBuffer())))}`
+
     return new Response(
-      JSON.stringify({ image: data.data[0].url }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
+      JSON.stringify({ image: base64Image }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   } catch (error) {
     console.error('Error:', error)
     return new Response(
       JSON.stringify({ error: error.message }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 },
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
     )
   }
 })

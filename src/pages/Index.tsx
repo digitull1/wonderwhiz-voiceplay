@@ -31,7 +31,8 @@ const Index = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
       text: "Hi there! 👋 I'm Wonder Whiz, your learning buddy! What's your name? 🌟",
-      isAi: true
+      isAi: true,
+      blocks: []
     },
   ]);
   const [input, setInput] = useState("");
@@ -50,7 +51,11 @@ const Index = () => {
     setMessages(prev => [
       ...prev,
       { text: name, isAi: false },
-      { text: `Awesome, ${name}! How old are you? This helps me tailor everything just for you! 🎯`, isAi: true }
+      { 
+        text: `Awesome, ${name}! How old are you? This helps me tailor everything just for you! 🎯`, 
+        isAi: true,
+        blocks: []
+      }
     ]);
   };
 
@@ -97,7 +102,7 @@ const Index = () => {
         setMessages(prev => [
           ...prev,
           { text: messageText, isAi: false },
-          { text: "Please enter a valid age between 5 and 16! 🎈", isAi: true }
+          { text: "Please enter a valid age between 5 and 16! 🎈", isAi: true, blocks: [] }
         ]);
         return;
       }
@@ -111,7 +116,7 @@ const Index = () => {
 
     try {
       const response = await getGroqResponse(messageText);
-      const aiMessage = { text: response, isAi: true };
+      const aiMessage = { text: response, isAi: true, blocks: [] };
       
       // Generate new blocks based on the response
       const blocks = await generateDynamicBlocks(response, currentTopic);
@@ -153,20 +158,11 @@ const Index = () => {
           description: "Click to explore more!"
         }));
       }
+      return [];
     } catch (error) {
       console.error('Error generating blocks:', error);
-      return null;
+      return [];
     }
-  };
-
-  const handleVoiceInput = (text: string) => {
-    setInput(text);
-  };
-
-  const handleListen = () => {
-    const synth = window.speechSynthesis;
-    const utterance = new SpeechSynthesisUtterance(messages[messages.length - 1].text);
-    synth.speak(utterance);
   };
 
   return (
@@ -188,7 +184,7 @@ const Index = () => {
             input={input}
             setInput={setInput}
             handleSend={() => sendMessage(input)}
-            handleVoiceInput={handleVoiceInput}
+            handleVoiceInput={() => {}}
             isLoading={isLoading}
             currentTopic={currentTopic}
           />

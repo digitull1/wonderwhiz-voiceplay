@@ -2,7 +2,6 @@ import React from "react";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
 import { Send } from "lucide-react";
-import { VoiceInput } from "./VoiceInput";
 import { motion } from "framer-motion";
 
 interface ChatInputProps {
@@ -18,7 +17,6 @@ export const ChatInput = ({
   input,
   setInput,
   handleSend,
-  handleVoiceInput,
   isLoading,
   currentTopic,
 }: ChatInputProps) => {
@@ -37,7 +35,6 @@ export const ChatInput = ({
         className="flex-1 bg-white/80 backdrop-blur-sm"
         disabled={isLoading}
       />
-      <VoiceInput onVoiceInput={handleVoiceInput} />
       <Button 
         onClick={handleSend} 
         disabled={isLoading} 
