@@ -10,9 +10,16 @@ interface BlockCardProps {
 }
 
 export const BlockCard = ({ block, index, onClick, color }: BlockCardProps) => {
+  const CONTENT_LIMIT = 75;
+
+  const truncateContent = (text: string) => {
+    if (text.length <= CONTENT_LIMIT) return text;
+    return text.substring(0, CONTENT_LIMIT - 3) + "...";
+  };
+
   return (
     <motion.div
-      className="snap-center"
+      className="snap-center px-2 py-4 w-[80vw] md:w-[280px]"
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: index * 0.1 }}
@@ -21,14 +28,18 @@ export const BlockCard = ({ block, index, onClick, color }: BlockCardProps) => {
     >
       <motion.button
         onClick={onClick}
-        className={`flex flex-col items-start p-6 rounded-xl w-[280px] min-w-[280px] h-[160px] 
-          transition-all hover:shadow-xl relative overflow-hidden text-white snap-center group
-          ${color} before:content-[''] before:absolute before:inset-0 
+        className={`flex flex-col items-center justify-center p-6 rounded-xl w-full h-[160px] 
+          transition-all hover:shadow-block-hover shadow-block relative overflow-hidden text-white 
+          snap-center group ${color} before:content-[''] before:absolute before:inset-0 
           before:bg-gradient-to-br before:from-white/20 before:to-transparent`}
       >
-        <div className="relative z-10 h-full flex flex-col justify-between">
-          <h3 className="text-xl font-bold mb-2 text-left line-clamp-2">{block.title}</h3>
-          <p className="text-sm text-left opacity-90 line-clamp-2">{block.description}</p>
+        <div className="relative z-10 h-full flex flex-col items-center justify-center text-center">
+          <h3 className="text-block-title font-bold mb-4 line-clamp-2">
+            {truncateContent(block.title)}
+          </h3>
+          <p className="text-block-desc opacity-90 line-clamp-2">
+            {block.description || "Click to explore more!"}
+          </p>
         </div>
         
         <div className="absolute bottom-0 right-0 w-24 h-24 opacity-20 bg-white rounded-tl-full 

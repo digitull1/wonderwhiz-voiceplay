@@ -37,11 +37,9 @@ export const ChatMessage = ({
     exit: { opacity: 0, y: -20 }
   };
 
-  // Format message to add proper spacing after emojis and punctuation
   const formattedMessage = message
     .split(/([.!?])\s*/)
     .map((part, i, arr) => {
-      // Add line break after sentences
       if (i < arr.length - 1) {
         return part + arr[i + 1] + '\n\n';
       }
@@ -49,16 +47,14 @@ export const ChatMessage = ({
     })
     .filter((_, i) => i % 2 === 0)
     .join('')
-    // Add space after emojis if there isn't one already
     .replace(/(\p{Emoji}+)(?!\s)/gu, '$1 ')
-    // Remove extra line breaks
     .replace(/\n{3,}/g, '\n\n')
     .trim();
 
   return (
     <motion.div 
       className={cn(
-        "flex mb-6",
+        "flex mb-8 px-4 md:px-6",
         isAi ? "justify-start" : "justify-end"
       )}
       variants={containerVariants}
@@ -67,7 +63,7 @@ export const ChatMessage = ({
       exit="exit"
       transition={{ duration: 0.3 }}
     >
-      <div className="flex items-start gap-3 max-w-[80%] group">
+      <div className="flex items-start gap-4 max-w-[85%] md:max-w-[80%] group">
         {isAi && (
           <motion.div
             initial={{ scale: 0 }}
@@ -80,7 +76,7 @@ export const ChatMessage = ({
 
         <motion.div
           className={cn(
-            "space-y-4 p-5 rounded-2xl shadow-lg relative overflow-hidden",
+            "space-y-4 p-6 rounded-2xl shadow-lg relative overflow-hidden",
             "transition-all duration-300",
             isAi ? 
               "bg-gradient-to-br from-chat-ai/90 to-chat-ai via-chat-ai/95 text-foreground" : 
@@ -100,7 +96,7 @@ export const ChatMessage = ({
           
           {isAi && (
             <motion.div 
-              className="flex flex-col gap-3 mt-4 relative z-10"
+              className="flex flex-col gap-4 mt-6 relative z-10"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
@@ -126,7 +122,7 @@ export const ChatMessage = ({
           )}
 
           <motion.div 
-            className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+            className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
             animate={{ 
               rotate: [0, 10, -10, 0],
               scale: [1, 1.1, 1]

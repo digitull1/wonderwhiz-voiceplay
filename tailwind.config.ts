@@ -25,25 +25,25 @@ export default {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: {
-          DEFAULT: "#8B5CF6",  // Updated to vibrant purple
+          DEFAULT: "#8B5CF6",
           foreground: "#ffffff",
         },
         secondary: {
-          DEFAULT: "#0EA5E9",  // Updated to ocean blue
+          DEFAULT: "#0EA5E9",
           foreground: "#ffffff",
         },
         accent: {
-          DEFAULT: "#F97316",  // Updated to bright orange
+          DEFAULT: "#F97316",
           foreground: "#ffffff",
         },
         chat: {
-          user: "#F2FCE2",     // Updated to soft green
-          ai: "#E5DEFF",       // Updated to soft purple
+          user: "#F2FCE2",
+          ai: "#E5DEFF",
         },
         block: {
-          orange: "#F97316",   // Exciting facts
-          blue: "#0EA5E9",     // Exploration
-          purple: "#8B5CF6",   // Mystery
+          orange: "#F97316",
+          blue: "#0EA5E9",
+          purple: "#8B5CF6",
         },
         reward: {
           bronze: "#CD7F32",
@@ -65,74 +65,19 @@ export default {
         'subtitle': '20px',
         'body': '16px',
         'small': '14px',
+        'block-title': '18px',
+        'block-desc': '16px',
       },
-      lineHeight: {
-        'relaxed': '1.5',
+      spacing: {
+        'safe-bottom': 'env(safe-area-inset-bottom)',
+        'mobile-input': '90vw',
       },
-      backgroundImage: {
-        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
-        'gradient-primary': 'linear-gradient(135deg, #EDE7F6 0%, #D7EFF7 100%)',
+      height: {
+        'screen-safe': 'calc(100vh - env(safe-area-inset-bottom))',
       },
-      keyframes: {
-        "accordion-down": {
-          from: { height: "0" },
-          to: { height: "var(--radix-accordion-content-height)" },
-        },
-        "accordion-up": {
-          from: { height: "var(--radix-accordion-content-height)" },
-          to: { height: "0" },
-        },
-        "pulse-ring": {
-          "0%": { transform: "scale(0.8)", opacity: "0" },
-          "50%": { transform: "scale(1)", opacity: "0.4" },
-          "100%": { transform: "scale(1.4)", opacity: "0" },
-        },
-        bounce: {
-          "0%, 100%": { transform: "translateY(0)" },
-          "50%": { transform: "translateY(-20px)" },
-        },
-        wiggle: {
-          "0%, 100%": { transform: "rotate(-3deg)" },
-          "50%": { transform: "rotate(3deg)" },
-        },
-        "slide-in": {
-          "0%": { transform: "translateX(100%)" },
-          "100%": { transform: "translateX(0)" },
-        },
-        "slide-out": {
-          "0%": { transform: "translateX(0)" },
-          "100%": { transform: "translateX(-100%)" },
-        },
-        "fade-in": {
-          "0%": { opacity: "0" },
-          "100%": { opacity: "1" },
-        },
-        "slide-up": {
-          "0%": { transform: "translateY(20px)", opacity: "0" },
-          "100%": { transform: "translateY(0)", opacity: "1" },
-        },
-        "gradient": {
-          "0%": { backgroundPosition: "0% 50%" },
-          "50%": { backgroundPosition: "100% 50%" },
-          "100%": { backgroundPosition: "0% 50%" },
-        },
-        float: {
-          "0%, 100%": { transform: "translateY(0)" },
-          "50%": { transform: "translateY(-20px)" },
-        },
-      },
-      animation: {
-        "accordion-down": "accordion-down 0.2s ease-out",
-        "accordion-up": "accordion-up 0.2s ease-out",
-        "pulse-ring": "pulse-ring 1.25s cubic-bezier(0.24, 0, 0.38, 1) infinite",
-        "bounce-slow": "bounce 3s ease-in-out infinite",
-        "wiggle": "wiggle 1s ease-in-out infinite",
-        "slide-in": "slide-in 0.3s ease-out",
-        "slide-out": "slide-out 0.3s ease-out",
-        "fade-in": "fade-in 0.3s ease-out",
-        "slide-up": "slide-up 0.3s ease-out",
-        "gradient": "gradient 5s ease infinite",
-        "float": "float 6s ease-in-out infinite",
+      boxShadow: {
+        'block': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+        'block-hover': '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
       },
     },
   },

@@ -93,7 +93,7 @@ export const ChatInput = ({
 
   return (
     <motion.div 
-      className="flex flex-col gap-4 relative"
+      className="flex flex-col gap-4 relative px-4 pb-safe-bottom"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, delay: 0.2 }}
@@ -103,10 +103,10 @@ export const ChatInput = ({
           <motion.div className="flex gap-2">
             <ImageUpload 
               onImageAnalyzed={onImageAnalyzed}
-              className="bg-gradient-to-r from-primary via-purple-500 to-purple-600 hover:from-primary/90 
-                hover:to-purple-600/90 text-white p-3 rounded-xl shadow-lg transition-all 
-                duration-300 hover:scale-105 active:scale-95 disabled:opacity-50 
-                disabled:hover:scale-100 flex items-center justify-center"
+              className="bg-gradient-to-r from-primary via-purple-500 to-purple-600 
+                hover:from-primary/90 hover:to-purple-600/90 text-white p-3 rounded-xl 
+                shadow-lg transition-all duration-300 hover:scale-105 active:scale-95 
+                disabled:opacity-50 disabled:hover:scale-100 flex items-center justify-center"
             >
               <ImagePlus className="w-5 h-5" />
             </ImageUpload>
