@@ -1,5 +1,9 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { corsHeaders } from "../_shared/cors.ts";
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
 
 const GROQ_API_KEY = Deno.env.get('Groq');
 
@@ -48,7 +52,8 @@ serve(async (req) => {
     });
 
     if (!response.ok) {
-      throw new Error('Failed to generate blocks');
+      console.error('Groq API error:', await response.text());
+      throw new Error('Failed to generate blocks from Groq API');
     }
 
     const data = await response.json();
