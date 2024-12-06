@@ -1,4 +1,4 @@
-const GROQ_API_URL = "https://api.groq.com/v1/chat/completions";
+const GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
 
 export const getGroqResponse = async (message: string) => {
   const apiKey = localStorage.getItem("groqApiKey");
@@ -27,7 +27,8 @@ export const getGroqResponse = async (message: string) => {
   });
 
   if (!response.ok) {
-    throw new Error("Failed to get response from Groq");
+    const errorData = await response.json();
+    throw new Error(errorData.error?.message || "Failed to get response from Groq");
   }
 
   const data = await response.json();
