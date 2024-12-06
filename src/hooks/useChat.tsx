@@ -5,6 +5,7 @@ import { Message, UserProfile, Block } from "@/types/chat";
 import { handleNameInput, handleAgeInput } from "@/utils/profileUtils";
 import { useUserProgress } from "./useUserProgress";
 import { supabase } from "@/integrations/supabase/client";
+import { useBlockGeneration } from "./useBlockGeneration";
 
 export const useChat = () => {
   const [messages, setMessages] = useState<Message[]>([
@@ -20,35 +21,10 @@ export const useChat = () => {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const { toast } = useToast();
   const { userProgress, updateUserProgress } = useUserProgress();
-
-  const generateDynamicBlocks = async (response: string, topic: string): Promise<Block[]> => {
-    try {
-      const { data, error } = await supabase.functions.invoke('generate-blocks', {
-        body: {
-          query: response,
-          context: topic,
-          age_group: userProfile ? `${userProfile.age}-${userProfile.age + 2}` : "8-12",
-          name: userProfile?.name
-        }
-      });
-
-      if (error) throw error;
-
-      if (data?.choices?.[0]?.message?.content) {
-        const parsedData = typeof data.choices[0].message.content === 'string' 
-          ? JSON.parse(data.choices[0].message.content) 
-          : data.choices[0].message.content;
-
-        return parsedData.blocks || [];
-      }
-      return [];
-    } catch (error) {
-      console.error('Error generating blocks:', error);
-      return [];
-    }
-  };
+  const { generateDynamicBlocks } = useBlockGeneration(userProfile);
 
   const sendMessage = async (messageText: string) => {
+    console.log("Sending message:", messageText);
     if (!messageText.trim() || isLoading) return;
     
     if (!userProfile?.name) {
@@ -66,21 +42,24 @@ export const useChat = () => {
         ]);
         return;
       }
-      await handleAgeInput(age, setUserProfile, setMessages, async (points: number) => {
-        await updateUserProgress(points);
-      });
+      await handleAgeInput(age, setUserProfile, setMessages, updateUserProgress);
       return;
     }
 
+    // Add user message to chat
     setMessages(prev => [...prev, { text: messageText, isAi: false }]);
     setInput("");
     setIsLoading(true);
 
     try {
-      console.log("Sending message:", messageText);
+      console.log("Getting Groq response for:", messageText);
       const response = await getGroqResponse(messageText);
-      console.log("Received response:", response);
+      console.log("Received Groq response:", response);
       
+      if (!response) {
+        throw new Error("No response received from Groq");
+      }
+
       const blocks = await generateDynamicBlocks(response, currentTopic);
       console.log("Generated blocks:", blocks);
       
@@ -100,7 +79,16 @@ export const useChat = () => {
       });
       
     } catch (error: any) {
-      console.error('Error getting response:', error);
+      console.error('Error in sendMessage:', error);
+      setMessages(prev => [
+        ...prev,
+        { 
+          text: "Oops! I had a little hiccup. Let's try that again! 🎈", 
+          isAi: true, 
+          blocks: [] 
+        }
+      ]);
+      
       toast({
         title: "Oops!",
         description: error.message || "Something went wrong. Let's try that again!",
@@ -112,6 +100,7 @@ export const useChat = () => {
   };
 
   const handleBlockClick = async (block: Block) => {
+    console.log("Block clicked:", block);
     setCurrentTopic(block.metadata.topic);
     const prompt = `Tell me about "${block.title}": ${block.description}`;
     await sendMessage(prompt);

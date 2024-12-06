@@ -67,6 +67,11 @@ Remember:
 
     const data = await response.json();
     console.log("Received response from Groq API:", data);
+    
+    if (!data.choices?.[0]?.message?.content) {
+      throw new Error("Invalid response format from Groq API");
+    }
+    
     return data.choices[0].message.content;
   } catch (error) {
     console.error("Error in getGroqResponse:", error);
