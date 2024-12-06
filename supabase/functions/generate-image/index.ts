@@ -25,10 +25,12 @@ serve(async (req) => {
 
     const imagePromise = hf.textToImage({
       inputs: prompt || "A magical educational scene",
-      model: 'black-forest-labs/FLUX.1-schnell',
+      model: 'stabilityai/stable-diffusion-2',
       parameters: {
-        num_inference_steps: 30,  // Reduced for better performance
-        guidance_scale: 7.5
+        num_inference_steps: 30,
+        guidance_scale: 7.5,
+        width: 512,
+        height: 512
       }
     })
 
@@ -51,15 +53,24 @@ serve(async (req) => {
     console.log('Image converted to base64 successfully')
 
     return new Response(
-      JSON.stringify({ image: `data:image/png;base64,${base64}` }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      JSON.stringify({ 
+        image: `data:image/png;base64,${base64}`,
+        success: true 
+      }),
+      { 
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json' 
+        } 
+      }
     )
   } catch (error) {
     console.error('Error in generate-image function:', error)
     return new Response(
       JSON.stringify({ 
         error: 'Failed to generate image', 
-        details: error.message 
+        details: error.message,
+        success: false
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }, 
