@@ -1,9 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Button } from "./ui/button";
-import { Mic } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
-import { useToast } from "@/components/ui/use-toast";
-import "../types/speech.d.ts";
+import { Mic, MicOff } from "lucide-react";
+import { useToast } from "./ui/use-toast";
+import { motion } from "framer-motion";
 
 interface VoiceInputProps {
   onVoiceInput: (text: string) => void;
@@ -15,44 +14,52 @@ export const VoiceInput: React.FC<VoiceInputProps> = ({ onVoiceInput }) => {
   const { toast } = useToast();
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
-      
-      if (SpeechRecognitionAPI) {
-        const recognitionInstance = new SpeechRecognitionAPI();
-        recognitionInstance.continuous = false;
-        recognitionInstance.interimResults = false;
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (SpeechRecognition) {
+      const recognition = new SpeechRecognition();
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.lang = "en-US";
+      setRecognition(recognition);
+    }
+  }, []);
 
-        recognitionInstance.onresult = (event: SpeechRecognitionEvent) => {
-          const text = event.results[0][0].transcript;
-          onVoiceInput(text);
-          setIsListening(false);
-        };
+  const handleResult = useCallback((event: SpeechRecognitionEvent) => {
+    const transcript = Array.from(event.results)
+      .map(result => result[0].transcript)
+      .join("");
 
-        recognitionInstance.onerror = (event: SpeechRecognitionErrorEvent) => {
-          console.error("Speech recognition error", event.error);
-          setIsListening(false);
-          toast({
-            title: "Oops!",
-            description: "There was an error with the microphone. Please try again!",
-            variant: "destructive",
-          });
-        };
-
-        recognitionInstance.onend = () => {
-          setIsListening(false);
-        };
-
-        setRecognition(recognitionInstance);
+    if (event.results[0].isFinal) {
+      onVoiceInput(transcript);
+      if (recognition) {
+        recognition.stop();
+        setIsListening(false);
       }
     }
-  }, [onVoiceInput, toast]);
+  }, [onVoiceInput, recognition]);
 
-  const handleVoiceInput = () => {
+  const handleError = useCallback((event: SpeechRecognitionErrorEvent) => {
+    console.error("Speech recognition error:", event.error);
+    toast({
+      title: "Oops!",
+      description: "There was an error with voice recognition. Please try again.",
+      variant: "destructive",
+    });
+    setIsListening(false);
+  }, [toast]);
+
+  useEffect(() => {
+    if (recognition) {
+      recognition.onresult = handleResult;
+      recognition.onerror = handleError;
+    }
+  }, [recognition, handleResult, handleError]);
+
+  const toggleListening = () => {
     if (!recognition) {
       toast({
         title: "Not Supported",
-        description: "Voice input is not supported in your browser.",
+        description: "Speech recognition is not supported in your browser.",
         variant: "destructive",
       });
       return;
@@ -61,47 +68,45 @@ export const VoiceInput: React.FC<VoiceInputProps> = ({ onVoiceInput }) => {
     if (isListening) {
       recognition.stop();
     } else {
-      setIsListening(true);
       recognition.start();
     }
+    setIsListening(!isListening);
   };
 
   return (
-    <motion.div
-      whileHover={{ scale: 1.05 }}
-      whileTap={{ scale: 0.95 }}
-    >
+    <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
       <Button
         variant="outline"
         size="icon"
-        className={`relative w-12 h-12 rounded-full transition-all duration-300 ${
-          isListening 
-            ? "bg-primary/10 border-primary shadow-lg ring-2 ring-primary/50" 
-            : "hover:bg-primary/5"
+        className={`relative ${
+          isListening ? "bg-primary text-white" : "hover:bg-primary/10"
         }`}
-        onClick={handleVoiceInput}
+        onClick={toggleListening}
       >
-        <AnimatePresence>
-          {isListening && (
-            <>
-              <motion.span
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: -32 }}
-                exit={{ opacity: 0, y: -40 }}
-                className="absolute whitespace-nowrap text-sm font-medium text-primary"
-              >
-                Listening... 🎤
-              </motion.span>
-              <motion.span
-                initial={{ scale: 1 }}
-                animate={{ scale: [1, 1.2, 1] }}
-                transition={{ repeat: Infinity, duration: 1.5 }}
-                className="absolute inset-0 rounded-full bg-primary/30"
-              />
-            </>
-          )}
-        </AnimatePresence>
-        <Mic className={`w-5 h-5 ${isListening ? "text-primary animate-pulse" : ""}`} />
+        {isListening ? (
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ duration: 0.2 }}
+          >
+            <MicOff className="h-4 w-4" />
+          </motion.div>
+        ) : (
+          <motion.div
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ duration: 0.2 }}
+          >
+            <Mic className="h-4 w-4" />
+          </motion.div>
+        )}
+        {isListening && (
+          <motion.div
+            className="absolute inset-0 rounded-full bg-primary/20"
+            animate={{ scale: [1, 1.5, 1] }}
+            transition={{ duration: 2, repeat: Infinity }}
+          />
+        )}
       </Button>
     </motion.div>
   );
