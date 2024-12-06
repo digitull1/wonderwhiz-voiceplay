@@ -6,6 +6,50 @@ import { useBlockGeneration } from "./useBlockGeneration";
 import { useUserProgress } from "./useUserProgress";
 import { supabase } from "@/integrations/supabase/client";
 
+const generateInitialBlocks = (age: number): Block[] => {
+  const blocks = [
+    {
+      title: "🌟 Did You Know: Your Brain is Like a Superhero!",
+      description: "Discover how your amazing brain processes over 70,000 thoughts every day! Want to learn its superpowers?",
+      metadata: { topic: "brain science" },
+      color: "bg-gradient-to-br from-purple-500 to-pink-500"
+    },
+    {
+      title: "🦕 Secret Ancient Giants: Dinosaur Mystery!",
+      description: "Some dinosaurs were as tall as a 4-story building! Ready to uncover more incredible dino facts?",
+      metadata: { topic: "dinosaurs" },
+      color: "bg-gradient-to-br from-green-500 to-teal-500"
+    },
+    {
+      title: "🚀 Space Adventure: Hidden Planets!",
+      description: "There's a planet where it rains diamonds! Want to explore more cosmic wonders?",
+      metadata: { topic: "space" },
+      color: "bg-gradient-to-br from-blue-500 to-indigo-500"
+    },
+    {
+      title: "🌋 Earth's Super Powers Revealed!",
+      description: "Our planet has underwater volcanoes taller than Mount Everest! Ready to dive into Earth's secrets?",
+      metadata: { topic: "earth science" },
+      color: "bg-gradient-to-br from-orange-500 to-red-500"
+    },
+    {
+      title: "🧪 Magic of Science: Mind-Blowing Experiments!",
+      description: "You can make invisible ink with lemon juice! Want to become a science wizard?",
+      metadata: { topic: "experiments" },
+      color: "bg-gradient-to-br from-yellow-500 to-orange-500"
+    }
+  ];
+
+  // Adjust content based on age
+  if (age < 8) {
+    return blocks.map(block => ({
+      ...block,
+      description: block.description.replace(/complex|advanced/g, 'cool')
+    }));
+  }
+  return blocks;
+};
+
 export const useChat = () => {
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -43,13 +87,12 @@ export const useChat = () => {
     ]);
 
     try {
-      const welcomeResponse = `Welcome to WonderWhiz! Let's explore amazing topics together!`;
-      const blocks = await generateDynamicBlocks(welcomeResponse, "welcome");
+      const welcomeBlocks = generateInitialBlocks(age);
       
       setMessages(prev => [...prev, {
-        text: `Great to meet you${userProfile?.name ? `, ${userProfile.name}` : ''}! I'll make sure to make our learning adventure perfect for a ${age} year old explorer! What would you like to learn about? 🚀`,
+        text: `Wow! ${age} is a perfect age for amazing discoveries! 🌟 I've got some mind-blowing facts that will blow your socks off! Check these out and click on what interests you the most! 🚀`,
         isAi: true,
-        blocks: blocks
+        blocks: welcomeBlocks
       }]);
 
       // Award points for completing profile
@@ -58,7 +101,7 @@ export const useChat = () => {
       toast({
         title: "Profile Complete! 🎉",
         description: "You've earned 10 points for starting your journey!",
-        className: "bg-primary text-white",
+        className: "bg-gradient-to-r from-primary to-purple-600 text-white",
       });
     } catch (error) {
       console.error('Error generating welcome blocks:', error);
