@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { getGroqResponse } from "@/utils/groq";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { Message, UserProfile, Block } from "@/types/chat";
+import { QuizState, QuizQuestion } from "@/types/quiz";
 import { handleNameInput, handleAgeInput } from "@/utils/profileUtils";
 import { useUserProgress } from "./useUserProgress";
 import { supabase } from "@/integrations/supabase/client";
@@ -22,6 +23,13 @@ export const useChat = () => {
   const { toast } = useToast();
   const { userProgress, updateUserProgress } = useUserProgress();
   const { generateDynamicBlocks } = useBlockGeneration(userProfile);
+
+  const [quizState, setQuizState] = useState<QuizState>({
+    isActive: false,
+    currentQuestion: null,
+    blocksExplored: 0,
+    currentTopic: ""
+  });
 
   const sendMessage = async (messageText: string) => {
     console.log("Sending message:", messageText);
@@ -109,15 +117,82 @@ export const useChat = () => {
   const handleBlockClick = async (block: Block) => {
     console.log("Block clicked:", block);
     setCurrentTopic(block.metadata.topic);
+    
+    // Update blocks explored count
+    if (block.metadata.topic === quizState.currentTopic) {
+      const newBlocksExplored = quizState.blocksExplored + 1;
+      setQuizState(prev => ({
+        ...prev,
+        blocksExplored: newBlocksExplored,
+        currentTopic: block.metadata.topic
+      }));
+
+      // Trigger quiz after 4 blocks
+      if (newBlocksExplored >= 4) {
+        await generateQuizQuestion(block.metadata.topic);
+      }
+    } else {
+      setQuizState(prev => ({
+        ...prev,
+        blocksExplored: 1,
+        currentTopic: block.metadata.topic
+      }));
+    }
+
     const prompt = `Tell me about "${block.title}": ${block.description}`;
     await sendMessage(prompt);
   };
 
-  const handleImageAnalysis = (response: string) => {
+  const generateQuizQuestion = async (topic: string) => {
+    try {
+      const { data: quizData, error } = await supabase.functions.invoke('generate-quiz', {
+        body: { topic }
+      });
+
+      if (error) throw error;
+
+      setQuizState(prev => ({
+        ...prev,
+        isActive: true,
+        currentQuestion: quizData.question
+      }));
+    } catch (error) {
+      console.error('Error generating quiz:', error);
+      toast({
+        title: "Oops!",
+        description: "Couldn't generate a quiz right now. Let's keep exploring!",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleQuizAnswer = async (isCorrect: boolean) => {
+    if (isCorrect) {
+      await updateUserProgress(10); // Award 10 points for correct answer
+    }
+
+    setQuizState(prev => ({
+      ...prev,
+      isActive: false,
+      currentQuestion: null,
+      blocksExplored: 0
+    }));
+
+    // Generate new blocks after quiz
+    const blocks = await generateDynamicBlocks(
+      `Let's explore more about ${quizState.currentTopic}!`,
+      quizState.currentTopic
+    );
+
     setMessages(prev => [
       ...prev,
-      { text: "I uploaded an image! 📸", isAi: false },
-      { text: response, isAi: true }
+      {
+        text: isCorrect
+          ? `Great job! Let's explore more about ${quizState.currentTopic}!`
+          : `Keep learning! Here are more interesting facts about ${quizState.currentTopic}!`,
+        isAi: true,
+        blocks
+      }
     ]);
   };
 
@@ -130,6 +205,8 @@ export const useChat = () => {
     userProgress,
     handleListen: () => {}, // Placeholder for voice feature
     handleBlockClick,
+    handleQuizAnswer,
+    quizState,
     sendMessage,
     handleImageAnalysis
   };
