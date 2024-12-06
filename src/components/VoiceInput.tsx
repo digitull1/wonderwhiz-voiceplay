@@ -3,7 +3,6 @@ import { Button } from "./ui/button";
 import { Mic, MicOff } from "lucide-react";
 import { useToast } from "./ui/use-toast";
 import { motion } from "framer-motion";
-import "../types/speech.d.ts";
 
 interface VoiceInputProps {
   onVoiceInput: (text: string) => void;

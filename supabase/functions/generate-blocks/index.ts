@@ -1,5 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import "https://deno.land/x/xhr@0.1.0/mod.ts"
+import "https://deno.land/x/xhr@0.1.0/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -7,65 +7,51 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
 
   try {
-    const { query, context, age_group, name, depth } = await req.json()
+    const { query, context, age_group } = await req.json()
     
-    console.log('Generating blocks for:', { query, context, age_group, depth, name })
-
-    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-      method: "POST",
+    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${Deno.env.get('Groq')}`,
+        'Authorization': `Bearer ${Deno.env.get('GROQ_API_KEY')}`,
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
         model: "mixtral-8x7b-32768",
         messages: [
           {
             role: "system",
-            content: `You are an AI assistant helping generate engaging educational blocks for children. 
-            Based on the query and context, generate 3 relevant subtopics that would interest a child in the ${age_group} age group.
-            Each block should have an emoji and be presented in a fun, engaging way.
-            The response should be in JSON format with an array of blocks, each containing a title, description, and metadata.topic field.
-            Make the content appropriate for ${name ? name + "'s" : "a child's"} age group (${age_group}).`
+            content: `You are an educational AI that generates engaging learning topics for children. 
+            Format your response as JSON with an array of 'blocks', each containing:
+            - title: an engaging, emoji-rich title
+            - description: a brief, exciting description
+            - metadata: { topic: string }`
           },
-          { 
-            role: "user", 
-            content: `Generate blocks for query: "${query}" at depth level ${depth}. Context: ${context}`
+          {
+            role: "user",
+            content: `Generate 3 engaging learning topics related to "${context}" for ${age_group} year olds, based on: "${query}"`
           }
         ],
         temperature: 0.7,
-        max_tokens: 500,
-        response_format: { type: "json_object" }
-      }),
+        max_tokens: 1000,
+      })
     })
 
-    if (!response.ok) {
-      console.error('Groq API error:', await response.text())
-      throw new Error('Failed to generate blocks from Groq API')
-    }
-
     const data = await response.json()
-    console.log('Generated blocks:', data)
-
+    
     return new Response(
       JSON.stringify(data),
-      { headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } },
     )
-
   } catch (error) {
     console.error('Error:', error)
     return new Response(
-      JSON.stringify({ error: "Failed to generate blocks" }),
-      { 
-        status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" }
-      }
+      JSON.stringify({ error: error.message }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 },
     )
   }
 })
