@@ -2,14 +2,32 @@ import React from "react";
 import { Button } from "./ui/button";
 import { Volume2, Sparkles, Star } from "lucide-react";
 import { motion } from "framer-motion";
+import { ChatBlocks } from "./ChatBlocks";
+
+interface Block {
+  title: string;
+  description: string;
+  metadata: {
+    topic: string;
+  };
+  color?: string;
+}
 
 interface ChatMessageProps {
   isAi?: boolean;
   message: string;
   onListen?: () => void;
+  blocks?: Block[];
+  onBlockClick?: (block: Block) => void;
 }
 
-export const ChatMessage: React.FC<ChatMessageProps> = ({ isAi, message, onListen }) => {
+export const ChatMessage: React.FC<ChatMessageProps> = ({ 
+  isAi, 
+  message, 
+  onListen,
+  blocks,
+  onBlockClick 
+}) => {
   return (
     <motion.div 
       className={`flex ${isAi ? "justify-start" : "justify-end"} mb-6`}
@@ -44,7 +62,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ isAi, message, onListe
       >
         <div className="relative z-10">
           <p className="text-sm md:text-base leading-relaxed">{message}</p>
-          {isAi && (
+          {isAi && onListen && (
             <Button
               variant="ghost"
               size="sm"
@@ -55,6 +73,11 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({ isAi, message, onListe
               Listen
               <Star className="w-4 h-4 ml-2 text-yellow-300 animate-pulse" />
             </Button>
+          )}
+          {blocks && blocks.length > 0 && onBlockClick && (
+            <div className="mt-4">
+              <ChatBlocks blocks={blocks} onBlockClick={onBlockClick} />
+            </div>
           )}
         </div>
         <div className="absolute top-0 right-0 w-32 h-32 opacity-10 bg-white rounded-full transform translate-x-16 -translate-y-16" />

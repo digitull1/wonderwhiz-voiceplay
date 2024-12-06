@@ -1,27 +1,11 @@
 interface SpeechRecognitionErrorEvent extends Event {
-  error: 'aborted' | 'audio-capture' | 'bad-grammar' | 'language-not-supported' | 'network' | 'no-speech' | 'not-allowed' | 'service-not-allowed';
+  error: string;
   message: string;
 }
 
 interface SpeechRecognitionEvent extends Event {
   resultIndex: number;
   results: SpeechRecognitionResultList;
-}
-
-interface SpeechRecognitionResult {
-  isFinal: boolean;
-  [index: number]: SpeechRecognitionAlternative;
-}
-
-interface SpeechRecognitionResultList {
-  length: number;
-  item(index: number): SpeechRecognitionResult;
-  [index: number]: SpeechRecognitionResult;
-}
-
-interface SpeechRecognitionAlternative {
-  transcript: string;
-  confidence: number;
 }
 
 interface SpeechRecognition extends EventTarget {
@@ -46,24 +30,9 @@ interface SpeechRecognition extends EventTarget {
   abort(): void;
 }
 
-interface SpeechGrammarList {
-  length: number;
-  addFromString(string: string, weight?: number): void;
-  addFromURI(src: string, weight?: number): void;
-  item(index: number): SpeechGrammar;
-  [index: number]: SpeechGrammar;
-}
-
-interface SpeechGrammar {
-  src: string;
-  weight: number;
-}
-
 interface Window {
   SpeechRecognition: new () => SpeechRecognition;
   webkitSpeechRecognition: new () => SpeechRecognition;
-  SpeechGrammarList: new () => SpeechGrammarList;
-  webkitSpeechGrammarList: new () => SpeechGrammarList;
 }
 
 export {};
