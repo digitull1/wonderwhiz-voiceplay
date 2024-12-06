@@ -1,21 +1,20 @@
-const validateGroqKey = (key: string | null): string => {
-  const envKey = import.meta.env.VITE_GROQ_API_KEY;
-  
-  if (!envKey || envKey === "your_api_key_here") {
-    throw new Error("Please set your Groq API key in the .env file!");
+const validateGroqKey = (key: string | undefined): string => {
+  if (!key || key === "your_api_key_here") {
+    throw new Error("Groq API key not found in environment variables");
   }
   
-  if (!envKey.startsWith("gsk_")) {
+  if (!key.startsWith("gsk_")) {
     throw new Error("Invalid Groq API key format. It should start with 'gsk_'");
   }
   
-  return envKey;
+  return key;
 };
 
 export const getGroqResponse = async (message: string) => {
   const apiKey = validateGroqKey(import.meta.env.VITE_GROQ_API_KEY);
-
+  
   try {
+    console.log("Sending request to Groq API...");
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -43,6 +42,7 @@ export const getGroqResponse = async (message: string) => {
     }
 
     const data = await response.json();
+    console.log("Received response from Groq API:", data);
     return data.choices[0].message.content;
   } catch (error) {
     console.error("Error in getGroqResponse:", error);
