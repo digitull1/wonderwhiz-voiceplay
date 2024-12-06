@@ -15,6 +15,11 @@ serve(async (req) => {
     const { query, context, age_group, name } = await req.json()
     console.log("Generating blocks for:", { query, context, age_group, name });
 
+    const apiKey = Deno.env.get('GROQ_API_KEY');
+    if (!apiKey) {
+      throw new Error('GROQ_API_KEY is not set');
+    }
+
     const prompt = `
       Based on this chat message: "${query}" and the current topic "${context}",
       generate 3 engaging, educational blocks for a ${age_group} year old ${name ? `named ${name}` : 'child'}.
@@ -41,7 +46,7 @@ serve(async (req) => {
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${Deno.env.get("GROQ_API_KEY")}`,
+        "Authorization": `Bearer ${apiKey}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
@@ -60,6 +65,12 @@ serve(async (req) => {
         max_tokens: 500,
       }),
     })
+
+    if (!response.ok) {
+      const error = await response.json();
+      console.error("Groq API Error:", error);
+      throw new Error(error.error?.message || "Failed to get response from Groq");
+    }
 
     const data = await response.json()
     console.log("Generated blocks:", data)

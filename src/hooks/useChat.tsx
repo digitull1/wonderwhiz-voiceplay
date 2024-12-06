@@ -34,33 +34,31 @@ export const useChat = () => {
     ]);
   };
 
-  const handleAgeInput = (age: number) => {
+  const handleAgeInput = async (age: number) => {
     setUserProfile(prev => ({ ...prev, age } as UserProfile));
     setMessages(prev => [
       ...prev,
-      { text: age.toString(), isAi: false },
-      { 
+      { text: age.toString(), isAi: false }
+    ]);
+
+    // Generate dynamic welcome blocks
+    try {
+      const welcomeResponse = `Welcome to WonderWhiz! Let's explore amazing topics together!`;
+      const blocks = await generateDynamicBlocks(welcomeResponse, "welcome");
+      
+      setMessages(prev => [...prev, {
         text: `Great to meet you${userProfile?.name ? `, ${userProfile.name}` : ''}! I'll make sure to make our learning adventure perfect for a ${age} year old explorer! What would you like to learn about? 🚀`,
         isAi: true,
-        blocks: [
-          {
-            title: "Space Exploration 🚀",
-            description: "Discover the mysteries of the universe!",
-            metadata: { topic: "space" }
-          },
-          {
-            title: "Animal Kingdom 🦁",
-            description: "Learn about amazing creatures!",
-            metadata: { topic: "animals" }
-          },
-          {
-            title: "Science Lab 🧪",
-            description: "Explore exciting experiments!",
-            metadata: { topic: "science" }
-          }
-        ]
-      }
-    ]);
+        blocks: blocks
+      }]);
+    } catch (error) {
+      console.error('Error generating welcome blocks:', error);
+      toast({
+        title: "Oops!",
+        description: "Had trouble generating topics. Try again!",
+        variant: "destructive"
+      });
+    }
   };
 
   const sendMessage = async (messageText: string) => {
@@ -81,7 +79,7 @@ export const useChat = () => {
         ]);
         return;
       }
-      handleAgeInput(age);
+      await handleAgeInput(age);
       return;
     }
 

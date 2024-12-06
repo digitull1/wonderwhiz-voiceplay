@@ -62,7 +62,7 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
         transition={{ type: "spring", stiffness: 200, damping: 20 }}
       >
         <div className="relative z-10">
-          <p className="text-sm md:text-base leading-relaxed">{message}</p>
+          <p className="text-sm md:text-base leading-relaxed whitespace-pre-wrap">{message}</p>
           {isAi && (
             <>
               {onListen && (
@@ -81,9 +81,14 @@ export const ChatMessage: React.FC<ChatMessageProps> = ({
             </>
           )}
           {blocks && blocks.length > 0 && onBlockClick && (
-            <div className="mt-4">
+            <motion.div 
+              className="mt-4"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+            >
               <ChatBlocks blocks={blocks} onBlockClick={onBlockClick} />
-            </div>
+            </motion.div>
           )}
         </div>
         <div className="absolute top-0 right-0 w-32 h-32 opacity-10 bg-white rounded-full transform translate-x-16 -translate-y-16" />
