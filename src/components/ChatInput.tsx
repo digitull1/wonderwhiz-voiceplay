@@ -16,12 +16,6 @@ interface ChatInputProps {
   onImageAnalyzed: (response: string) => void;
 }
 
-declare global {
-  interface Window {
-    webkitSpeechRecognition: typeof SpeechRecognition;
-  }
-}
-
 export const ChatInput = ({
   input,
   setInput,
@@ -36,7 +30,7 @@ export const ChatInput = ({
   const handleSubmit = () => {
     if (input.trim()) {
       handleSend();
-      setInput(""); // Clear input after sending
+      setInput("");
     }
   };
 
@@ -104,31 +98,40 @@ export const ChatInput = ({
     >
       <div className="flex gap-3 items-end relative">
         <div className="flex gap-2">
-          <ImageUpload 
-            onImageAnalyzed={onImageAnalyzed}
-            className="bg-gradient-to-r from-primary via-purple-500 to-purple-600 hover:from-primary/90 
-              hover:to-purple-600/90 text-white p-3 rounded-xl shadow-lg transition-all 
-              duration-300 hover:scale-105 active:scale-95 disabled:opacity-50 
-              disabled:hover:scale-100 flex items-center justify-center"
-          >
-            <ImagePlus className="w-5 h-5" />
-          </ImageUpload>
+          <motion.div className="flex gap-2">
+            <ImageUpload 
+              onImageAnalyzed={onImageAnalyzed}
+              className="bg-gradient-to-r from-primary via-purple-500 to-purple-600 hover:from-primary/90 
+                hover:to-purple-600/90 text-white p-3 rounded-xl shadow-lg transition-all 
+                duration-300 hover:scale-105 active:scale-95 disabled:opacity-50 
+                disabled:hover:scale-100 flex items-center justify-center"
+            >
+              <ImagePlus className="w-5 h-5" />
+            </ImageUpload>
 
-          <Button
-            onClick={isListening ? stopListening : startListening}
-            className={`bg-gradient-to-r ${
-              isListening 
-                ? "from-red-500 to-red-600" 
-                : "from-secondary to-cyan-600"
-            } text-white p-3 rounded-xl shadow-lg transition-all duration-300 
-            hover:scale-105 active:scale-95`}
-          >
-            {isListening ? (
-              <MicOff className="w-5 h-5 animate-pulse" />
-            ) : (
-              <Mic className="w-5 h-5" />
-            )}
-          </Button>
+            <Button
+              onClick={isListening ? stopListening : startListening}
+              className={`bg-gradient-to-r ${
+                isListening 
+                  ? "from-red-500 to-red-600" 
+                  : "from-secondary to-cyan-600"
+              } text-white p-3 rounded-xl shadow-lg transition-all duration-300 
+              hover:scale-105 active:scale-95 relative`}
+            >
+              {isListening ? (
+                <>
+                  <MicOff className="w-5 h-5 animate-pulse" />
+                  <motion.div
+                    className="absolute inset-0 rounded-xl bg-secondary/20"
+                    animate={{ scale: [1, 1.2, 1] }}
+                    transition={{ duration: 1.5, repeat: Infinity }}
+                  />
+                </>
+              ) : (
+                <Mic className="w-5 h-5" />
+              )}
+            </Button>
+          </motion.div>
         </div>
 
         <div className="flex-1 relative">

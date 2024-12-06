@@ -2,8 +2,10 @@ interface SpeechRecognition extends EventTarget {
   continuous: boolean;
   interimResults: boolean;
   lang: string;
-  onresult: (event: SpeechRecognitionEvent) => void;
-  onerror: (event: SpeechRecognitionErrorEvent) => void;
+  onstart: ((this: SpeechRecognition, ev: Event) => any) | null;
+  onend: ((this: SpeechRecognition, ev: Event) => any) | null;
+  onerror: ((this: SpeechRecognition, ev: SpeechRecognitionErrorEvent) => any) | null;
+  onresult: ((this: SpeechRecognition, ev: SpeechRecognitionEvent) => any) | null;
   start(): void;
   stop(): void;
 }
@@ -17,7 +19,9 @@ interface SpeechRecognitionErrorEvent extends Event {
   message: string;
 }
 
-interface Window {
-  SpeechRecognition: new () => SpeechRecognition;
-  webkitSpeechRecognition: new () => SpeechRecognition;
+declare global {
+  interface Window {
+    SpeechRecognition: new () => SpeechRecognition;
+    webkitSpeechRecognition: new () => SpeechRecognition;
+  }
 }

@@ -1,12 +1,12 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { getGroqResponse } from "@/utils/groq";
 import { useToast } from "@/hooks/use-toast";
 import { Message, UserProfile, Block } from "@/types/chat";
-import { QuizState } from "@/types/quiz";
 import { handleNameInput, handleAgeInput } from "@/utils/profileUtils";
 import { useUserProgress } from "./useUserProgress";
 import { useBlockGeneration } from "./useBlockGeneration";
 import { useImageAnalysis } from "./useImageAnalysis";
+import { useQuiz } from "./useQuiz";
 
 export const useChat = () => {
   const [messages, setMessages] = useState<Message[]>([
@@ -20,20 +20,14 @@ export const useChat = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [currentTopic, setCurrentTopic] = useState("space");
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  
   const { toast } = useToast();
   const { userProgress, updateUserProgress } = useUserProgress();
   const { generateDynamicBlocks } = useBlockGeneration(userProfile);
   const { handleImageAnalysis, isAnalyzing } = useImageAnalysis();
-
-  const [quizState, setQuizState] = useState<QuizState>({
-    isActive: false,
-    currentQuestion: null,
-    blocksExplored: 0,
-    currentTopic: ""
-  });
+  const { quizState, handleQuizAnswer, updateBlocksExplored } = useQuiz(updateUserProgress);
 
   const sendMessage = async (messageText: string) => {
-    console.log("Sending message:", messageText);
     if (!messageText.trim() || isLoading) return;
     
     if (!userProfile?.name) {
@@ -51,48 +45,25 @@ export const useChat = () => {
         ]);
         return;
       }
-      await handleAgeInput(age, setUserProfile, setMessages, async (points: number) => {
-        await updateUserProgress(points);
-      });
+      await handleAgeInput(age, setUserProfile, setMessages, updateUserProgress);
       return;
     }
 
-    // Add user message to chat
     setMessages(prev => [...prev, { text: messageText, isAi: false }]);
     setInput("");
     setIsLoading(true);
 
     try {
-      console.log("Getting Groq response for:", messageText);
       const response = await getGroqResponse(messageText);
-      console.log("Received Groq response:", response);
-      
-      if (!response) {
-        throw new Error("No response received from Groq");
-      }
-
       const blocks = await generateDynamicBlocks(response, currentTopic);
-      console.log("Generated blocks:", blocks);
       
-      const aiMessage = { 
+      setMessages(prev => [...prev, { 
         text: response, 
         isAi: true, 
-        blocks: blocks 
-      };
+        blocks 
+      }]);
       
-      setMessages(prev => [...prev, aiMessage]);
-      
-      // Update user progress with points
-      const pointsToAdd = 5;
-      const updatedProgress = await updateUserProgress(pointsToAdd);
-      
-      if (updatedProgress) {
-        toast({
-          title: "Points Earned! 🌟",
-          description: `You've earned ${pointsToAdd} points for exploring and learning!`,
-          className: "bg-primary text-white",
-        });
-      }
+      await updateUserProgress(5);
       
     } catch (error: any) {
       console.error('Error in sendMessage:', error);
@@ -116,85 +87,9 @@ export const useChat = () => {
   };
 
   const handleBlockClick = async (block: Block) => {
-    console.log("Block clicked:", block);
     setCurrentTopic(block.metadata.topic);
-    
-    // Update blocks explored count
-    if (block.metadata.topic === quizState.currentTopic) {
-      const newBlocksExplored = quizState.blocksExplored + 1;
-      setQuizState(prev => ({
-        ...prev,
-        blocksExplored: newBlocksExplored,
-        currentTopic: block.metadata.topic
-      }));
-
-      // Trigger quiz after 4 blocks
-      if (newBlocksExplored >= 4) {
-        await generateQuizQuestion(block.metadata.topic);
-      }
-    } else {
-      setQuizState(prev => ({
-        ...prev,
-        blocksExplored: 1,
-        currentTopic: block.metadata.topic
-      }));
-    }
-
-    const prompt = `Tell me about "${block.title}": ${block.description}`;
-    await sendMessage(prompt);
-  };
-
-  const generateQuizQuestion = async (topic: string) => {
-    try {
-      const { data: quizData, error } = await supabase.functions.invoke('generate-quiz', {
-        body: { topic }
-      });
-
-      if (error) throw error;
-
-      setQuizState(prev => ({
-        ...prev,
-        isActive: true,
-        currentQuestion: quizData.question
-      }));
-    } catch (error) {
-      console.error('Error generating quiz:', error);
-      toast({
-        title: "Oops!",
-        description: "Couldn't generate a quiz right now. Let's keep exploring!",
-        variant: "destructive"
-      });
-    }
-  };
-
-  const handleQuizAnswer = async (isCorrect: boolean) => {
-    if (isCorrect) {
-      await updateUserProgress(10); // Award 10 points for correct answer
-    }
-
-    setQuizState(prev => ({
-      ...prev,
-      isActive: false,
-      currentQuestion: null,
-      blocksExplored: 0
-    }));
-
-    // Generate new blocks after quiz
-    const blocks = await generateDynamicBlocks(
-      `Let's explore more about ${quizState.currentTopic}!`,
-      quizState.currentTopic
-    );
-
-    setMessages(prev => [
-      ...prev,
-      {
-        text: isCorrect
-          ? `Great job! Let's explore more about ${quizState.currentTopic}!`
-          : `Keep learning! Here are more interesting facts about ${quizState.currentTopic}!`,
-        isAi: true,
-        blocks
-      }
-    ]);
+    updateBlocksExplored(block.metadata.topic);
+    await sendMessage(`Tell me about "${block.title}"`);
   };
 
   return {
@@ -209,6 +104,7 @@ export const useChat = () => {
     handleQuizAnswer,
     quizState,
     sendMessage,
-    handleImageAnalysis
+    handleImageAnalysis,
+    isAnalyzing
   };
 };
