@@ -14,33 +14,36 @@ export const VoiceInput: React.FC<VoiceInputProps> = ({ onVoiceInput }) => {
   const { toast } = useToast();
 
   useEffect(() => {
-    if (typeof window !== "undefined" && "SpeechRecognition" in window || "webkitSpeechRecognition" in window) {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      const recognitionInstance = new SpeechRecognition();
-      recognitionInstance.continuous = false;
-      recognitionInstance.interimResults = false;
+    if (typeof window !== "undefined") {
+      const SpeechRecognitionAPI = window.SpeechRecognition || window.webkitSpeechRecognition;
+      
+      if (SpeechRecognitionAPI) {
+        const recognitionInstance = new SpeechRecognitionAPI();
+        recognitionInstance.continuous = false;
+        recognitionInstance.interimResults = false;
 
-      recognitionInstance.onresult = (event) => {
-        const text = event.results[0][0].transcript;
-        onVoiceInput(text);
-        setIsListening(false);
-      };
+        recognitionInstance.onresult = (event: SpeechRecognitionEvent) => {
+          const text = event.results[0][0].transcript;
+          onVoiceInput(text);
+          setIsListening(false);
+        };
 
-      recognitionInstance.onerror = (event) => {
-        console.error("Speech recognition error", event.error);
-        setIsListening(false);
-        toast({
-          title: "Oops!",
-          description: "There was an error with the microphone. Please try again!",
-          variant: "destructive",
-        });
-      };
+        recognitionInstance.onerror = (event: SpeechRecognitionErrorEvent) => {
+          console.error("Speech recognition error", event.error);
+          setIsListening(false);
+          toast({
+            title: "Oops!",
+            description: "There was an error with the microphone. Please try again!",
+            variant: "destructive",
+          });
+        };
 
-      recognitionInstance.onend = () => {
-        setIsListening(false);
-      };
+        recognitionInstance.onend = () => {
+          setIsListening(false);
+        };
 
-      setRecognition(recognitionInstance);
+        setRecognition(recognitionInstance);
+      }
     }
   }, [onVoiceInput, toast]);
 
