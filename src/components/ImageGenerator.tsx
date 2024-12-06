@@ -33,15 +33,12 @@ export const ImageGenerator = ({ prompt }: ImageGeneratorProps) => {
 
       console.log("Starting image generation with prompt:", cleanPrompt);
       
-      // Prepare request body
-      const requestBody = { prompt: cleanPrompt };
+      // Prepare request body and stringify it
+      const requestBody = JSON.stringify({ prompt: cleanPrompt });
       console.log("Sending request with body:", requestBody);
 
       const { data, error } = await supabase.functions.invoke('generate-image', {
-        body: requestBody,
-        headers: {
-          'Content-Type': 'application/json',
-        }
+        body: requestBody
       });
 
       console.log("Response from generate-image:", { data, error });

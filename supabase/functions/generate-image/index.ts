@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { HfInference } from 'https://esm.sh/@huggingface/inference@2.3.2'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -19,7 +20,9 @@ serve(async (req) => {
     try {
       const text = await req.text();
       console.log('Raw request body:', text);
-      body = JSON.parse(text);
+      
+      // Check if the body is already parsed
+      body = typeof text === 'object' ? text : JSON.parse(text);
     } catch (error) {
       console.error('Error parsing request body:', error);
       return new Response(
@@ -56,38 +59,24 @@ serve(async (req) => {
     console.log('Processing prompt:', prompt);
 
     // Call Hugging Face API
-    const response = await fetch(
-      "https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-2",
-      {
-        headers: {
-          Authorization: `Bearer ${Deno.env.get("HUGGING_FACE_ACCESS_TOKEN")}`,
-          "Content-Type": "application/json",
-        },
-        method: "POST",
-        body: JSON.stringify({
-          inputs: prompt,
-          parameters: {
-            negative_prompt: "blurry, bad quality, distorted",
-            num_inference_steps: 30,
-            guidance_scale: 7.5,
-          }
-        }),
+    const hf = new HfInference(Deno.env.get("HUGGING_FACE_ACCESS_TOKEN"))
+    const image = await hf.textToImage({
+      inputs: prompt,
+      model: "stabilityai/stable-diffusion-2",
+      parameters: {
+        negative_prompt: "blurry, bad quality, distorted",
+        num_inference_steps: 30,
+        guidance_scale: 7.5,
       }
-    );
+    });
 
-    if (!response.ok) {
-      console.error('Hugging Face API error:', await response.text());
-      throw new Error(`Hugging Face API error: ${response.statusText}`);
-    }
-
-    // Get the image data
-    const imageData = await response.arrayBuffer();
-    if (!imageData || imageData.byteLength === 0) {
-      throw new Error('No image data received from API');
+    if (!image) {
+      throw new Error('No image generated from Hugging Face API');
     }
 
     // Convert to base64
-    const base64 = btoa(String.fromCharCode(...new Uint8Array(imageData)));
+    const arrayBuffer = await image.arrayBuffer();
+    const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
     console.log('Image generated successfully');
 
     return new Response(
