@@ -165,6 +165,16 @@ const Index = () => {
     }
   };
 
+  // Add handleListen function
+  const handleListen = () => {
+    console.log("Text-to-speech functionality will be implemented later");
+    toast({
+      title: "Coming Soon!",
+      description: "Text-to-speech functionality will be available soon!",
+      variant: "default",
+    });
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 flex flex-col">
       <div className="flex-1 container max-w-4xl mx-auto py-8 px-4">
