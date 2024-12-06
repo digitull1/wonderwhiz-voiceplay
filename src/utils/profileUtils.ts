@@ -1,14 +1,14 @@
 import { Message, UserProfile } from "@/types/chat";
 import { generateInitialBlocks } from "./blockUtils";
-import { supabase } from "@/integrations/supabase/client";
 
 export const handleNameInput = (
   name: string,
-  setUserProfile: (profile: UserProfile) => void,
-  setMessages: (messages: Message[]) => void
+  setUserProfile: React.Dispatch<React.SetStateAction<UserProfile>>,
+  setMessages: React.Dispatch<React.SetStateAction<Message[]>>
 ) => {
-  setUserProfile({ name, age: 0 });
-  setMessages(prev => [...prev,
+  setUserProfile(prev => ({ ...prev, name, age: 0 }));
+  setMessages(prev => [
+    ...prev,
     { text: name, isAi: false },
     { 
       text: `Awesome, ${name}! How old are you? This helps me tailor everything just for you! 🎯`, 
@@ -20,8 +20,8 @@ export const handleNameInput = (
 
 export const handleAgeInput = async (
   age: number,
-  setUserProfile: (profile: UserProfile) => void,
-  setMessages: (messages: Message[]) => void,
+  setUserProfile: React.Dispatch<React.SetStateAction<UserProfile>>,
+  setMessages: React.Dispatch<React.SetStateAction<Message[]>>,
   updateUserProgress: (points: number) => Promise<void>
 ) => {
   try {

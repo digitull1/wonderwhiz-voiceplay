@@ -1,3 +1,4 @@
+import { supabase } from "@/integrations/supabase/client";
 import { Block } from "@/types/chat";
 
 export const generateInitialBlocks = async (age: number): Promise<Block[]> => {
