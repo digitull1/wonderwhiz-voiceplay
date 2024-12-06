@@ -65,6 +65,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
         toast({
           title: "Image analyzed! 🎨",
           description: "Let me tell you what I see!",
+          className: "bg-primary text-white",
         });
       };
 

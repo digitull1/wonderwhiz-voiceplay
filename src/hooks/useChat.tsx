@@ -22,15 +22,20 @@ export const useChat = () => {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   
   const { toast } = useToast();
-  const { userProgress, updateUserProgress: rawUpdateProgress } = useUserProgress();
+  const { userProgress, updateUserProgress } = useUserProgress();
   const { generateDynamicBlocks } = useBlockGeneration(userProfile);
   const { handleImageAnalysis, isAnalyzing } = useImageAnalysis();
-  
-  const updateUserProgress = async (points: number): Promise<void> => {
-    await rawUpdateProgress(points);
-  };
-  
   const { quizState, handleQuizAnswer, updateBlocksExplored } = useQuiz(updateUserProgress);
+
+  const getPointsForAction = (action: string): number => {
+    switch (action) {
+      case 'question': return 5;  // Basic question
+      case 'image_upload': return 15;  // Image analysis
+      case 'block_exploration': return 10;  // Clicking on a block
+      case 'long_conversation': return 8;  // Multiple messages in a row
+      default: return 5;
+    }
+  };
 
   const sendMessage = async (messageText: string, skipUserMessage: boolean = false) => {
     if (!messageText.trim() || isLoading) return;
@@ -61,8 +66,11 @@ export const useChat = () => {
     setIsLoading(true);
 
     try {
+      // Get previous context for better block generation
+      const previousMessages = messages.slice(-3).map(m => m.text).join(" ");
+      
       const response = await getGroqResponse(messageText);
-      const blocks = await generateDynamicBlocks(response, currentTopic);
+      const blocks = await generateDynamicBlocks(response, currentTopic, previousMessages);
       
       setMessages(prev => [...prev, { 
         text: response, 
@@ -70,7 +78,17 @@ export const useChat = () => {
         blocks 
       }]);
       
-      await updateUserProgress(5);
+      // Award points based on interaction type
+      const points = getPointsForAction(
+        messages.length > 3 ? 'long_conversation' : 'question'
+      );
+      await updateUserProgress(points);
+      
+      toast({
+        title: "Points Earned! ⭐",
+        description: `You've earned ${points} points for exploring and learning!`,
+        className: "bg-primary text-white",
+      });
       
     } catch (error: any) {
       console.error('Error in sendMessage:', error);
@@ -99,8 +117,35 @@ export const useChat = () => {
     setCurrentTopic(topic);
     updateBlocksExplored(topic);
     
-    // Skip adding the "Tell me about" message and directly get the response
+    // Award points for block exploration
+    await updateUserProgress(getPointsForAction('block_exploration'));
+    
+    toast({
+      title: "Great exploring! 🚀",
+      description: `You've earned ${getPointsForAction('block_exploration')} points for your curiosity!`,
+      className: "bg-secondary text-white",
+    });
+    
     await sendMessage(`Tell me about "${block?.title || 'this topic'}"`, true);
+  };
+
+  const handleImageUploadSuccess = async (response: string) => {
+    if (response) {
+      // Award points for image upload
+      await updateUserProgress(getPointsForAction('image_upload'));
+      
+      toast({
+        title: "Image analyzed! 🎨",
+        description: `You've earned ${getPointsForAction('image_upload')} points for sharing an image!`,
+        className: "bg-accent text-white",
+      });
+      
+      setMessages(prev => [...prev, { 
+        text: response, 
+        isAi: true,
+        blocks: [] 
+      }]);
+    }
   };
 
   return {
@@ -115,7 +160,7 @@ export const useChat = () => {
     handleQuizAnswer,
     quizState,
     sendMessage,
-    handleImageAnalysis,
+    handleImageAnalysis: handleImageUploadSuccess,
     isAnalyzing
   };
 };

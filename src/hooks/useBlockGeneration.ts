@@ -2,16 +2,20 @@ import { supabase } from "@/integrations/supabase/client";
 import { Block, UserProfile } from "@/types/chat";
 
 export const useBlockGeneration = (userProfile: UserProfile | null) => {
-  const generateDynamicBlocks = async (response: string, topic: string): Promise<Block[]> => {
-    console.log("Generating blocks for topic:", topic);
+  const generateDynamicBlocks = async (
+    response: string, 
+    topic: string,
+    previousContext: string = ""
+  ): Promise<Block[]> => {
+    console.log("Generating blocks for topic:", topic, "with context:", previousContext);
     try {
       const { data, error } = await supabase.functions.invoke('generate-blocks', {
         body: {
           query: response,
           context: topic,
+          previous_context: previousContext,
           age_group: userProfile ? `${userProfile.age}-${userProfile.age + 2}` : "8-12",
-          name: userProfile?.name,
-          previous_response: response
+          name: userProfile?.name
         }
       });
 
@@ -28,10 +32,9 @@ export const useBlockGeneration = (userProfile: UserProfile | null) => {
 
         console.log("Generated blocks:", parsedData.blocks);
         
-        // Format blocks to use single-line content
         const formattedBlocks = (parsedData.blocks || []).map((block: Block) => ({
           ...block,
-          title: block.title?.substring(0, 75) || "", // Use title for the single-line content
+          title: block.title?.substring(0, 75) || "",
           metadata: {
             ...block.metadata,
             topic: block.metadata?.topic || topic
