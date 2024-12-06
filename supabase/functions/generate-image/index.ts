@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { HfInference } from 'https://esm.sh/@huggingface/inference@2.3.2'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -15,51 +14,86 @@ serve(async (req) => {
   try {
     console.log('Starting image generation request');
     
-    // Get and validate the request body
-    const { prompt } = await req.json();
+    // Parse and validate request body
+    let body;
+    try {
+      body = await req.json();
+    } catch (error) {
+      console.error('Error parsing request body:', error);
+      return new Response(
+        JSON.stringify({
+          error: 'Invalid request format',
+          details: 'Request body must be valid JSON',
+          success: false
+        }),
+        { 
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
+    }
+
+    const { prompt } = body;
     if (!prompt || typeof prompt !== 'string') {
       console.error('Invalid prompt:', prompt);
-      throw new Error('Invalid prompt format');
+      return new Response(
+        JSON.stringify({
+          error: 'Invalid prompt',
+          details: 'Prompt must be a non-empty string',
+          success: false
+        }),
+        { 
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
     }
 
     console.log('Processing prompt:', prompt);
 
-    // Initialize Hugging Face with access token
-    const hf = new HfInference(Deno.env.get('HUGGING_FACE_ACCESS_TOKEN'));
-    if (!hf) {
-      throw new Error('Failed to initialize Hugging Face client');
-    }
-
-    console.log('Generating image with Hugging Face');
-    const image = await hf.textToImage({
-      inputs: prompt,
-      model: "stabilityai/stable-diffusion-2",
-      parameters: {
-        negative_prompt: "blurry, bad quality, distorted",
-        num_inference_steps: 30,
-        guidance_scale: 7.5,
-        width: 512,
-        height: 512
+    // Call Hugging Face API
+    const response = await fetch(
+      "https://api-inference.huggingface.co/models/stabilityai/stable-diffusion-2",
+      {
+        headers: {
+          Authorization: `Bearer ${Deno.env.get("HUGGING_FACE_ACCESS_TOKEN")}`,
+          "Content-Type": "application/json",
+        },
+        method: "POST",
+        body: JSON.stringify({
+          inputs: prompt,
+          parameters: {
+            negative_prompt: "blurry, bad quality, distorted",
+            num_inference_steps: 30,
+            guidance_scale: 7.5,
+          }
+        }),
       }
-    });
+    );
 
-    if (!image) {
-      console.error('No image generated');
-      throw new Error('No image generated from API');
+    if (!response.ok) {
+      console.error('Hugging Face API error:', await response.text());
+      throw new Error(`Hugging Face API error: ${response.statusText}`);
     }
 
-    console.log('Image generated successfully, converting to base64');
-    
-    // Convert blob to base64
-    const arrayBuffer = await image.arrayBuffer();
-    const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+    // Get the image data
+    const imageData = await response.arrayBuffer();
+    if (!imageData || imageData.byteLength === 0) {
+      throw new Error('No image data received from API');
+    }
+
+    // Convert to base64
+    const base64 = btoa(String.fromCharCode(...new Uint8Array(imageData)));
+    console.log('Image generated successfully');
 
     return new Response(
       JSON.stringify({
         image: `data:image/png;base64,${base64}`,
         success: true
       }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      }
     );
 
   } catch (error) {

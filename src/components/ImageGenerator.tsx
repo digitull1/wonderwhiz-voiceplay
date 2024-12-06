@@ -40,12 +40,15 @@ export const ImageGenerator = ({ prompt }: ImageGeneratorProps) => {
         }
       });
 
+      console.log("Response from generate-image:", { data, error });
+
       if (error) {
         console.error("Supabase function error:", error);
         throw error;
       }
 
       if (!data?.image) {
+        console.error("No image data in response:", data);
         throw new Error("No image data received");
       }
 
@@ -59,6 +62,7 @@ export const ImageGenerator = ({ prompt }: ImageGeneratorProps) => {
     } catch (error: any) {
       console.error("Error generating image:", error);
       
+      // Check if we should retry
       if (retryCount < MAX_RETRIES) {
         console.log(`Retrying... Attempt ${retryCount + 1} of ${MAX_RETRIES}`);
         setRetryCount(prev => prev + 1);
