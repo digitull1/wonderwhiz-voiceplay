@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import { ChatMessage } from "./ChatMessage";
 import { QuizCard } from "./quiz/QuizCard";
 import { Block, QuizState } from "@/types/chat";
@@ -24,6 +24,16 @@ export const ChatContainer = ({
   quizState,
   onQuizAnswer 
 }: ChatContainerProps) => {
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, quizState?.currentQuestion]); // Scroll when messages or quiz changes
+
   // Filter out messages that are just block titles
   const filteredMessages = messages.filter((message, index) => {
     if (index === 0) return true; // Always keep the first message
@@ -51,6 +61,7 @@ export const ChatContainer = ({
           onAnswer={onQuizAnswer || (() => {})}
         />
       )}
+      <div ref={messagesEndRef} />
     </div>
   );
 };
