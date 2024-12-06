@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { UserProgress } from "@/types/chat";
@@ -11,6 +11,49 @@ export const useUserProgress = () => {
     streak_days: 0,
     last_interaction_date: new Date().toISOString()
   });
+
+  // Subscribe to real-time updates
+  useEffect(() => {
+    const setupSubscription = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      // Initial fetch
+      const { data: initialProgress } = await supabase
+        .from('user_progress')
+        .select('*')
+        .eq('user_id', user.id)
+        .single();
+
+      if (initialProgress) {
+        setUserProgress(initialProgress);
+      }
+
+      // Subscribe to changes
+      const subscription = supabase
+        .channel('user_progress_changes')
+        .on(
+          'postgres_changes',
+          {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'user_progress',
+            filter: `user_id=eq.${user.id}`
+          },
+          (payload) => {
+            console.log('Progress updated:', payload.new);
+            setUserProgress(payload.new as UserProgress);
+          }
+        )
+        .subscribe();
+
+      return () => {
+        subscription.unsubscribe();
+      };
+    };
+
+    setupSubscription();
+  }, []);
 
   const updateUserProgress = async (pointsToAdd: number) => {
     try {
@@ -27,7 +70,16 @@ export const useUserProgress = () => {
       if (!currentProgress) return;
 
       const newPoints = currentProgress.points + pointsToAdd;
-      const newLevel = Math.floor(newPoints / 100) + 1; // Level up every 100 points
+      
+      // Calculate points needed for next level
+      const { data: pointsNeeded } = await supabase
+        .rpc('calculate_next_level_points', {
+          current_level: currentProgress.level
+        });
+
+      // Check if user should level up
+      const shouldLevelUp = newPoints >= pointsNeeded;
+      const newLevel = shouldLevelUp ? currentProgress.level + 1 : currentProgress.level;
 
       const { data, error } = await supabase
         .from('user_progress')
@@ -45,18 +97,28 @@ export const useUserProgress = () => {
       if (data) {
         setUserProgress(data);
         
-        // Show different toasts based on point changes
-        if (currentProgress.level < newLevel) {
+        // Show different toasts based on achievements
+        if (shouldLevelUp) {
           toast({
             title: "🎉 LEVEL UP! 🎉",
-            description: `Incredible! You've reached level ${newLevel}!`,
+            description: `Amazing! You've reached level ${newLevel}! Keep exploring to earn more points!`,
             className: "bg-gradient-to-r from-primary to-purple-600 text-white",
           });
         } else {
+          const pointsToNextLevel = pointsNeeded - newPoints;
           toast({
-            title: "Points earned! ⭐",
-            description: `You've earned ${pointsToAdd} points!`,
+            title: "⭐ Points earned!",
+            description: `+${pointsToAdd} points! ${pointsToNextLevel} more to level ${currentProgress.level + 1}!`,
             className: "bg-gradient-to-r from-secondary to-green-500 text-white",
+          });
+        }
+
+        // Check and celebrate streak milestones
+        if (data.streak_days > currentProgress.streak_days) {
+          toast({
+            title: "🔥 Streak Extended!",
+            description: `${data.streak_days} days learning streak! Keep it up!`,
+            className: "bg-gradient-to-r from-orange-400 to-red-500 text-white",
           });
         }
       }
