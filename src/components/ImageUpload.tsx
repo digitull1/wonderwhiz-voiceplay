@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from './ui/button';
-import { ImagePlus, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useToast } from './ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -65,18 +65,17 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className={cn("flex items-center gap-2", className)}
+      className={cn("relative cursor-pointer", className)}
     >
       <Button
         variant="ghost"
-        size="icon"
-        className="relative hover:bg-primary/10"
+        className="w-full h-full p-0 hover:bg-transparent"
         disabled={isLoading}
       >
         {isLoading ? (
-          <Loader2 className="h-5 w-5 animate-spin text-primary" />
+          <Loader2 className="h-5 w-5 animate-spin text-white" />
         ) : (
-          <ImagePlus className="h-5 w-5 text-primary" />
+          children
         )}
         <input
           type="file"

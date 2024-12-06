@@ -1,7 +1,7 @@
 import React from "react";
 import { Input } from "./ui/input";
 import { Button } from "./ui/button";
-import { Send, Sparkles, Image } from "lucide-react";
+import { Send, Sparkles, ImagePlus } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ImageUpload } from "./ImageUpload";
 
@@ -38,6 +38,16 @@ export const ChatInput = ({
       transition={{ duration: 0.3, delay: 0.2 }}
     >
       <div className="flex gap-3 items-end relative">
+        <ImageUpload 
+          onImageAnalyzed={onImageAnalyzed}
+          className="bg-gradient-to-r from-primary via-purple-500 to-purple-600 hover:from-primary/90 
+            hover:to-purple-600/90 text-white p-3 rounded-xl shadow-lg transition-all 
+            duration-300 hover:scale-105 active:scale-95 disabled:opacity-50 
+            disabled:hover:scale-100 flex items-center justify-center"
+        >
+          <ImagePlus className="w-5 h-5" />
+        </ImageUpload>
+
         <div className="flex-1 relative">
           <Input
             placeholder={isLoading ? "Thinking..." : `Ask me anything about ${currentTopic}...`}
@@ -65,29 +75,16 @@ export const ChatInput = ({
           </motion.div>
         </div>
 
-        <div className="flex gap-2">
-          <ImageUpload 
-            onImageAnalyzed={onImageAnalyzed}
-            className="bg-gradient-to-r from-secondary to-green-500 hover:from-secondary/90 
-              hover:to-green-500/90 text-white px-4 py-3 rounded-xl shadow-lg transition-all 
-              duration-300 hover:scale-105 active:scale-95 disabled:opacity-50 
-              disabled:hover:scale-100 flex items-center gap-2"
-          >
-            <Image className="w-5 h-5" />
-            <span className="hidden sm:inline">Upload Picture</span>
-          </ImageUpload>
-
-          <Button 
-            onClick={handleSubmit}
-            disabled={isLoading || !input.trim()} 
-            className="bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 
-              hover:to-purple-600/90 text-white px-6 py-6 rounded-xl shadow-lg transition-all 
-              duration-300 hover:scale-105 active:scale-95 disabled:opacity-50 
-              disabled:hover:scale-100"
-          >
-            <Send className={`w-5 h-5 ${isLoading ? "animate-pulse" : ""}`} />
-          </Button>
-        </div>
+        <Button 
+          onClick={handleSubmit}
+          disabled={isLoading || !input.trim()} 
+          className="bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 
+            hover:to-purple-600/90 text-white px-6 py-6 rounded-xl shadow-lg transition-all 
+            duration-300 hover:scale-105 active:scale-95 disabled:opacity-50 
+            disabled:hover:scale-100"
+        >
+          <Send className={`w-5 h-5 ${isLoading ? "animate-pulse" : ""}`} />
+        </Button>
       </div>
 
       {/* Decorative gradient line */}
