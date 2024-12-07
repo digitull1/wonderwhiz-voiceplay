@@ -76,14 +76,12 @@ serve(async (req) => {
     // Call Hugging Face API
     const hf = new HfInference(hfToken);
     try {
-      console.log('Calling Hugging Face API with model: stabilityai/stable-diffusion-2');
+      console.log('Calling Hugging Face API with model: black-forest-labs/FLUX.1-schnell');
       const image = await hf.textToImage({
         inputs: prompt,
-        model: "stabilityai/stable-diffusion-2",
+        model: "black-forest-labs/FLUX.1-schnell",
         parameters: {
           negative_prompt: "blurry, bad quality, distorted",
-          num_inference_steps: 30,
-          guidance_scale: 7.5,
         }
       });
 
