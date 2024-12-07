@@ -9,7 +9,10 @@ export const useUserProgress = (tempUserId?: string | null) => {
     points: 0,
     level: 1,
     streak_days: 0,
-    last_interaction_date: new Date().toISOString()
+    last_interaction_date: new Date().toISOString(),
+    topicsExplored: 0,
+    questionsAsked: 0,
+    quizScore: 0
   });
 
   useEffect(() => {
@@ -22,7 +25,6 @@ export const useUserProgress = (tempUserId?: string | null) => {
         }
 
         if (tempUserId) {
-          // Use local storage for temporary progress tracking
           const storedProgress = localStorage.getItem(`progress_${tempUserId}`);
           if (storedProgress) {
             setUserProgress(JSON.parse(storedProgress));
@@ -44,7 +46,15 @@ export const useUserProgress = (tempUserId?: string | null) => {
 
         if (initialProgress) {
           console.log('Initial progress loaded:', initialProgress);
-          setUserProgress(initialProgress);
+          setUserProgress({
+            points: initialProgress.points,
+            level: initialProgress.level,
+            streak_days: initialProgress.streak_days,
+            last_interaction_date: initialProgress.last_interaction_date,
+            topicsExplored: initialProgress.topics_explored,
+            questionsAsked: initialProgress.questions_asked,
+            quizScore: initialProgress.quiz_score
+          });
         }
 
         // Subscribe to changes
@@ -61,7 +71,16 @@ export const useUserProgress = (tempUserId?: string | null) => {
             (payload) => {
               console.log('Progress update received:', payload);
               if (payload.new) {
-                setUserProgress(payload.new as UserProgress);
+                const newData = payload.new as any;
+                setUserProgress({
+                  points: newData.points,
+                  level: newData.level,
+                  streak_days: newData.streak_days,
+                  last_interaction_date: newData.last_interaction_date,
+                  topicsExplored: newData.topics_explored,
+                  questionsAsked: newData.questions_asked,
+                  quizScore: newData.quiz_score
+                });
               }
             }
           )
@@ -91,7 +110,6 @@ export const useUserProgress = (tempUserId?: string | null) => {
       console.log('Updating user progress with points:', pointsToAdd);
       
       if (tempUserId) {
-        // Update progress in local storage for temporary users
         const newPoints = userProgress.points + pointsToAdd;
         const newProgress = {
           ...userProgress,
@@ -109,7 +127,6 @@ export const useUserProgress = (tempUserId?: string | null) => {
         return;
       }
 
-      // Update progress in Supabase for authenticated users
       const { data: currentProgress, error: fetchError } = await supabase
         .from('user_progress')
         .select('*')
@@ -141,7 +158,10 @@ export const useUserProgress = (tempUserId?: string | null) => {
           user_id: user.id,
           points: newPoints,
           level: newLevel,
-          last_interaction_date: new Date().toISOString()
+          last_interaction_date: new Date().toISOString(),
+          topics_explored: currentProgress?.topics_explored || 0,
+          questions_asked: currentProgress?.questions_asked || 0,
+          quiz_score: currentProgress?.quiz_score || 0
         })
         .select()
         .single();
@@ -154,7 +174,15 @@ export const useUserProgress = (tempUserId?: string | null) => {
       console.log('Progress updated successfully:', data);
 
       if (data) {
-        setUserProgress(data);
+        setUserProgress({
+          points: data.points,
+          level: data.level,
+          streak_days: data.streak_days,
+          last_interaction_date: data.last_interaction_date,
+          topicsExplored: data.topics_explored,
+          questionsAsked: data.questions_asked,
+          quizScore: data.quiz_score
+        });
         
         if (shouldLevelUp) {
           toast({

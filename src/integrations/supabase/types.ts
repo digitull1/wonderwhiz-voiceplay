@@ -118,7 +118,10 @@ export type Database = {
           last_interaction_date: string
           level: number
           points: number
+          questions_asked: number
+          quiz_score: number
           streak_days: number
+          topics_explored: number
           updated_at: string
           user_id: string
         }
@@ -128,7 +131,10 @@ export type Database = {
           last_interaction_date?: string
           level?: number
           points?: number
+          questions_asked?: number
+          quiz_score?: number
           streak_days?: number
+          topics_explored?: number
           updated_at?: string
           user_id: string
         }
@@ -138,7 +144,10 @@ export type Database = {
           last_interaction_date?: string
           level?: number
           points?: number
+          questions_asked?: number
+          quiz_score?: number
           streak_days?: number
+          topics_explored?: number
           updated_at?: string
           user_id?: string
         }
