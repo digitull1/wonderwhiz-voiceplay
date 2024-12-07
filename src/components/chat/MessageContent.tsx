@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { MessageActions } from "./MessageActions";
@@ -13,6 +13,7 @@ interface MessageContentProps {
   showActions?: boolean;
   isTyping?: boolean;
   onTypingComplete?: () => void;
+  onImageAnalyzed?: (response: string) => void;
 }
 
 export const MessageContent: React.FC<MessageContentProps> = ({ 
@@ -24,7 +25,8 @@ export const MessageContent: React.FC<MessageContentProps> = ({
   imageUrl,
   showActions = true,
   isTyping,
-  onTypingComplete
+  onTypingComplete,
+  onImageAnalyzed
 }) => {
   const [displayedText, setDisplayedText] = useState(message);
 
@@ -69,6 +71,7 @@ export const MessageContent: React.FC<MessageContentProps> = ({
           onQuizGenerated={onQuizGenerated}
           messageText={message}
           onPanelOpen={onPanelOpen}
+          onImageAnalyzed={onImageAnalyzed}
         />
       )}
     </div>

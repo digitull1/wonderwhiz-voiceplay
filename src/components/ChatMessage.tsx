@@ -19,6 +19,7 @@ interface ChatMessageProps {
   quizState?: QuizState;
   onQuizAnswer?: (isCorrect: boolean) => void;
   messageIndex?: number;
+  onImageAnalyzed?: (response: string) => void;
 }
 
 const ChatMessage: React.FC<ChatMessageProps> = ({ 
@@ -32,7 +33,8 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
   imageUrl,
   quizState,
   onQuizAnswer,
-  messageIndex = 0
+  messageIndex = 0,
+  onImageAnalyzed
 }) => {
   const [isTyping, setIsTyping] = useState(false);
   const [showBlocks, setShowBlocks] = useState(false);
@@ -106,6 +108,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
             showActions={showActions && !isTyping}
             isTyping={isTyping}
             onTypingComplete={handleTypingComplete}
+            onImageAnalyzed={onImageAnalyzed}
           />
           
           {isAi && blocks && blocks.length > 0 && onBlockClick && showBlocks && !isTyping && (

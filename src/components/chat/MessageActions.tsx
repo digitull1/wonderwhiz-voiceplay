@@ -1,22 +1,25 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Volume2, BookOpen, ImageIcon, Trophy } from "lucide-react";
+import { Volume2, BookOpen, ImageIcon, Trophy, Upload } from "lucide-react";
 import { ActionIcon } from "./actions/ActionIcon";
 import { QuizAction } from "./actions/QuizAction";
 import { ImageAction } from "./actions/ImageAction";
+import { ImageUpload } from "../ImageUpload";
 
 interface MessageActionsProps {
   onListen?: (text: string) => void;
   onQuizGenerated?: (quiz: any) => void;
   onPanelOpen?: () => void;
   messageText: string;
+  onImageAnalyzed?: (response: string) => void;
 }
 
 export const MessageActions: React.FC<MessageActionsProps> = ({ 
   onListen, 
   onQuizGenerated,
   onPanelOpen,
-  messageText
+  messageText,
+  onImageAnalyzed
 }) => {
   console.log("MessageActions rendered:", { hasListenHandler: !!onListen });
 
@@ -49,6 +52,18 @@ export const MessageActions: React.FC<MessageActionsProps> = ({
             icon={BookOpen}
             tooltip="Let's have a fun quiz to test what you've learned!"
           />
+        )}
+
+        {onImageAnalyzed && (
+          <ImageUpload onImageAnalyzed={onImageAnalyzed}>
+            <ActionIcon
+              key="upload"
+              icon={Upload}
+              tooltip="Upload an image!"
+              onClick={() => {}}
+              className="bg-gradient-to-br from-purple-500/5 to-pink-500/5 hover:scale-110"
+            />
+          </ImageUpload>
         )}
 
         {onPanelOpen && (
