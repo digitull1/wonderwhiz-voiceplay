@@ -4,6 +4,7 @@ import { QuizCard } from "./quiz/QuizCard";
 import { Block, QuizState } from "@/types/chat";
 import { Button } from "./ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";
 
 interface Message {
   text: string;
