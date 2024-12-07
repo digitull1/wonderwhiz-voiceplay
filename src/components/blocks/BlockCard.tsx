@@ -2,7 +2,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { Block } from "@/types/chat";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { cn } from "@/lib/utils";  // Add this import
+import { cn } from "@/lib/utils";
 
 interface BlockCardProps {
   block: Block;
@@ -18,6 +18,18 @@ export const BlockCard = ({ block, index, onClick, color }: BlockCardProps) => {
   const truncateContent = (text: string) => {
     if (text.length <= CONTENT_LIMIT) return text;
     return text.substring(0, CONTENT_LIMIT - 3) + "...";
+  };
+
+  // Different gradients based on block type
+  const getBlockGradient = () => {
+    switch (block.metadata.type) {
+      case 'image':
+        return 'from-purple-500/90 to-pink-500/90';
+      case 'quiz':
+        return 'from-green-500/90 to-emerald-500/90';
+      default:
+        return color;
+    }
   };
 
   return (
@@ -37,7 +49,7 @@ export const BlockCard = ({ block, index, onClick, color }: BlockCardProps) => {
         className={`block-hover flex flex-col items-center justify-center p-6 
           rounded-xl w-full h-[160px] transition-all hover:shadow-block 
           shadow-block relative overflow-hidden text-white snap-center 
-          group ${color}`}
+          group bg-gradient-to-br ${getBlockGradient()}`}
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{
@@ -53,12 +65,6 @@ export const BlockCard = ({ block, index, onClick, color }: BlockCardProps) => {
             text-app-text-light">
             {truncateContent(block.title)}
           </h3>
-          {block.description && !block.description.includes("Click to explore") && (
-            <p className="text-block-desc opacity-90 line-clamp-2 
-              text-app-text-light">
-              {block.description}
-            </p>
-          )}
         </div>
         
         <div className="absolute bottom-0 right-0 w-24 h-24 opacity-20 

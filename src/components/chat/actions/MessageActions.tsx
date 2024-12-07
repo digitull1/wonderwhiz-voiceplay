@@ -1,29 +1,22 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Volume2, ImageIcon, BookOpen, Trophy, Upload } from "lucide-react";
+import { ImageIcon, Trophy, Upload } from "lucide-react";
 import { ActionIcon } from "./ActionIcon";
-import { QuizAction } from "./QuizAction";
 import { ImageAction } from "./ImageAction";
 import { ImageUpload } from "../../ImageUpload";
 
 interface MessageActionsProps {
-  onListen?: (text: string) => void;
-  onQuizGenerated?: (quiz: any) => void;
   onPanelOpen?: () => void;
   messageText: string;
   onImageAnalyzed?: (response: string) => void;
 }
 
 export const MessageActions: React.FC<MessageActionsProps> = ({ 
-  onListen, 
-  onQuizGenerated,
   onPanelOpen,
   messageText,
   onImageAnalyzed
 }) => {
   console.log("MessageActions rendered with props:", { 
-    hasListenHandler: !!onListen,
-    hasQuizHandler: !!onQuizGenerated,
     hasImageHandler: !!onImageAnalyzed
   });
 
@@ -36,31 +29,8 @@ export const MessageActions: React.FC<MessageActionsProps> = ({
       transition={{ duration: 0.2, delay: 0.1 }}
     >
       <AnimatePresence mode="wait">
-        {/* Listen Icon */}
-        {onListen && (
-          <ActionIcon
-            key="listen"
-            icon={Volume2}
-            tooltip="Listen to this message!"
-            onClick={() => onListen(messageText)}
-            className="bg-gradient-to-br from-primary/20 to-secondary/20 hover:scale-110"
-          />
-        )}
-
         {/* Image Generation Icon */}
         <ImageAction key="image" messageText={messageText} />
-
-        {/* Quiz Icon */}
-        {onQuizGenerated && (
-          <QuizAction
-            key="quiz"
-            onQuizGenerated={onQuizGenerated}
-            messageText={messageText}
-            icon={BookOpen}
-            tooltip="Let's have a fun quiz to test what you've learned!"
-            className="bg-gradient-to-br from-accent/20 to-primary/20 hover:scale-110"
-          />
-        )}
 
         {/* Image Upload Icon */}
         {onImageAnalyzed && (

@@ -37,21 +37,31 @@ serve(async (req) => {
     console.log("Generating blocks for:", { query, context, age_group });
 
     const prompt = `
-      Based on "${query}" and topic "${context}", generate 3 engaging, educational blocks.
+      Based on "${query}" and topic "${context}", generate 5 engaging, educational blocks.
       
       RULES:
       1. Each block must be EXACTLY ONE LINE and 75 CHARACTERS or LESS (including emoji)
-      2. Each line MUST:
+      2. First 3 blocks MUST:
          - Start with "Did you know" or an exciting question
          - Include ONE fascinating fact DIRECTLY RELATED to the topic
          - End with ONE relevant emoji
          - Be engaging for kids aged ${age_group}
-      3. MAINTAIN TOPIC RELEVANCE:
+      3. 4th block MUST:
+         - Be an exciting image generation prompt
+         - Start with "Would you like to see..."
+         - Make it super detailed and creative for amazing AI image generation
+         - End with 🎨 emoji
+      4. 5th block MUST:
+         - Be a quiz challenge
+         - Start with "Ready to test your knowledge..."
+         - Make it fun and exciting
+         - End with 🎯 emoji
+      5. MAINTAIN TOPIC RELEVANCE:
          - Each block must naturally continue the current topic
          - Focus on related subtopics
          - Ensure logical connections between blocks
-      4. NO undefined values or spelling mistakes allowed
-      5. DO NOT include phrases like 'Click to explore more'
+      6. NO undefined values or spelling mistakes allowed
+      7. DO NOT include phrases like 'Click to explore more'
 
       Format response as:
       {
@@ -59,7 +69,8 @@ serve(async (req) => {
           {
             "title": "Single line of exactly 75 chars or less with emoji",
             "metadata": {
-              "topic": "specific_subtopic_related_to_context"
+              "topic": "specific_subtopic_related_to_context",
+              "type": "fact|image|quiz"
             }
           }
         ]
@@ -106,7 +117,8 @@ serve(async (req) => {
         title: block.title?.trim().replace(/undefined|null/g, '').replace(/Click to explore more/gi, '') || 
                "Did you know? Let's explore something amazing! ✨",
         metadata: {
-          topic: block.metadata?.topic || context
+          topic: block.metadata?.topic || context,
+          type: block.metadata?.type || "fact"
         }
       }));
 
