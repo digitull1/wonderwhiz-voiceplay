@@ -61,13 +61,13 @@ export default {
         display: ['SF Pro Display', 'system-ui', 'sans-serif'],
       },
       fontSize: {
-        'title': '28px', // Reduced from 32px
-        'subtitle': '24px', // Reduced from 28px
-        'body': '16px', // Reduced from 18px
-        'small': '14px', // Reduced from 16px
-        'block-title': '16px', // Reduced from 20px
-        'block-desc': '14px', // Reduced from 16px
-        'cta': '16px', // Reduced from 18px
+        'title': '28px',
+        'subtitle': '24px',
+        'body': '16px',
+        'small': '14px',
+        'block-title': '16px',
+        'block-desc': '14px',
+        'cta': '16px',
       },
       backgroundImage: {
         'gradient-luxury': 'linear-gradient(135deg, #F5F5F7 0%, #E5E5E7 100%)',
