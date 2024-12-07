@@ -1,15 +1,15 @@
 import React, { useState } from "react";
-import { BookOpen } from "lucide-react";
+import { BookOpen, Loader2 } from "lucide-react";
+import { ActionIcon } from "./ActionIcon";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { ActionIcon } from "./ActionIcon";
 
 interface QuizActionProps {
   messageText: string;
   onQuizGenerated?: (quiz: any) => void;
 }
 
-export const QuizAction = ({ messageText, onQuizGenerated }: QuizActionProps) => {
+export const QuizAction = ({ messageText }: QuizActionProps) => {
   const [isGenerating, setIsGenerating] = useState(false);
   const { toast } = useToast();
 
@@ -35,7 +35,19 @@ export const QuizAction = ({ messageText, onQuizGenerated }: QuizActionProps) =>
       console.log('Quiz response:', data);
 
       if (data?.question) {
-        onQuizGenerated?.(data.question);
+        // Dispatch a custom event with the quiz data
+        const event = new CustomEvent('wonderwhiz:newMessage', {
+          detail: {
+            text: "Let's test your knowledge with a fun quiz! 🎯",
+            isAi: true,
+            quizState: {
+              isActive: true,
+              currentQuestion: data.question
+            }
+          }
+        });
+        window.dispatchEvent(event);
+
         toast({
           title: "Quiz time! 🎯",
           description: "Let's test your knowledge!",
@@ -58,7 +70,7 @@ export const QuizAction = ({ messageText, onQuizGenerated }: QuizActionProps) =>
 
   return (
     <ActionIcon
-      icon={BookOpen}
+      icon={isGenerating ? Loader2 : BookOpen}
       tooltip="Take a quiz!"
       onClick={handleQuizGeneration}
       isLoading={isGenerating}

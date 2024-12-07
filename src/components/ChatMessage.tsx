@@ -1,10 +1,11 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { Block } from "@/types/chat";
+import { Block, QuizState } from "@/types/chat";
 import { RelatedBlocks } from "./chat/RelatedBlocks";
 import { MessageContent } from "./chat/MessageContent";
 import { LoaderCircle } from "lucide-react";
+import { QuizCard } from "./quiz/QuizCard";
 
 interface ChatMessageProps {
   isAi?: boolean;
@@ -16,6 +17,8 @@ interface ChatMessageProps {
   onPanelOpen?: () => void;
   imageUrl?: string;
   isTyping?: boolean;
+  quizState?: QuizState;
+  onQuizAnswer?: (isCorrect: boolean) => void;
 }
 
 export const ChatMessage = ({ 
@@ -27,7 +30,9 @@ export const ChatMessage = ({
   onQuizGenerated,
   onPanelOpen,
   imageUrl,
-  isTyping
+  isTyping,
+  quizState,
+  onQuizAnswer
 }: ChatMessageProps) => {
   return (
     <motion.div 
@@ -80,6 +85,20 @@ export const ChatMessage = ({
               transition={{ delay: 0.2 }}
             >
               <RelatedBlocks blocks={blocks} onBlockClick={onBlockClick} />
+            </motion.div>
+          )}
+
+          {isAi && quizState?.isActive && quizState.currentQuestion && onQuizAnswer && (
+            <motion.div 
+              className="mt-4 relative z-10 w-full"
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+            >
+              <QuizCard
+                question={quizState.currentQuestion}
+                onAnswer={onQuizAnswer}
+              />
             </motion.div>
           )}
         </motion.div>
