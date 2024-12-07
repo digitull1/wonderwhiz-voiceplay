@@ -7,6 +7,42 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+function getAgeSpecificInstructions(ageGroup: string): string {
+  const [minAge] = ageGroup.split('-').map(Number);
+  
+  if (minAge <= 7) {
+    return `
+      Create a cute, friendly cartoon-style illustration that is:
+      - Simple and colorful with clear shapes
+      - Playful and magical in appearance
+      - Safe and gentle for young children
+      - Includes fun, happy elements
+      - Uses bright, cheerful colors
+      - Avoids any scary or complex elements
+    `;
+  } else if (minAge <= 11) {
+    return `
+      Create a colorful, engaging illustration that is:
+      - Detailed but still fun and approachable
+      - Educational with interesting details
+      - Uses relatable comparisons
+      - Includes elements of wonder and discovery
+      - Maintains scientific accuracy while being engaging
+      - Safe and appropriate for curious minds
+    `;
+  } else {
+    return `
+      Create a detailed educational illustration that is:
+      - More sophisticated in style
+      - Scientifically accurate
+      - Shows real-world relevance
+      - Includes interesting technical details
+      - Maintains engagement while being informative
+      - Age-appropriate for young teens
+    `;
+  }
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -20,21 +56,15 @@ serve(async (req) => {
       throw new Error('Invalid prompt provided');
     }
 
-    // Format the prompt based on age group
-    let stylePrompt = "";
-    const [minAge] = age_group.split('-').map(Number);
+    // Get age-specific instructions
+    const styleInstructions = getAgeSpecificInstructions(age_group);
     
-    if (minAge <= 7) {
-      stylePrompt = "cute, friendly cartoon style, very simple, colorful, and playful";
-    } else if (minAge <= 11) {
-      stylePrompt = "colorful illustration style, engaging, educational, with fun details";
-    } else {
-      stylePrompt = "detailed educational illustration, realistic yet engaging, with scientific accuracy";
-    }
-
-    const formattedPrompt = `Create a ${stylePrompt} illustration of: ${prompt.slice(0, 200)}. 
-      Make it safe and suitable for children aged ${age_group}. 
-      Focus on educational value while maintaining visual appeal.`.slice(0, 500);
+    const formattedPrompt = `
+      ${styleInstructions}
+      
+      Create an illustration of: ${prompt.slice(0, 200)}
+      Make it educational, engaging, and perfectly suited for children aged ${age_group}.
+    `.slice(0, 500);
     
     console.log('Formatted prompt:', formattedPrompt);
 
@@ -45,7 +75,6 @@ serve(async (req) => {
       if (!hfToken) {
         throw new Error('HuggingFace access token not configured');
       }
-      console.log('HuggingFace token found, initializing client...');
       
       const hf = new HfInference(hfToken);
       console.log('Sending request to FLUX model...');
@@ -87,7 +116,7 @@ serve(async (req) => {
           n: 1,
           size: "1024x1024",
           quality: "standard",
-          style: "natural"
+          style: minAge <= 7 ? "vivid" : "natural"
         }),
       });
 
