@@ -70,7 +70,7 @@ export const MessageContent = ({
 
       {showActions && !isTyping && (
         <MessageActions 
-          onListen={onListen}
+          onListen={onListen ? () => onListen(message) : undefined}
           onQuizGenerated={onQuizGenerated}
           messageText={message}
         />
