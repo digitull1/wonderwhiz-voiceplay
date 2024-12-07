@@ -6,10 +6,8 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
-// Utility function to wait for a specified time
 const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-// Retry function with exponential backoff
 async function retryWithBackoff<T>(
   operation: () => Promise<T>,
   retries = 3,
@@ -70,8 +68,10 @@ serve(async (req) => {
               1. Under ${max_words} words
               2. Educational and engaging
               3. Simple enough for children
-              4. Limited to ONE emoji per response
-              5. With proper spacing (no double line breaks)`
+              4. Limited to ONE emoji at the end of the response (not in the middle)
+              5. With proper spacing (no double line breaks)
+              6. Never include undefined or null in your responses
+              7. Double-check spelling and grammar`
             },
             {
               role: "user",
@@ -89,14 +89,25 @@ serve(async (req) => {
         throw new Error(error.error?.message || "Failed to get response from Groq");
       }
 
-      return await response.json();
+      const data = await response.json();
+      console.log("Raw response from Groq:", data);
+      
+      // Clean up the response to ensure no undefined values
+      const content = data.choices[0]?.message?.content || "";
+      if (!content) {
+        throw new Error("Empty response from Groq");
+      }
+
+      return data;
     };
 
     const data = await retryWithBackoff(makeRequest);
-    console.log("Generated response:", data);
+    console.log("Final processed response:", data.choices[0].message.content);
 
     return new Response(
-      JSON.stringify({ response: data.choices[0].message.content }),
+      JSON.stringify({ 
+        response: data.choices[0].message.content.trim() 
+      }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
