@@ -3,6 +3,7 @@ import { Button } from "./ui/button";
 import { Mic, MicOff } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
 
 interface VoiceInputProps {
   onVoiceInput: (text: string) => void;
@@ -14,10 +15,12 @@ export const VoiceInput: React.FC<VoiceInputProps> = ({ onVoiceInput }) => {
   const { toast } = useToast();
 
   useEffect(() => {
+    console.log("Initializing speech recognition...");
     if (typeof window !== 'undefined') {
       try {
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         if (SpeechRecognition) {
+          console.log("Speech recognition supported");
           const recognition = new SpeechRecognition();
           recognition.continuous = true;
           recognition.interimResults = true;
@@ -39,6 +42,7 @@ export const VoiceInput: React.FC<VoiceInputProps> = ({ onVoiceInput }) => {
           };
 
           recognition.onresult = (event) => {
+            console.log('Speech recognition result received');
             const transcript = Array.from(event.results)
               .map(result => result[0])
               .map(result => result.transcript)
@@ -54,20 +58,27 @@ export const VoiceInput: React.FC<VoiceInputProps> = ({ onVoiceInput }) => {
           recognition.onerror = (event) => {
             console.error('Speech recognition error:', event.error);
             toast({
-              title: "Oops!",
-              description: "There was an error with speech recognition. Please try again.",
+              title: "Error",
+              description: `Speech recognition error: ${event.error}`,
               variant: "destructive",
             });
             setIsListening(false);
           };
 
           setRecognition(recognition);
+        } else {
+          console.error('Speech Recognition not supported');
+          toast({
+            title: "Not Supported",
+            description: "Speech recognition is not supported in your browser.",
+            variant: "destructive",
+          });
         }
       } catch (error) {
         console.error('Speech recognition initialization error:', error);
         toast({
-          title: "Speech Recognition Not Available",
-          description: "Your browser doesn't support speech recognition.",
+          title: "Error",
+          description: "Failed to initialize speech recognition",
           variant: "destructive",
         });
       }
@@ -75,18 +86,22 @@ export const VoiceInput: React.FC<VoiceInputProps> = ({ onVoiceInput }) => {
   }, [onVoiceInput, toast]);
 
   const toggleListening = () => {
+    console.log('Toggle listening clicked, current state:', isListening);
     if (!recognition) {
+      console.error('Recognition not initialized');
       toast({
-        title: "Speech Recognition Not Available",
-        description: "Your browser doesn't support speech recognition.",
+        title: "Not Available",
+        description: "Speech recognition is not available",
         variant: "destructive",
       });
       return;
     }
 
     if (isListening) {
+      console.log('Stopping recognition');
       recognition.stop();
     } else {
+      console.log('Starting recognition');
       try {
         recognition.start();
       } catch (error) {
