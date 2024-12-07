@@ -32,8 +32,21 @@ export const ImageAction = ({ messageText }: ImageActionProps) => {
 
       if (error) throw error;
 
+      console.log('Image generation response:', data);
+
       if (data?.image) {
         console.log('Image generated successfully:', data.image);
+        
+        // Dispatch a custom event with the image URL
+        const event = new CustomEvent('wonderwhiz:newMessage', {
+          detail: {
+            text: "Here's the image I created based on your request! What do you think? ✨",
+            isAi: true,
+            imageUrl: data.image
+          }
+        });
+        window.dispatchEvent(event);
+
         toast({
           title: "Image created! ✨",
           description: "Here's what I imagined!",

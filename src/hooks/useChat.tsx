@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useQuiz } from "./useQuiz";
 import { useUserProgress } from "./useUserProgress";
 import { Block } from "@/types/chat";
@@ -24,6 +24,19 @@ export const useChat = () => {
   const { quizState, handleQuizAnswer, updateBlocksExplored } = useQuiz({ updateProgress: updateUserProgress });
   const { generateDynamicBlocks } = useBlockGeneration(null);
   const { handleImageAnalysis: analyzeImage } = useImageAnalysis();
+
+  // Add event listener for new messages
+  useEffect(() => {
+    const handleNewMessage = (event: CustomEvent) => {
+      console.log('New message event received:', event.detail);
+      setMessages(prev => [...prev, event.detail]);
+    };
+
+    window.addEventListener('wonderwhiz:newMessage', handleNewMessage as EventListener);
+    return () => {
+      window.removeEventListener('wonderwhiz:newMessage', handleNewMessage as EventListener);
+    };
+  }, []);
 
   const handleListen = useCallback((text: string) => {
     const utterance = new SpeechSynthesisUtterance(text);
