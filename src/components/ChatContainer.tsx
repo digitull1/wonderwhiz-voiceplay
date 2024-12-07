@@ -33,7 +33,7 @@ export const ChatContainer = ({
       const scrollHeight = container.scrollHeight;
       const currentScroll = container.scrollTop;
       const clientHeight = container.clientHeight;
-      const scrollThreshold = 100; // Reduced threshold for smoother scrolling
+      const scrollThreshold = 100;
       
       const shouldScroll = 
         scrollHeight - currentScroll - clientHeight < scrollThreshold ||
@@ -53,7 +53,6 @@ export const ChatContainer = ({
     return () => clearTimeout(timeoutId);
   }, [messages, quizState?.currentQuestion]);
 
-  // Filter out messages that are just block titles
   const filteredMessages = messages.filter((message, index) => {
     if (index === 0) return true;
     const prevMessage = messages[index - 1];
@@ -70,7 +69,7 @@ export const ChatContainer = ({
           key={index}
           message={message.text}
           isAi={message.isAi}
-          onListen={message.isAi ? handleListen : undefined}
+          onListen={() => handleListen(message.text)}
           blocks={message.blocks}
           onBlockClick={onBlockClick}
         />

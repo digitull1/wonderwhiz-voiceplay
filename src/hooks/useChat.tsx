@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { getGroqResponse } from "@/utils/groq";
 import { useToast } from "@/hooks/use-toast";
 import { Message, UserProfile, Block } from "@/types/chat";
@@ -27,6 +27,58 @@ export const useChat = () => {
   const { generateDynamicBlocks } = useBlockGeneration(userProfile);
   const { handleImageAnalysis, isAnalyzing } = useImageAnalysis();
   const { quizState, handleQuizAnswer, updateBlocksExplored } = useQuiz(updateUserProgress);
+
+  useEffect(() => {
+    const trackLearningTime = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const interval = setInterval(async () => {
+        try {
+          const today = new Date().toISOString().split('T')[0];
+          const { data: existingTime, error: fetchError } = await supabase
+            .from('learning_time')
+            .select('*')
+            .eq('date', today)
+            .eq('user_id', user.id)
+            .single();
+
+          if (fetchError && fetchError.code !== 'PGRST116') {
+            console.error('Error fetching learning time:', fetchError);
+            return;
+          }
+
+          if (existingTime) {
+            await supabase
+              .from('learning_time')
+              .update({ 
+                minutes_spent: (existingTime.minutes_spent || 0) + 1 
+              })
+              .eq('id', existingTime.id);
+          } else {
+            await supabase
+              .from('learning_time')
+              .insert([{ 
+                minutes_spent: 1,
+                date: today,
+                user_id: user.id
+              }]);
+          }
+        } catch (error) {
+          console.error('Error updating learning time:', error);
+        }
+      }, 60000); // Update every minute
+
+      return () => clearInterval(interval);
+    };
+
+    trackLearningTime();
+  }, []);
+
+  const handleListen = (text: string) => {
+    const utterance = new SpeechSynthesisUtterance(text);
+    window.speechSynthesis.speak(utterance);
+  };
 
   const sendMessage = async (messageText: string, skipUserMessage: boolean = false) => {
     if (!messageText.trim() || isLoading) return;
@@ -129,7 +181,7 @@ export const useChat = () => {
     isLoading,
     currentTopic,
     userProgress,
-    handleListen: () => {}, // Placeholder for voice feature
+    handleListen,
     handleBlockClick,
     handleQuizAnswer,
     quizState,

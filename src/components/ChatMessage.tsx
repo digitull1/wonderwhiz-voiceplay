@@ -7,6 +7,7 @@ import { MessageActions } from "./chat/MessageActions";
 import { RelatedBlocks } from "./chat/RelatedBlocks";
 import { ImageGenerator } from "./ImageGenerator";
 import { Volume2 } from "lucide-react";
+import { Button } from "./ui/button";
 
 interface ChatMessageProps {
   isAi?: boolean;
@@ -54,6 +55,12 @@ export const ChatMessage = ({
         stiffness: 400,
         damping: 10
       }
+    }
+  };
+
+  const handleListen = () => {
+    if (onListen) {
+      onListen();
     }
   };
 
@@ -114,18 +121,18 @@ export const ChatMessage = ({
             {formattedMessage}
           </p>
           
-          {isAi && onListen && (
-            <motion.button 
+          {isAi && (
+            <Button
+              onClick={handleListen}
+              size="sm"
+              variant="ghost"
               className="absolute top-2.5 right-2.5 opacity-70 hover:opacity-100 
                 cursor-pointer transition-all p-1.5 rounded-full hover:bg-white/50
                 active:scale-95"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              onClick={onListen}
               aria-label="Listen to message"
             >
               <Volume2 className="w-4 h-4 text-primary" />
-            </motion.button>
+            </Button>
           )}
           
           {isAi && (
