@@ -69,6 +69,45 @@ export const ChatBlocks = ({ blocks, onBlockClick }: ChatBlocksProps) => {
           variant: "destructive"
         });
       }
+    } else if (block.metadata.type === 'quiz') {
+      try {
+        console.log('Generating quiz for topic:', block.title);
+        const { data: quizData, error: quizError } = await supabase.functions.invoke('generate-quiz', {
+          body: { topic: block.title }
+        });
+
+        if (quizError) throw quizError;
+
+        if (quizData?.question) {
+          // Dispatch a custom event with the quiz data
+          const event = new CustomEvent('wonderwhiz:newMessage', {
+            detail: {
+              text: "Let's test your knowledge with a fun quiz! 🎯",
+              isAi: true,
+              quizState: {
+                isActive: true,
+                currentQuestion: quizData.question,
+                blocksExplored: 0,
+                currentTopic: block.metadata.topic
+              }
+            }
+          });
+          window.dispatchEvent(event);
+
+          toast({
+            title: "Quiz time! 🎯",
+            description: "Let's test what you've learned!",
+            className: "bg-primary text-white"
+          });
+        }
+      } catch (error) {
+        console.error('Error generating quiz:', error);
+        toast({
+          title: "Oops!",
+          description: "Couldn't create a quiz right now. Try again!",
+          variant: "destructive"
+        });
+      }
     } else {
       onBlockClick(block);
     }
