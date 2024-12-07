@@ -40,8 +40,9 @@ export const ChatHeader = () => {
           </motion.button>
         </SheetTrigger>
         <SheetContent 
-          side="right" 
-          className="w-[300px] sm:w-[400px] bg-white border-l border-gray-100 shadow-xl"
+          side="right"
+          className="fixed right-0 top-0 h-full w-[300px] sm:w-[400px] bg-white/95 backdrop-blur-sm border-l 
+            border-gray-100 shadow-xl overflow-y-auto z-50"
         >
           <CollapsiblePanel 
             userProgress={userProgress || {
