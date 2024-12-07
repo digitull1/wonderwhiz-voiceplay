@@ -79,9 +79,22 @@ export const useChat = () => {
   };
 
   const handleListen = (text: string) => {
-    console.log('Speaking text:', text);
+    if (!text) return;
+    
     const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 0.9; // Slightly slower for better comprehension
+    utterance.pitch = 1.1; // Slightly higher pitch for a more engaging voice
+    
+    // Cancel any ongoing speech
+    window.speechSynthesis.cancel();
+    
+    // Start new speech
     window.speechSynthesis.speak(utterance);
+    
+    toast({
+      title: "🎙️ Speaking...",
+      description: "Click again to stop",
+    });
   };
 
   const handleImageUploadSuccess = async (response: string) => {
