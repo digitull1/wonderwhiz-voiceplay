@@ -53,9 +53,6 @@ serve(async (req) => {
       const image = await hf.textToImage({
         inputs: formattedPrompt,
         model: 'black-forest-labs/FLUX.1-schnell',
-        parameters: {
-          negative_prompt: "unsafe, inappropriate, scary, violent",
-        }
       });
 
       console.log('Image received from HuggingFace, converting to base64...');
