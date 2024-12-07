@@ -1,7 +1,8 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Clock } from "lucide-react";
 import { TimeTrackerRing } from "./TimeTrackerRing";
 import { motion } from "framer-motion";
+import { supabase } from "@/integrations/supabase/client";
 
 interface TimeTrackerProps {
   timeSpent: {
@@ -10,7 +11,66 @@ interface TimeTrackerProps {
   };
 }
 
-export const TimeTracker = ({ timeSpent }: TimeTrackerProps) => {
+export const TimeTracker = ({ timeSpent: initialTimeSpent }: TimeTrackerProps) => {
+  const [timeSpent, setTimeSpent] = useState(initialTimeSpent);
+  
+  useEffect(() => {
+    const fetchLearningTime = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        // Get today's date in YYYY-MM-DD format
+        const today = new Date().toISOString().split('T')[0];
+        
+        // Get date 7 days ago
+        const weekAgo = new Date();
+        weekAgo.setDate(weekAgo.getDate() - 7);
+        const weekAgoStr = weekAgo.toISOString().split('T')[0];
+
+        // Fetch today's learning time
+        const { data: todayData, error: todayError } = await supabase
+          .from('learning_time')
+          .select('minutes_spent')
+          .eq('user_id', user.id)
+          .eq('date', today)
+          .single();
+
+        if (todayError && todayError.code !== 'PGRST116') {
+          console.error('Error fetching today\'s learning time:', todayError);
+        }
+
+        // Fetch week's learning time
+        const { data: weekData, error: weekError } = await supabase
+          .from('learning_time')
+          .select('minutes_spent')
+          .eq('user_id', user.id)
+          .gte('date', weekAgoStr)
+          .lte('date', today);
+
+        if (weekError) {
+          console.error('Error fetching week\'s learning time:', weekError);
+        }
+
+        // Calculate total minutes for the week
+        const weeklyMinutes = weekData?.reduce((acc, curr) => acc + (curr.minutes_spent || 0), 0) || 0;
+
+        setTimeSpent({
+          today: todayData?.minutes_spent || 0,
+          week: weeklyMinutes
+        });
+
+      } catch (error) {
+        console.error('Error in fetchLearningTime:', error);
+      }
+    };
+
+    fetchLearningTime();
+    // Set up an interval to refresh data every minute
+    const interval = setInterval(fetchLearningTime, 60000);
+    return () => clearInterval(interval);
+  }, []);
+
   // Calculate percentages based on daily and weekly goals
   const dailyGoal = 60; // 60 minutes per day goal
   const weeklyGoal = 300; // 300 minutes per week goal (5 hours)

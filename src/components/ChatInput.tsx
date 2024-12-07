@@ -1,21 +1,18 @@
-import React, { useState } from "react";
-import { Input } from "./ui/input";
+import React, { useState, useRef } from "react";
 import { Button } from "./ui/button";
-import { Send, Sparkles, ImagePlus, Mic, MicOff } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
-import { ImageUpload } from "./ImageUpload";
-import { useToast } from "@/hooks/use-toast";
+import { Mic, Send } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useIsMobile } from "@/hooks/use-mobile";
+import { ImageUpload } from "./ImageUpload";
+import { useToast } from "./ui/use-toast";
 
 interface ChatInputProps {
   input: string;
   setInput: (value: string) => void;
   handleSend: () => void;
-  handleVoiceInput: (text: string) => void;
-  isLoading: boolean;
-  currentTopic: string;
-  onImageAnalyzed: (response: string) => void;
+  handleVoiceInput: () => void;
+  isLoading?: boolean;
+  currentTopic?: string;
+  onImageAnalyzed?: (response: string) => void;
   placeholder?: string;
 }
 
@@ -26,109 +23,138 @@ export const ChatInput = ({
   isLoading,
   currentTopic,
   onImageAnalyzed,
-  placeholder
+  placeholder = "Type a message..."
 }: ChatInputProps) => {
   const [isListening, setIsListening] = useState(false);
-  const [isExpanded, setIsExpanded] = useState(false);
   const { toast } = useToast();
-  const isMobile = useIsMobile();
+  const recognition = useRef<any>(null);
 
-  const handleSubmit = () => {
-    if (input.trim()) {
-      handleSend();
-      setInput("");
-      setIsExpanded(false);
+  const startListening = () => {
+    try {
+      if (!('webkitSpeechRecognition' in window)) {
+        toast({
+          title: "Speech Recognition Not Available",
+          description: "Your browser doesn't support speech recognition.",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      recognition.current = new (window as any).webkitSpeechRecognition();
+      recognition.current.continuous = true;
+      recognition.current.interimResults = true;
+
+      recognition.current.onstart = () => {
+        console.log('Speech recognition started');
+        setIsListening(true);
+        toast({
+          title: "Listening...",
+          description: "Speak clearly into your microphone",
+          className: "bg-primary text-white"
+        });
+      };
+
+      recognition.current.onresult = (event: any) => {
+        const transcript = Array.from(event.results)
+          .map((result: any) => result[0])
+          .map((result: any) => result.transcript)
+          .join('');
+
+        console.log('Transcript:', transcript);
+        setInput(transcript);
+      };
+
+      recognition.current.onerror = (event: any) => {
+        console.error('Speech recognition error:', event.error);
+        setIsListening(false);
+        toast({
+          title: "Error",
+          description: "There was an error with speech recognition. Please try again.",
+          variant: "destructive"
+        });
+      };
+
+      recognition.current.onend = () => {
+        console.log('Speech recognition ended');
+        setIsListening(false);
+      };
+
+      recognition.current.start();
+    } catch (error) {
+      console.error('Error starting speech recognition:', error);
+      toast({
+        title: "Error",
+        description: "Could not start speech recognition. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const stopListening = () => {
+    if (recognition.current) {
+      recognition.current.stop();
+      setIsListening(false);
+    }
+  };
+
+  const toggleListening = () => {
+    if (isListening) {
+      stopListening();
+    } else {
+      startListening();
     }
   };
 
   return (
-    <motion.div 
-      className={cn(
-        "fixed bottom-0 left-0 right-0 z-50 px-4 pb-4 pt-2",
-        "bg-gradient-to-t from-white/80 to-transparent backdrop-blur-xl",
-        "transition-all duration-300 ease-out"
-      )}
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, delay: 0.2 }}
-    >
-      <div className="max-w-3xl mx-auto">
-        <motion.div 
-          className={cn(
-            "flex items-center gap-2 w-full rounded-full",
-            "bg-white/80 backdrop-blur-xl p-1.5",
-            "shadow-input border border-white/20",
-            "transition-all duration-300 ease-out",
-            isExpanded && "rounded-2xl"
-          )}
-          animate={{ 
-            height: isExpanded ? (isMobile ? 100 : 120) : 56
-          }}
-        >
-          <Button
-            onClick={() => setIsListening(!isListening)}
-            className={cn(
-              "rounded-full w-10 h-10 p-0 relative overflow-hidden shrink-0",
-              isListening ? "bg-red-500 hover:bg-red-600" : "bg-primary hover:bg-primary/90"
-            )}
-          >
-            {isListening ? (
-              <MicOff className="w-4 h-4 text-white" />
-            ) : (
-              <Mic className="w-4 h-4 text-white" />
-            )}
-            {isListening && (
-              <motion.div
-                className="absolute inset-0 bg-red-400 opacity-30"
-                animate={{ scale: [1, 1.5, 1] }}
-                transition={{ duration: 2, repeat: Infinity }}
-              />
-            )}
-          </Button>
-
-          <Input
-            placeholder={placeholder || (isLoading ? "Thinking..." : `Ask me anything about ${currentTopic}...`)}
+    <div className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-xl border-t border-white/20 p-4 md:p-6">
+      <div className="max-w-screen-lg mx-auto flex items-center gap-2">
+        <ImageUpload onImageAnalyzed={onImageAnalyzed} />
+        
+        <div className="flex-1 relative">
+          <input
+            type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            onFocus={() => setIsExpanded(true)}
-            onBlur={() => !input && setIsExpanded(false)}
-            onKeyPress={(e) => e.key === "Enter" && handleSubmit()}
+            onKeyPress={(e) => e.key === 'Enter' && !isLoading && handleSend()}
+            placeholder={placeholder}
             className={cn(
-              "flex-1 bg-transparent border-0 shadow-none",
-              "text-body placeholder:text-gray-400 focus-visible:ring-0",
-              "transition-all duration-300",
-              isExpanded ? "h-[80px]" : "h-10"
+              "w-full px-4 py-2 rounded-xl",
+              "bg-white/50 backdrop-blur-sm border border-white/20",
+              "focus:outline-none focus:ring-2 focus:ring-primary/50",
+              "placeholder:text-gray-400"
             )}
-            style={{
-              resize: isExpanded ? "vertical" : "none"
-            }}
             disabled={isLoading}
           />
+        </div>
 
-          <ImageUpload 
-            onImageAnalyzed={onImageAnalyzed}
-            className={cn(
-              "rounded-full w-10 h-10 shrink-0",
-              "bg-secondary hover:bg-secondary/90",
-              "flex items-center justify-center transition-colors"
-            )}
-          >
-            <ImagePlus className="w-4 h-4 text-white" />
-          </ImageUpload>
+        <Button
+          onClick={toggleListening}
+          variant="ghost"
+          size="icon"
+          className={cn(
+            "bg-white/95 backdrop-blur-xl shadow-luxury border border-white/20",
+            "hover:bg-white hover:scale-110 active:scale-95",
+            "transition-all duration-300",
+            isListening && "bg-red-500 hover:bg-red-600 text-white"
+          )}
+        >
+          <Mic className="w-4 h-4" />
+        </Button>
 
-          <Button 
-            onClick={handleSubmit}
-            disabled={isLoading || !input.trim()} 
-            className="rounded-full w-10 h-10 bg-accent hover:bg-accent/90 p-0 shrink-0"
-          >
-            {isLoading ? (
-              <Sparkles className="w-4 h-4 text-white animate-pulse" />
-            ) : (
-              <Send className="w-4 h-4 text-white" />
-            )}
-          </Button>
-        </motion.div>
+        <Button
+          onClick={handleSend}
+          disabled={isLoading || !input.trim()}
+          variant="ghost"
+          size="icon"
+          className={cn(
+            "bg-white/95 backdrop-blur-xl shadow-luxury border border-white/20",
+            "hover:bg-white hover:scale-110 active:scale-95",
+            "transition-all duration-300"
+          )}
+        >
+          <Send className="w-4 h-4" />
+        </Button>
       </div>
-    </motion.div>
+    </div>
   );
 };

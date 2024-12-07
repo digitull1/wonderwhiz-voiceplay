@@ -16,35 +16,54 @@ interface ExploredTopic {
 }
 
 interface RecentTopicsProps {
-  topics: ExploredTopic[];
+  onTopicClick?: (topic: string) => void;
 }
 
-export const RecentTopics = ({ topics }: RecentTopicsProps) => {
+export const RecentTopics = ({ onTopicClick }: RecentTopicsProps) => {
   const [recentTopics, setRecentTopics] = useState<ExploredTopic[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const fetchTopics = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          setIsLoading(false);
+          return;
+        }
 
-      const { data, error } = await supabase
-        .from('explored_topics')
-        .select('topic, emoji, last_explored_at')
-        .eq('user_id', user.id)
-        .order('last_explored_at', { ascending: false })
-        .limit(3);
+        const { data, error } = await supabase
+          .from('explored_topics')
+          .select('topic, emoji, last_explored_at')
+          .eq('user_id', user.id)
+          .order('last_explored_at', { ascending: false })
+          .limit(5);
 
-      if (error) {
-        console.error('Error fetching topics:', error);
-        return;
+        if (error) {
+          console.error('Error fetching topics:', error);
+          return;
+        }
+
+        console.log('Fetched topics:', data);
+        setRecentTopics(data || []);
+        setIsLoading(false);
+      } catch (error) {
+        console.error('Error in fetchTopics:', error);
+        setIsLoading(false);
       }
-
-      console.log('Fetched topics:', data);
-      setRecentTopics(data || []);
     };
 
     fetchTopics();
-  }, [topics]); // Re-fetch when topics prop changes
+    // Refresh topics every 30 seconds
+    const interval = setInterval(fetchTopics, 30000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const handleTopicClick = (topic: string) => {
+    if (onTopicClick) {
+      onTopicClick(topic);
+    }
+  };
 
   return (
     <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 shadow-sm border border-primary/10">
@@ -53,9 +72,17 @@ export const RecentTopics = ({ topics }: RecentTopicsProps) => {
         <h3 className="text-lg font-semibold">Recent Topics</h3>
       </div>
       <div className="space-y-2">
-        {recentTopics.length > 0 ? (
+        {isLoading ? (
+          <div className="text-center py-4">
+            <motion.div
+              className="inline-block w-6 h-6 border-2 border-primary border-t-transparent rounded-full"
+              animate={{ rotate: 360 }}
+              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+            />
+          </div>
+        ) : recentTopics.length > 0 ? (
           recentTopics.map((topic, index) => (
-            <TooltipProvider key={topic.topic}>
+            <TooltipProvider key={topic.topic + index}>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <motion.button
@@ -66,6 +93,7 @@ export const RecentTopics = ({ topics }: RecentTopicsProps) => {
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: index * 0.1 }}
                     whileHover={{ x: 4 }}
+                    onClick={() => handleTopicClick(topic.topic)}
                   >
                     <span className="text-xl" role="img" aria-label={topic.topic}>
                       {topic.emoji}
