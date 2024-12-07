@@ -27,6 +27,45 @@ async function retryWithBackoff<T>(operation: () => Promise<T>, retries = 3, bas
   throw lastError;
 }
 
+function getAgeSpecificInstructions(ageGroup: string): string {
+  const [minAge, maxAge] = ageGroup.split('-').map(Number);
+  
+  if (minAge >= 5 && maxAge <= 7) {
+    return `
+      For young explorers (${ageGroup} years):
+      - Use very simple, playful language
+      - Include lots of fun comparisons to familiar things
+      - Keep sentences short and exciting
+      - Use plenty of magical and wonder-filled words
+      - Add fun emojis that match the content
+      - Focus on basic, fascinating facts
+      - Make everything sound like a magical adventure
+    `;
+  } else if (minAge >= 8 && maxAge <= 11) {
+    return `
+      For curious minds (${ageGroup} years):
+      - Use clear language with some interesting vocabulary
+      - Include relatable examples from daily life
+      - Add silly comparisons that make learning fun
+      - Mix in some playful jokes and puns
+      - Use emojis that add meaning to the content
+      - Focus on the 'how' and 'why' of things
+      - Make everything sound like an exciting discovery
+    `;
+  } else {
+    return `
+      For young scientists (${ageGroup} years):
+      - Use more sophisticated language but keep it engaging
+      - Include real-world applications and examples
+      - Add interesting scientific facts
+      - Use cool analogies that respect their intelligence
+      - Choose emojis that complement the content
+      - Focus on deeper understanding and connections
+      - Make everything sound like an interesting exploration
+    `;
+  }
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -36,16 +75,7 @@ serve(async (req) => {
     const { query, context, age_group } = await req.json();
     console.log("Generating blocks for:", { query, context, age_group });
 
-    const ageSpecificInstructions = `
-      For ${age_group} year olds:
-      - Use simple, clear language they can understand
-      - Include relatable examples from their daily life
-      - Make comparisons to things they know (toys, games, school)
-      - Keep explanations brief but engaging
-      - Use a friendly, encouraging tone
-      - Include fun facts that spark curiosity
-      - Avoid complex terminology unless explained simply
-    `;
+    const ageSpecificInstructions = getAgeSpecificInstructions(age_group);
 
     const prompt = `
       Based on "${query}" and topic "${context}", generate 5 engaging, educational blocks following these guidelines:
@@ -62,23 +92,23 @@ serve(async (req) => {
          - Use warm, playful language
       3. 4th block MUST:
          - Start with "Want to see..."
-         - Choose ONE of these styles randomly:
-           * Realistic: "a detailed photograph of..."
-           * Cartoon: "a cute cartoon illustration of..."
-           * Printable: "a simple black and white outline of..."
-         - Include whimsical elements (e.g., "a penguin wearing a top hat")
+         - Choose ONE of these styles based on age:
+           * Ages 5-7: "a cute, friendly cartoon of..."
+           * Ages 8-11: "a colorful illustration of..."
+           * Ages 12-16: "a detailed educational image of..."
+         - Include whimsical elements for younger ages
          - End with 🎨 emoji
       4. 5th block MUST:
          - Start with "Ready to test your knowledge..."
-         - Make it fun and exciting with a silly twist
+         - Make it fun and exciting with age-appropriate challenges
          - End with 🎯 emoji
       5. MAINTAIN TOPIC RELEVANCE:
          - Each block must naturally continue the current topic
          - Focus on related subtopics
          - Ensure logical connections between blocks
       6. TONE & STYLE:
-         - Be warm and enthusiastic
-         - Use simple, kid-friendly language
+         - Match the age-specific tone perfectly
+         - Use language appropriate for ${age_group} year olds
          - Add light humor or silly comparisons
          - Celebrate curiosity
       7. NO undefined values or spelling mistakes allowed
@@ -111,7 +141,7 @@ serve(async (req) => {
           messages: [
             {
               role: "system",
-              content: "You are WonderWhiz, generating exciting educational content for kids. Be warm, playful, and encouraging!"
+              content: `You are WonderWhiz, generating exciting educational content for kids aged ${age_group}. Be warm, playful, and encouraging!`
             },
             { role: "user", content: prompt }
           ],
