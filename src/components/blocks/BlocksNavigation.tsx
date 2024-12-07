@@ -6,44 +6,65 @@ import { motion } from "framer-motion";
 import { useIsMobile } from "@/hooks/use-mobile";
 
 interface BlocksNavigationProps {
-  direction: 'left' | 'right';
-  onClick: () => void;
-  className?: string;
+  onScroll: (direction: 'left' | 'right') => void;
+  canScrollLeft: boolean;
+  canScrollRight: boolean;
 }
 
 export const BlocksNavigation = ({ 
-  direction, 
-  onClick,
-  className 
+  onScroll,
+  canScrollLeft,
+  canScrollRight
 }: BlocksNavigationProps) => {
   const isMobile = useIsMobile();
-  const Icon = direction === 'left' ? ChevronLeft : ChevronRight;
   
   if (isMobile) return null;
   
   return (
-    <motion.div
-      initial={{ opacity: 0, x: direction === 'left' ? -20 : 20 }}
-      animate={{ opacity: 1, x: 0 }}
-      exit={{ opacity: 0, x: direction === 'left' ? -20 : 20 }}
-      className={cn(
-        "absolute top-1/2 -translate-y-1/2 z-10",
-        direction === 'left' ? "left-0" : "right-0",
-        className
+    <>
+      {canScrollLeft && (
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: -20 }}
+          className="absolute left-0 top-1/2 -translate-y-1/2 z-10"
+        >
+          <Button
+            variant="ghost"
+            className={cn(
+              "bg-white/90 hover:bg-white shadow-lg",
+              "rounded-full p-3 transition-all duration-300",
+              "border border-gray-200",
+              "group"
+            )}
+            onClick={() => onScroll('left')}
+          >
+            <ChevronLeft className="h-5 w-5 text-gray-700 group-hover:scale-110 transition-transform" />
+          </Button>
+        </motion.div>
       )}
-    >
-      <Button
-        variant="ghost"
-        className={cn(
-          "bg-white/90 hover:bg-white shadow-lg",
-          "rounded-full p-3 transition-all duration-300",
-          "border border-gray-200",
-          "group"
-        )}
-        onClick={onClick}
-      >
-        <Icon className="h-5 w-5 text-gray-700 group-hover:scale-110 transition-transform" />
-      </Button>
-    </motion.div>
+      
+      {canScrollRight && (
+        <motion.div
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          exit={{ opacity: 0, x: 20 }}
+          className="absolute right-0 top-1/2 -translate-y-1/2 z-10"
+        >
+          <Button
+            variant="ghost"
+            className={cn(
+              "bg-white/90 hover:bg-white shadow-lg",
+              "rounded-full p-3 transition-all duration-300",
+              "border border-gray-200",
+              "group"
+            )}
+            onClick={() => onScroll('right')}
+          >
+            <ChevronRight className="h-5 w-5 text-gray-700 group-hover:scale-110 transition-transform" />
+          </Button>
+        </motion.div>
+      )}
+    </>
   );
 };
