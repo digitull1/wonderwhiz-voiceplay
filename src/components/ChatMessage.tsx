@@ -31,9 +31,12 @@ export const ChatMessage = ({
       setIsTypingComplete(false);
       let index = 0;
       
+      // Clean the message by removing undefined and ensuring proper spacing
+      const cleanedMessage = message?.replace(/undefined|null/g, '').trim() || "Hi! I'm WonderWhiz! What's your name? 😊";
+      
       const typingInterval = setInterval(() => {
-        if (index < message.length) {
-          setDisplayedText(prev => prev + message[index]);
+        if (index < cleanedMessage.length) {
+          setDisplayedText(prev => prev + cleanedMessage[index]);
           index++;
         } else {
           clearInterval(typingInterval);
@@ -43,7 +46,7 @@ export const ChatMessage = ({
 
       return () => clearInterval(typingInterval);
     } else {
-      setDisplayedText(message);
+      setDisplayedText(message || "");
       setIsTypingComplete(true);
     }
   }, [message, isAi]);
