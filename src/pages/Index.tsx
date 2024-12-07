@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { ChatHeader } from "@/components/ChatHeader";
 import { ChatContainer } from "@/components/ChatContainer";
 import { ChatInput } from "@/components/ChatInput";
+import { CollapsiblePanel } from "@/components/CollapsiblePanel";
 import { useChat } from "@/hooks/useChat";
 import { Sparkles, Stars, Shapes, Home, MessageSquare, User, Award } from "lucide-react";
 
@@ -30,7 +31,9 @@ const Index = () => {
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
       >
-        {/* Enhanced floating background elements */}
+        {/* Add CollapsiblePanel */}
+        <CollapsiblePanel userProgress={userProgress} />
+
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <motion.div
             className="absolute top-20 left-10 text-primary/20"
@@ -168,7 +171,6 @@ const Index = () => {
   );
 };
 
-// Navigation Button Component
 const NavButton = ({ 
   icon, 
   label, 
