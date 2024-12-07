@@ -41,6 +41,8 @@ export const QuizAction = ({ messageText, onQuizGenerated }: QuizActionProps) =>
           description: "Let's test your knowledge!",
           className: "bg-primary text-white"
         });
+      } else {
+        throw new Error('Invalid quiz data received');
       }
     } catch (error) {
       console.error('Error generating quiz:', error);

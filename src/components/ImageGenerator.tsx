@@ -8,7 +8,7 @@ import { useBlockGeneration } from '@/hooks/useBlockGeneration';
 
 interface ImageGeneratorProps {
   prompt: string;
-  onResponse: (response: string, blocks?: any[]) => void;
+  onResponse: (response: string, blocks?: any[], imageUrl?: string) => void;
 }
 
 export const ImageGenerator = ({ prompt, onResponse }: ImageGeneratorProps) => {
@@ -51,7 +51,7 @@ export const ImageGenerator = ({ prompt, onResponse }: ImageGeneratorProps) => {
         const blocks = await generateDynamicBlocks(response, "image analysis");
         console.log('Generated blocks:', blocks);
 
-        onResponse(response, blocks);
+        onResponse(response, blocks, imageData.image);
       }
     } catch (error) {
       console.error('Failed to generate image:', error);
