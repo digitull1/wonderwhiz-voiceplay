@@ -1,5 +1,5 @@
 import React from "react";
-import { Volume2, Image as ImageIcon, Sparkles, Brain } from "lucide-react";
+import { Volume2, Image as ImageIcon, Sparkles } from "lucide-react";
 import { ActionIcon } from "./actions/ActionIcon";
 import { QuizAction } from "./actions/QuizAction";
 import { ImageUpload } from "../ImageUpload";
@@ -39,6 +39,7 @@ export const MessageActions = ({
             <ActionIcon
               icon={ImageIcon}
               tooltip="Upload homework photo"
+              onClick={() => {}} // Empty function since click is handled by ImageUpload
               className="bg-gradient-to-br from-green-500/5 to-blue-500/5"
             />
           </ImageUpload>
@@ -46,7 +47,7 @@ export const MessageActions = ({
           <ActionIcon
             icon={Sparkles}
             tooltip="Generate an image"
-            onClick={() => {}}
+            onClick={() => {}} // TODO: Implement image generation
             className="bg-gradient-to-br from-purple-500/5 to-pink-500/5"
           />
         </>
@@ -55,8 +56,7 @@ export const MessageActions = ({
       {onQuizGenerated && (
         <QuizAction
           onQuizGenerated={onQuizGenerated}
-          icon={Brain}
-          tooltip="Generate a quiz"
+          messageText="" // Add the required messageText prop
           className="bg-gradient-to-br from-orange-500/5 to-red-500/5"
         />
       )}
