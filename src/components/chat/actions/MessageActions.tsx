@@ -1,9 +1,10 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Trophy, Upload } from "lucide-react";
-import { ActionIcon } from "./ActionIcon";
 import { ImageAction } from "./ImageAction";
 import { ImageUpload } from "../../ImageUpload";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 interface MessageActionsProps {
   onPanelOpen?: () => void;
@@ -38,25 +39,38 @@ export const MessageActions: React.FC<MessageActionsProps> = ({
         {/* Image Upload Icon */}
         {onImageAnalyzed && (
           <ImageUpload onImageAnalyzed={onImageAnalyzed}>
-            <ActionIcon
+            <Button
               key="upload"
-              icon={Upload}
-              tooltip="Upload an image!"
-              onClick={() => {}}
-              className="bg-gradient-to-br from-primary/20 to-accent/20 hover:scale-110"
-            />
+              size="icon"
+              variant="ghost"
+              className={cn(
+                "relative p-2 rounded-full transition-all duration-300",
+                "hover:bg-white hover:scale-110 active:scale-95",
+                "focus:outline-none focus:ring-2 focus:ring-primary/20",
+                "bg-gradient-to-br from-primary/20 to-accent/20"
+              )}
+            >
+              <Upload className="w-4 h-4" />
+            </Button>
           </ImageUpload>
         )}
 
         {/* Trophy Icon */}
         {onPanelOpen && (
-          <ActionIcon
+          <Button
             key="trophy"
-            icon={Trophy}
-            tooltip="View your progress!"
+            size="icon"
+            variant="ghost"
             onClick={onPanelOpen}
-            className="bg-gradient-to-br from-accent/20 to-secondary/20 hover:scale-110"
-          />
+            className={cn(
+              "relative p-2 rounded-full transition-all duration-300",
+              "hover:bg-white hover:scale-110 active:scale-95",
+              "focus:outline-none focus:ring-2 focus:ring-primary/20",
+              "bg-gradient-to-br from-accent/20 to-secondary/20"
+            )}
+          >
+            <Trophy className="w-4 h-4" />
+          </Button>
         )}
       </AnimatePresence>
     </motion.div>
