@@ -11,11 +11,11 @@ export const useChat = () => {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [currentTopic, setCurrentTopic] = useState("");
-  const { user } = useAuth();
+  const { isAuthenticated } = useAuth();
   const { userProgress, updateUserProgress } = useUserProgress();
-  const { quizState, handleQuizAnswer } = useQuiz({ updateUserProgress });
-  const { generateBlocks } = useBlockGeneration();
-  const { analyzeImage } = useImageAnalysis();
+  const { quizState, handleQuizAnswer } = useQuiz({ updateProgress: updateUserProgress });
+  const { generateDynamicBlocks } = useBlockGeneration();
+  const { handleImageAnalysis } = useImageAnalysis();
 
   const handleListen = useCallback((text: string) => {
     const utterance = new SpeechSynthesisUtterance(text);
@@ -31,7 +31,7 @@ export const useChat = () => {
     
     setIsLoading(true);
     try {
-      const response = await generateBlocks(block.title, block.metadata.topic);
+      const response = await generateDynamicBlocks(block.title, block.metadata.topic);
       setMessages(prev => [...prev, {
         text: response.message,
         isAi: true,
@@ -42,7 +42,7 @@ export const useChat = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [generateBlocks]);
+  }, [generateDynamicBlocks]);
 
   const sendMessage = useCallback(async (message: string) => {
     if (!message.trim() || isLoading) return;
@@ -52,7 +52,7 @@ export const useChat = () => {
     setIsLoading(true);
 
     try {
-      const response = await generateBlocks(message, currentTopic);
+      const response = await generateDynamicBlocks(message, currentTopic);
       setMessages(prev => [...prev, {
         text: response.message,
         isAi: true,
@@ -63,23 +63,23 @@ export const useChat = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [currentTopic, generateBlocks, isLoading]);
+  }, [currentTopic, generateDynamicBlocks, isLoading]);
 
   const handleImageAnalysis = useCallback(async (imageData: string) => {
     setIsLoading(true);
     try {
-      const response = await analyzeImage(imageData);
+      const response = await handleImageAnalysis(imageData);
       setMessages(prev => [...prev, {
-        text: response.message,
+        text: response,
         isAi: true,
-        blocks: response.blocks
+        blocks: []
       }]);
     } catch (error) {
       console.error('Error analyzing image:', error);
     } finally {
       setIsLoading(false);
     }
-  }, [analyzeImage]);
+  }, [handleImageAnalysis]);
 
   return {
     messages,
@@ -94,6 +94,6 @@ export const useChat = () => {
     quizState,
     sendMessage,
     handleImageAnalysis,
-    isAuthenticated: !!user
+    isAuthenticated
   };
 };
