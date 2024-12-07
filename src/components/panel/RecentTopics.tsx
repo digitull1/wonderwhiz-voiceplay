@@ -28,9 +28,12 @@ export const RecentTopics = ({ onTopicClick }: RecentTopicsProps) => {
       try {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) {
+          console.log('No authenticated user found');
           setIsLoading(false);
           return;
         }
+
+        console.log('Fetching topics for user:', user.id);
 
         const { data, error } = await supabase
           .from('explored_topics')
@@ -41,7 +44,7 @@ export const RecentTopics = ({ onTopicClick }: RecentTopicsProps) => {
 
         if (error) {
           console.error('Error fetching topics:', error);
-          return;
+          throw error;
         }
 
         console.log('Fetched topics:', data);

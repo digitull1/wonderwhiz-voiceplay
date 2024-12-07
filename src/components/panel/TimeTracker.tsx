@@ -18,7 +18,10 @@ export const TimeTracker = ({ timeSpent: initialTimeSpent }: TimeTrackerProps) =
     const fetchLearningTime = async () => {
       try {
         const { data: { user } } = await supabase.auth.getUser();
-        if (!user) return;
+        if (!user) {
+          console.log('No authenticated user found');
+          return;
+        }
 
         // Get today's date in YYYY-MM-DD format
         const today = new Date().toISOString().split('T')[0];
@@ -28,6 +31,9 @@ export const TimeTracker = ({ timeSpent: initialTimeSpent }: TimeTrackerProps) =
         weekAgo.setDate(weekAgo.getDate() - 7);
         const weekAgoStr = weekAgo.toISOString().split('T')[0];
 
+        console.log('Fetching learning time for user:', user.id);
+        console.log('Date range:', weekAgoStr, 'to', today);
+
         // Fetch today's learning time
         const { data: todayData, error: todayError } = await supabase
           .from('learning_time')
@@ -36,8 +42,9 @@ export const TimeTracker = ({ timeSpent: initialTimeSpent }: TimeTrackerProps) =
           .eq('date', today)
           .single();
 
-        if (todayError && todayError.code !== 'PGRST116') {
+        if (todayError) {
           console.error('Error fetching today\'s learning time:', todayError);
+          if (todayError.code !== 'PGRST116') throw todayError;
         }
 
         // Fetch week's learning time
@@ -50,7 +57,11 @@ export const TimeTracker = ({ timeSpent: initialTimeSpent }: TimeTrackerProps) =
 
         if (weekError) {
           console.error('Error fetching week\'s learning time:', weekError);
+          throw weekError;
         }
+
+        console.log('Today\'s data:', todayData);
+        console.log('Week\'s data:', weekData);
 
         // Calculate total minutes for the week
         const weeklyMinutes = weekData?.reduce((acc, curr) => acc + (curr.minutes_spent || 0), 0) || 0;
