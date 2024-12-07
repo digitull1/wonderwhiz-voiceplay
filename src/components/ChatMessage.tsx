@@ -21,7 +21,7 @@ interface ChatMessageProps {
   messageIndex?: number;
 }
 
-const ChatMessage = ({ 
+const ChatMessage: React.FC<ChatMessageProps> = ({ 
   isAi, 
   message, 
   onListen,
@@ -33,7 +33,7 @@ const ChatMessage = ({
   quizState,
   onQuizAnswer,
   messageIndex = 0
-}: ChatMessageProps) => {
+}) => {
   const [isTyping, setIsTyping] = useState(true);
   const [showBlocks, setShowBlocks] = useState(false);
   const showActions = !isAi || messageIndex > 3;

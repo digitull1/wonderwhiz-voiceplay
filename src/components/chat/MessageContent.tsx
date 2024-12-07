@@ -15,7 +15,7 @@ interface MessageContentProps {
   onTypingComplete?: () => void;
 }
 
-const MessageContent = ({ 
+const MessageContent: React.FC<MessageContentProps> = ({ 
   message, 
   isAi,
   onListen,
@@ -25,7 +25,7 @@ const MessageContent = ({
   showActions = true,
   isTyping,
   onTypingComplete
-}: MessageContentProps) => {
+}) => {
   const [displayedText, setDisplayedText] = useState("");
   console.log("MessageContent rendered:", { isTyping, message, showActions });
 

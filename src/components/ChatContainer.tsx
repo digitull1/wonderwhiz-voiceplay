@@ -24,7 +24,7 @@ interface ChatContainerProps {
   onPanelOpen?: () => void;
 }
 
-export const ChatContainer = ({ 
+export const ChatContainer: React.FC<ChatContainerProps> = ({ 
   messages, 
   handleListen, 
   onBlockClick,
@@ -32,7 +32,7 @@ export const ChatContainer = ({
   onQuizAnswer,
   onAuthPromptClick,
   onPanelOpen
-}: ChatContainerProps) => {
+}) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const isMobile = useIsMobile();
