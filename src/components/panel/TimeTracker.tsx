@@ -56,8 +56,31 @@ export const TimeTracker = () => {
     };
 
     fetchTimeSpent();
-    const interval = setInterval(fetchTimeSpent, 60000); // Update every minute
-    return () => clearInterval(interval);
+
+    // Set up real-time subscription
+    const timeChannel = supabase
+      .channel('learning_time_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'learning_time'
+        },
+        () => {
+          console.log('Learning time updated, refetching...');
+          fetchTimeSpent();
+        }
+      )
+      .subscribe();
+
+    // Update every minute
+    const interval = setInterval(fetchTimeSpent, 60000);
+
+    return () => {
+      clearInterval(interval);
+      timeChannel.unsubscribe();
+    };
   }, []);
 
   return (

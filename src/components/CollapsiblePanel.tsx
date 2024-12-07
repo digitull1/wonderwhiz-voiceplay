@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "./ui/button";
 import { Menu, X } from "lucide-react";
@@ -8,7 +8,6 @@ import { ProgressCard } from "./panel/ProgressCard";
 import { TalkToWizzy } from "./panel/TalkToWizzy";
 import { TimeTracker } from "./panel/TimeTracker";
 import { TopicHistory } from "./panel/TopicHistory";
-import { supabase } from "@/integrations/supabase/client";
 
 interface CollapsiblePanelProps {
   userProgress?: UserProgress;
@@ -28,7 +27,16 @@ export const CollapsiblePanel: React.FC<CollapsiblePanelProps> = ({
 
   const handleTopicClick = (topic: string) => {
     console.log('Topic clicked:', topic);
-    // Handle topic click logic here
+    // Close panel when topic is clicked
+    setIsOpen(false);
+    // Send message to chat
+    const event = new CustomEvent('wonderwhiz:newMessage', {
+      detail: {
+        text: `Tell me about "${topic}"`,
+        isAi: false
+      }
+    });
+    window.dispatchEvent(event);
   };
 
   return (

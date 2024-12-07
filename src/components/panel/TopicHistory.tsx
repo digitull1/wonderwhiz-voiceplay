@@ -49,9 +49,35 @@ export const TopicHistory = ({ onTopicClick }: TopicHistoryProps) => {
     };
 
     fetchTopics();
-    const interval = setInterval(fetchTopics, 30000); // Refresh every 30 seconds
-    return () => clearInterval(interval);
+
+    // Set up real-time subscription
+    const topicsChannel = supabase
+      .channel('explored_topics_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'explored_topics'
+        },
+        () => {
+          console.log('Topics updated, refetching...');
+          fetchTopics();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      topicsChannel.unsubscribe();
+    };
   }, []);
+
+  const formatTopicLabel = (topic: string) => {
+    return topic
+      .split(/[-_]/)
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+  };
 
   return (
     <motion.div 
@@ -84,9 +110,10 @@ export const TopicHistory = ({ onTopicClick }: TopicHistoryProps) => {
               <Tooltip>
                 <TooltipTrigger asChild>
                   <motion.button
-                    className="w-full text-left p-3 rounded-lg hover:bg-white/50 
-                      transition-colors duration-200 flex items-center gap-2
-                      group focus:outline-none focus:ring-2 focus:ring-primary/50"
+                    className="w-full text-left p-3 rounded-lg bg-white/50 hover:bg-white/80 
+                      transition-all duration-200 flex items-center gap-3
+                      group focus:outline-none focus:ring-2 focus:ring-primary/50
+                      shadow-sm hover:shadow-md"
                     initial={{ opacity: 0, x: -20 }}
                     animate={{ opacity: 1, x: 0 }}
                     transition={{ delay: index * 0.1 }}
@@ -96,15 +123,17 @@ export const TopicHistory = ({ onTopicClick }: TopicHistoryProps) => {
                     <span className="text-xl" role="img" aria-label={topic.topic}>
                       {topic.emoji}
                     </span>
-                    <span className="text-sm font-medium flex-1">{topic.topic}</span>
+                    <span className="text-sm font-medium flex-1 text-gray-700">
+                      {formatTopicLabel(topic.topic)}
+                    </span>
                     <ChevronRight 
-                      className="w-4 h-4 text-gray-400 opacity-0 group-hover:opacity-100 
+                      className="w-4 h-4 text-primary opacity-0 group-hover:opacity-100 
                         transition-opacity duration-200"
                     />
                   </motion.button>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>Continue exploring {topic.topic}!</p>
+                  <p>Continue exploring {formatTopicLabel(topic.topic)}!</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
