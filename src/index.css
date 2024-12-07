@@ -79,30 +79,36 @@
 
 /* Enhanced Post-Chat Actions */
 .post-chat-actions {
-  @apply flex items-center justify-start gap-2 px-2 sm:px-4 py-1.5 sm:py-2 mt-1 sm:mt-2;
+  @apply flex items-center justify-start gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 mt-1;
   background: linear-gradient(
     to right,
-    rgba(155, 135, 245, 0.05),
-    rgba(51, 195, 240, 0.02)
+    rgba(155, 135, 245, 0.02),
+    rgba(51, 195, 240, 0.01)
   );
   backdrop-filter: blur(8px);
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .action-icon {
-  @apply p-1.5 sm:p-2 rounded-full transition-all duration-300 cursor-pointer;
+  @apply p-1.5 rounded-full transition-all duration-300 cursor-pointer;
   background: linear-gradient(135deg, 
-    rgba(155,135,245,0.1) 0%, 
-    rgba(51,195,240,0.05) 100%
+    rgba(155,135,245,0.05) 0%, 
+    rgba(51,195,240,0.02) 100%
   );
-  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-  border: 1px solid rgba(255,255,255,0.1);
+  box-shadow: 
+    0 2px 4px rgba(0,0,0,0.02),
+    inset 0 0 0 1px rgba(255,255,255,0.05);
 }
 
 .action-icon:hover {
-  @apply transform scale-105;
-  box-shadow: 0 4px 12px rgba(255,255,255,0.1);
-  border-color: rgba(255,255,255,0.2);
+  @apply transform;
+  box-shadow: 
+    0 4px 8px rgba(0,0,0,0.05),
+    inset 0 0 0 1px rgba(255,255,255,0.1);
+}
+
+.action-icon:disabled {
+  @apply cursor-not-allowed opacity-50;
 }
 
 /* Points Animation */
@@ -140,7 +146,7 @@
   }
 
   .post-chat-actions {
-    @apply px-2 py-1.5;
+    @apply px-2 py-1;
   }
 }
 
