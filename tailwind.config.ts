@@ -25,34 +25,34 @@ export default {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: {
-          DEFAULT: "#9b87f5", // Lavender
+          DEFAULT: "#9b87f5", // Soft Purple - Calming and engaging
           hover: "#7E69AB",
           foreground: "#1A1F2C", // Dark text for contrast
         },
         secondary: {
-          DEFAULT: "#33C3F0", // Teal
+          DEFAULT: "#33C3F0", // Sky Blue - Promotes creativity
           foreground: "#1A1F2C",
         },
         accent: {
-          DEFAULT: "#FEC6A1", // Coral
+          DEFAULT: "#FEC6A1", // Soft Peach - Warm and inviting
           foreground: "#1A1F2C",
         },
         chat: {
           user: "rgba(255, 255, 255, 0.95)",
-          ai: "rgba(155, 135, 245, 0.95)", // Lavender with opacity
+          ai: "rgba(155, 135, 245, 0.95)", // Soft Purple with opacity
         },
         block: {
-          orange: "#FEC6A1", // Coral
-          blue: "#33C3F0", // Teal
-          purple: "#9b87f5", // Lavender
+          orange: "#FEC6A1", // Soft Peach
+          blue: "#33C3F0",   // Sky Blue
+          purple: "#9b87f5", // Soft Purple
         },
         app: {
-          background: "#F5F5F7", // Light background
-          accent: "#9b87f5", // Lavender
-          cta: "#FEC6A1", // Coral
+          background: "#F5F5F7", // Light, neutral background
+          accent: "#9b87f5",     // Soft Purple
+          cta: "#FEC6A1",        // Soft Peach
           text: {
-            dark: "#1A1F2C", // Dark text
-            light: "#F6F6F7", // Light text
+            dark: "#1A1F2C",     // High contrast for readability
+            light: "#F6F6F7",    // Light text
           }
         }
       },

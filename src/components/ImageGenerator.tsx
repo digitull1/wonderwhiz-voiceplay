@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { Button } from './ui/button';
-import { Loader2, Image as ImageIcon } from 'lucide-react';
+import { Image as ImageIcon, Sparkles } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from './ui/use-toast';
 import { GeneratedImage } from './image/GeneratedImage';
 import { useBlockGeneration } from '@/hooks/useBlockGeneration';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface ImageGeneratorProps {
   prompt: string;
@@ -34,7 +35,6 @@ export const ImageGenerator = ({ prompt, onResponse }: ImageGeneratorProps) => {
         console.log('Image generated successfully');
         setImageUrl(imageData.image);
 
-        // Get image analysis with WonderWhiz style response
         const { data: analysisData, error: analysisError } = await supabase.functions.invoke('analyze-image', {
           body: { 
             image: imageData.image,
@@ -47,7 +47,6 @@ export const ImageGenerator = ({ prompt, onResponse }: ImageGeneratorProps) => {
         const response = analysisData.choices[0].message.content;
         console.log('Image analysis response:', response);
 
-        // Generate contextual blocks based on the analysis
         const blocks = await generateDynamicBlocks(response, "image analysis");
         console.log('Generated blocks:', blocks);
 
@@ -67,23 +66,47 @@ export const ImageGenerator = ({ prompt, onResponse }: ImageGeneratorProps) => {
 
   return (
     <div className="flex flex-col gap-4 w-full max-w-md">
-      <Button
-        onClick={generateImage}
-        disabled={isLoading}
-        className="bg-secondary hover:bg-secondary/90 text-white"
-      >
+      <AnimatePresence mode="wait">
         {isLoading ? (
-          <>
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Generating...
-          </>
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            className="flex flex-col items-center justify-center p-8 rounded-xl bg-gradient-to-br from-accent/20 to-primary/20"
+          >
+            <motion.div
+              animate={{
+                rotate: [0, 360],
+                scale: [1, 1.2, 1],
+              }}
+              transition={{
+                duration: 2,
+                repeat: Infinity,
+                ease: "linear"
+              }}
+              className="mb-4"
+            >
+              <Sparkles className="w-8 h-8 text-primary" />
+            </motion.div>
+            <motion.p
+              animate={{ opacity: [0.5, 1, 0.5] }}
+              transition={{ duration: 1.5, repeat: Infinity }}
+              className="text-primary font-medium text-center"
+            >
+              Creating something magical... ✨
+            </motion.p>
+          </motion.div>
         ) : (
-          <>
+          <Button
+            onClick={generateImage}
+            disabled={isLoading}
+            className="bg-gradient-to-r from-primary via-secondary to-accent hover:opacity-90 text-white shadow-lg"
+          >
             <ImageIcon className="mr-2 h-4 w-4" />
             Generate Image
-          </>
+          </Button>
         )}
-      </Button>
+      </AnimatePresence>
       
       {imageUrl && <GeneratedImage imageUrl={imageUrl} />}
     </div>
