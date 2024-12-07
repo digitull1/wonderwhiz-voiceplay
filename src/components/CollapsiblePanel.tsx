@@ -64,7 +64,7 @@ export const CollapsiblePanel: React.FC<CollapsiblePanelProps> = ({
               exit={{ scale: 0, rotate: 180 }}
               transition={{ duration: 0.3, type: "spring" }}
             >
-              <X className="h-5 w-5 text-primary" />
+              <X className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
             </motion.div>
           ) : (
             <motion.div
@@ -74,10 +74,20 @@ export const CollapsiblePanel: React.FC<CollapsiblePanelProps> = ({
               exit={{ scale: 0 }}
               transition={{ duration: 0.3, type: "spring" }}
             >
-              <Menu className="h-5 w-5 text-primary" />
+              <Menu className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
             </motion.div>
           )}
         </AnimatePresence>
+        {!isOpen && userProgress && (
+          <motion.div 
+            className="absolute -bottom-4 -right-2 bg-primary text-white text-xs px-1.5 py-0.5 rounded-full"
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ delay: 0.2 }}
+          >
+            {userProgress.points}
+          </motion.div>
+        )}
       </Button>
 
       <AnimatePresence>

@@ -119,7 +119,7 @@ export const TopicBlocks: React.FC<TopicBlocksProps> = ({
         ref={containerRef}
       >
         <motion.div 
-          className="flex gap-4 pb-4 px-2 snap-x snap-mandatory"
+          className="flex gap-2 pb-4 px-2 snap-x snap-mandatory"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
