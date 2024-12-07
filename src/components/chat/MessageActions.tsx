@@ -21,7 +21,11 @@ export const MessageActions: React.FC<MessageActionsProps> = ({
   messageText,
   onImageAnalyzed
 }) => {
-  console.log("MessageActions rendered:", { hasListenHandler: !!onListen });
+  console.log("MessageActions rendered with props:", { 
+    hasListenHandler: !!onListen,
+    hasQuizHandler: !!onQuizGenerated,
+    hasImageHandler: !!onImageAnalyzed
+  });
 
   return (
     <motion.div 
@@ -32,6 +36,7 @@ export const MessageActions: React.FC<MessageActionsProps> = ({
       transition={{ duration: 0.2, delay: 0.1 }}
     >
       <AnimatePresence mode="wait">
+        {/* Listen Icon */}
         {onListen && (
           <ActionIcon
             key="listen"
@@ -42,8 +47,10 @@ export const MessageActions: React.FC<MessageActionsProps> = ({
           />
         )}
 
+        {/* Image Generation Icon */}
         <ImageAction key="image" messageText={messageText} />
 
+        {/* Quiz Icon */}
         {onQuizGenerated && (
           <QuizAction
             key="quiz"
@@ -55,6 +62,7 @@ export const MessageActions: React.FC<MessageActionsProps> = ({
           />
         )}
 
+        {/* Image Upload Icon */}
         {onImageAnalyzed && (
           <ImageUpload onImageAnalyzed={onImageAnalyzed}>
             <ActionIcon
@@ -67,6 +75,7 @@ export const MessageActions: React.FC<MessageActionsProps> = ({
           </ImageUpload>
         )}
 
+        {/* Trophy Icon */}
         {onPanelOpen && (
           <ActionIcon
             key="trophy"
