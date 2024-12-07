@@ -1,5 +1,5 @@
 import React from "react";
-import { AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { CollapsiblePanel } from "@/components/CollapsiblePanel";
 import { MainContainer } from "@/components/layout/MainContainer";
 import { BackgroundDecorations } from "@/components/layout/BackgroundDecorations";
@@ -28,7 +28,7 @@ const Index = () => {
 
   return (
     <AnimatePresence>
-      <div 
+      <motion.div 
         className="min-h-screen gradient-bg flex flex-col relative overflow-hidden"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
@@ -92,7 +92,7 @@ const Index = () => {
             />
           </div>
         </TooltipProvider>
-      </div>
+      </motion.div>
     </AnimatePresence>
   );
 };
