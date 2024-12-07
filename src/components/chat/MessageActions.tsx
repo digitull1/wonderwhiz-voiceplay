@@ -1,11 +1,11 @@
 import React from "react";
-import { Volume2, Image, Sparkles } from "lucide-react";
+import { Volume2, Camera, Sparkles, Brain } from "lucide-react";
 import { ActionIcon } from "./actions/ActionIcon";
 import { QuizAction } from "./actions/QuizAction";
 import { ImageUpload } from "../ImageUpload";
 
 interface MessageActionsProps {
-  onListen?: (text: string) => void;  // Updated to match the parent component's type
+  onListen?: (text: string) => void;
   onQuizGenerated?: (quiz: any) => void;
   onImageAnalyzed?: (response: string) => void;
   showActions?: boolean;
@@ -26,7 +26,7 @@ export const MessageActions = ({
       {onListen && (
         <ActionIcon
           icon={Volume2}
-          tooltip="🔊 Listen to this message!"
+          tooltip="Listen to this message!"
           onClick={() => onListen(messageText)}
           className="bg-gradient-to-br from-blue-500/5 to-cyan-500/5"
         />
@@ -39,8 +39,8 @@ export const MessageActions = ({
             className="hover:scale-110 transition-transform"
           >
             <ActionIcon
-              icon={Image}
-              tooltip="📸 Share a picture with me!"
+              icon={Camera}
+              tooltip="Share pictures of your homework or anything you're curious about!"
               onClick={() => {}}
               className="bg-gradient-to-br from-green-500/5 to-blue-500/5"
             />
@@ -48,7 +48,7 @@ export const MessageActions = ({
 
           <ActionIcon
             icon={Sparkles}
-            tooltip="✨ Let me create a magical picture for you!"
+            tooltip="Let me create magical pictures to help you learn!"
             onClick={() => {}} // TODO: Implement image generation
             className="bg-gradient-to-br from-purple-500/5 to-pink-500/5"
           />
@@ -59,6 +59,8 @@ export const MessageActions = ({
         <QuizAction
           onQuizGenerated={onQuizGenerated}
           messageText={messageText}
+          icon={Brain}
+          tooltip="Let's have a fun quiz to test what you've learned!"
         />
       )}
     </div>
