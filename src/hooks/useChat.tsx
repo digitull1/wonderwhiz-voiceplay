@@ -113,7 +113,7 @@ export const useChat = () => {
 
     try {
       const previousMessages = messages.slice(-3).map(m => m.text).join(" ");
-      const response = await getGroqResponse(messageText);
+      const response = await getGroqResponse(messageText, 100); // Limit to 100 words
       console.log('Received response:', response);
       
       const blocks = await generateDynamicBlocks(response, currentTopic, previousMessages);

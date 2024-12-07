@@ -5,7 +5,7 @@ import { Volume2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface MessageActionsProps {
-  onListen?: () => void;
+  onListen?: (text: string) => void;
   messageText: string;
 }
 
@@ -14,6 +14,11 @@ export const MessageActions = ({
   messageText 
 }: MessageActionsProps) => {
   if (!onListen) return null;
+
+  const handleClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onListen(messageText);
+  };
 
   return (
     <motion.div
@@ -27,7 +32,7 @@ export const MessageActions = ({
         whileTap={{ scale: 0.95 }}
       >
         <Button
-          onClick={onListen}
+          onClick={handleClick}
           size="sm"
           variant="ghost"
           className={cn(
