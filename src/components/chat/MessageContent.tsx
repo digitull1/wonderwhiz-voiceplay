@@ -7,7 +7,7 @@ import { ActionIcon } from "./actions/ActionIcon";
 interface MessageContentProps {
   message: string;
   isAi?: boolean;
-  onListen?: () => void;
+  onListen?: (text: string) => void;
   onQuizGenerated?: (quiz: any) => void;
   onPanelOpen?: () => void;
 }
