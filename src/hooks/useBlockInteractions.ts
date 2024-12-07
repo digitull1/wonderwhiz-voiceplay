@@ -12,61 +12,71 @@ export const useBlockInteractions = (
   const [currentTopic, setCurrentTopic] = useState("space");
 
   const trackLearningTime = async (userId: string) => {
-    const today = new Date().toISOString().split('T')[0];
-    
-    const { data: existingTime, error: fetchError } = await supabase
-      .from('learning_time')
-      .select('*')
-      .eq('date', today)
-      .eq('user_id', userId)
-      .single();
-
-    if (fetchError && fetchError.code !== 'PGRST116') {
-      console.error('Error fetching learning time:', fetchError);
-      return;
-    }
-
-    if (existingTime) {
-      const { error: updateError } = await supabase
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      
+      const { data: existingTime, error: fetchError } = await supabase
         .from('learning_time')
-        .update({ 
-          minutes_spent: (existingTime.minutes_spent || 0) + 1 
-        })
-        .eq('id', existingTime.id);
+        .select('*')
+        .eq('date', today)
+        .eq('user_id', userId)
+        .single();
 
-      if (updateError) {
-        console.error('Error updating learning time:', updateError);
+      if (fetchError && fetchError.code !== 'PGRST116') {
+        console.error('Error fetching learning time:', fetchError);
+        return;
       }
-    } else {
-      const { error: insertError } = await supabase
-        .from('learning_time')
-        .insert([{ 
-          minutes_spent: 1,
-          date: today,
-          user_id: userId
-        }]);
 
-      if (insertError) {
-        console.error('Error inserting learning time:', insertError);
+      if (existingTime) {
+        const { error: updateError } = await supabase
+          .from('learning_time')
+          .update({ 
+            minutes_spent: (existingTime.minutes_spent || 0) + 1 
+          })
+          .eq('id', existingTime.id);
+
+        if (updateError) {
+          throw updateError;
+        }
+      } else {
+        const { error: insertError } = await supabase
+          .from('learning_time')
+          .insert([{ 
+            minutes_spent: 1,
+            date: today,
+            user_id: userId
+          }]);
+
+        if (insertError) {
+          throw insertError;
+        }
       }
+    } catch (error) {
+      console.error('Error tracking learning time:', error);
+      throw error;
     }
   };
 
   const trackExploredTopic = async (userId: string, topic: string) => {
-    const { error } = await supabase
-      .from('explored_topics')
-      .upsert({
-        user_id: userId,
-        topic: topic,
-        emoji: '🌟',
-        last_explored_at: new Date().toISOString(),
-        time_spent: 1
-      }, {
-        onConflict: 'user_id,topic'
-      });
+    try {
+      const { error } = await supabase
+        .from('explored_topics')
+        .upsert({
+          user_id: userId,
+          topic: topic,
+          emoji: '🌟',
+          last_explored_at: new Date().toISOString(),
+          time_spent: 1
+        }, {
+          onConflict: 'user_id,topic'
+        });
 
-    if (error) {
+      if (error) {
+        throw error;
+      }
+    } catch (error) {
       console.error('Error tracking explored topic:', error);
+      throw error;
     }
   };
 
@@ -80,7 +90,6 @@ export const useBlockInteractions = (
       setCurrentTopic(topic);
       updateBlocksExplored(topic);
       
-      // Track progress only if user is authenticated
       if (user) {
         await Promise.all([
           trackLearningTime(user.id),
@@ -95,10 +104,16 @@ export const useBlockInteractions = (
         });
       }
       
-      // Always send the message, even for unauthenticated users
       await sendMessage(`Tell me about "${block?.title || 'this topic'}"`, true);
+      
     } catch (error) {
       console.error('Error in handleBlockClick:', error);
+      toast({
+        title: "Oops!",
+        description: "Something went wrong while tracking your progress. But don't worry, let's keep exploring!",
+        variant: "destructive",
+      });
+      
       // Still allow content generation even if tracking fails
       await sendMessage(`Tell me about "${block?.title || 'this topic'}"`, true);
     }

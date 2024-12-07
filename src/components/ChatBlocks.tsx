@@ -4,6 +4,7 @@ import { Block } from "@/types/chat";
 import { BlockNavigationButton } from "./blocks/BlockNavigationButton";
 import { ScrollProgressDots } from "./blocks/ScrollProgressDots";
 import { EnhancedBlockCard } from "./blocks/EnhancedBlockCard";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface ChatBlocksProps {
   blocks: Block[];
@@ -13,11 +14,12 @@ interface ChatBlocksProps {
 export const ChatBlocks = ({ blocks, onBlockClick }: ChatBlocksProps) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [currentScrollIndex, setCurrentScrollIndex] = useState(0);
-  const visibleBlocksCount = 1;
+  const isMobile = useIsMobile();
+  const visibleBlocksCount = isMobile ? 1 : 3;
 
   const handleScroll = (direction: 'left' | 'right') => {
     if (!scrollContainerRef.current) return;
-    const blockWidth = scrollContainerRef.current.offsetWidth;
+    const blockWidth = scrollContainerRef.current.offsetWidth / visibleBlocksCount;
     const scrollAmount = direction === 'left' ? -blockWidth : blockWidth;
     
     scrollContainerRef.current.scrollTo({
@@ -26,15 +28,15 @@ export const ChatBlocks = ({ blocks, onBlockClick }: ChatBlocksProps) => {
     });
 
     const newIndex = Math.floor((scrollContainerRef.current.scrollLeft + scrollAmount) / blockWidth);
-    setCurrentScrollIndex(Math.max(0, Math.min(newIndex, blocks.length - 1)));
+    setCurrentScrollIndex(Math.max(0, Math.min(newIndex, blocks.length - visibleBlocksCount)));
   };
 
   useEffect(() => {
     const handleScrollEvent = () => {
       if (!scrollContainerRef.current) return;
-      const blockWidth = scrollContainerRef.current.offsetWidth;
+      const blockWidth = scrollContainerRef.current.offsetWidth / visibleBlocksCount;
       const newIndex = Math.floor(scrollContainerRef.current.scrollLeft / blockWidth);
-      setCurrentScrollIndex(Math.max(0, Math.min(newIndex, blocks.length - 1)));
+      setCurrentScrollIndex(Math.max(0, Math.min(newIndex, blocks.length - visibleBlocksCount)));
     };
 
     const container = scrollContainerRef.current;
@@ -42,22 +44,26 @@ export const ChatBlocks = ({ blocks, onBlockClick }: ChatBlocksProps) => {
       container.addEventListener('scroll', handleScrollEvent);
       return () => container.removeEventListener('scroll', handleScrollEvent);
     }
-  }, [blocks.length]);
+  }, [blocks.length, visibleBlocksCount]);
+
+  const showNavigation = blocks.length > visibleBlocksCount && !isMobile;
 
   return (
     <div className="relative w-full px-1">
       <AnimatePresence>
-        {blocks.length > 0 && (
+        {showNavigation && (
           <>
             <BlockNavigationButton 
               direction="left" 
               onClick={() => handleScroll('left')} 
               className="left-0 z-10"
+              disabled={currentScrollIndex === 0}
             />
             <BlockNavigationButton 
               direction="right" 
               onClick={() => handleScroll('right')} 
               className="right-0 z-10"
+              disabled={currentScrollIndex >= blocks.length - visibleBlocksCount}
             />
           </>
         )}
@@ -75,7 +81,9 @@ export const ChatBlocks = ({ blocks, onBlockClick }: ChatBlocksProps) => {
           {blocks.map((block, index) => (
             <div 
               key={`${block.title}-${index}`}
-              className="flex-none w-full snap-center px-1"
+              className={`flex-none snap-center px-1 ${
+                isMobile ? 'w-full' : 'w-1/3'
+              }`}
             >
               <EnhancedBlockCard
                 block={block}
@@ -87,7 +95,7 @@ export const ChatBlocks = ({ blocks, onBlockClick }: ChatBlocksProps) => {
         </AnimatePresence>
       </div>
 
-      {blocks.length > 0 && (
+      {blocks.length > visibleBlocksCount && (
         <ScrollProgressDots
           totalBlocks={blocks.length}
           visibleBlocksCount={visibleBlocksCount}
