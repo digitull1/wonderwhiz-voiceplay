@@ -3,11 +3,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "../ui/button";
 import { QuizQuestion } from "@/types/quiz";
 import { cn } from "@/lib/utils";
-import { quizStyles } from "./quizStyles";
 
 interface QuestionDisplayProps {
   question: QuizQuestion;
   currentQuestionIndex: number;
+  totalQuestions: number;
   correctAnswers: number;
   selectedAnswer: number | null;
   showCorrect: boolean;
@@ -17,6 +17,7 @@ interface QuestionDisplayProps {
 export const QuestionDisplay = ({
   question,
   currentQuestionIndex,
+  totalQuestions,
   correctAnswers,
   selectedAnswer,
   showCorrect,
@@ -31,15 +32,15 @@ export const QuestionDisplay = ({
     >
       <div className="flex justify-between items-center mb-4">
         <span className="text-white/90 text-sm font-medium">
-          Question {currentQuestionIndex + 1} of 5
+          Question {currentQuestionIndex + 1} of {totalQuestions}
         </span>
         <span className="text-white/90 text-sm font-medium">
-          Score: {correctAnswers}/5
+          Score: {correctAnswers}/{totalQuestions}
         </span>
       </div>
 
       <motion.h3 
-        className="text-lg sm:text-xl font-semibold mb-4 text-white"
+        className="text-lg sm:text-xl font-semibold mb-6 text-white"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.2 }}
@@ -66,9 +67,12 @@ export const QuestionDisplay = ({
                 <Button
                   variant="outline"
                   className={cn(
-                    quizStyles.optionButton,
-                    showResult && isCorrect && quizStyles.correctOption,
-                    showResult && isSelected && !isCorrect && quizStyles.incorrectOption
+                    "w-full text-left justify-start p-4 relative overflow-hidden",
+                    "transition-all duration-300",
+                    "bg-white/10 text-white border-white/10 backdrop-blur-sm hover:bg-white/20",
+                    showResult && isCorrect && "bg-green-500/90 text-white border-white/20",
+                    showResult && isSelected && !isCorrect && "bg-red-500/90 text-white border-white/20",
+                    "sm:text-base text-sm group"
                   )}
                   onClick={() => !showCorrect && onAnswerClick(index)}
                   disabled={showCorrect}

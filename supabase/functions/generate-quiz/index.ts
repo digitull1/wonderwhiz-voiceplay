@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2.7.1";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -14,12 +13,17 @@ serve(async (req) => {
   try {
     const { topic } = await req.json();
 
-    const prompt = `Generate a multiple choice quiz question about ${topic}. 
+    const prompt = `Generate 5 different multiple choice quiz questions about ${topic}. 
+    Make them progressively more challenging.
     The response should be in JSON format with the following structure:
     {
-      "question": "string",
-      "options": ["string", "string", "string", "string"],
-      "correctAnswer": number (0-3)
+      "questions": [
+        {
+          "question": "string",
+          "options": ["string", "string", "string", "string"],
+          "correctAnswer": number (0-3)
+        }
+      ]
     }`;
 
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -32,7 +36,7 @@ serve(async (req) => {
         model: "mixtral-8x7b-32768",
         messages: [{ role: "user", content: prompt }],
         temperature: 0.7,
-        max_tokens: 500,
+        max_tokens: 1000,
       }),
     });
 
@@ -40,13 +44,13 @@ serve(async (req) => {
     console.log("Quiz generation response:", data);
 
     if (!data.choices?.[0]?.message?.content) {
-      throw new Error("Failed to generate quiz question");
+      throw new Error("Failed to generate quiz questions");
     }
 
     const quizData = JSON.parse(data.choices[0].message.content);
 
     return new Response(
-      JSON.stringify({ question: quizData }),
+      JSON.stringify({ questions: quizData.questions }),
       { 
         headers: { 
           ...corsHeaders,
