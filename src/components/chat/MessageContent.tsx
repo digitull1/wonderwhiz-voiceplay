@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { MessageActions } from "./MessageActions";
+import { MessageActions } from "./actions/MessageActions";
 
 interface MessageContentProps {
   message: string;
@@ -65,7 +65,7 @@ export const MessageContent: React.FC<MessageContentProps> = ({
       </AnimatePresence>
 
       {isAi && showActions && !isTyping && (
-        <div className="mt-4 flex items-center justify-start gap-2">
+        <div className="mt-4">
           <MessageActions 
             onListen={onListen}
             onQuizGenerated={onQuizGenerated}
