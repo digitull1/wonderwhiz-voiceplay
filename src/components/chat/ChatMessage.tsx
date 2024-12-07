@@ -1,9 +1,9 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Block } from "@/types/chat";
 import { RelatedBlocks } from "./RelatedBlocks";
-import { MessageContent } from "./MessageContent";
+import MessageContent from "./MessageContent";
 import { LoaderCircle } from "lucide-react";
 
 interface ChatMessageProps {
@@ -18,7 +18,7 @@ interface ChatMessageProps {
   isTyping?: boolean;
 }
 
-export const ChatMessage = ({ 
+export const ChatMessage: React.FC<ChatMessageProps> = ({ 
   isAi, 
   message, 
   onListen,
@@ -28,7 +28,15 @@ export const ChatMessage = ({
   onPanelOpen,
   imageUrl,
   isTyping
-}: ChatMessageProps) => {
+}) => {
+  const [showBlocks, setShowBlocks] = useState(false);
+
+  useEffect(() => {
+    if (isAi) {
+      setShowBlocks(false);
+    }
+  }, [message, isAi]);
+
   return (
     <motion.div 
       className={cn(
@@ -87,3 +95,5 @@ export const ChatMessage = ({
     </motion.div>
   );
 };
+
+export default React.memo(ChatMessage);

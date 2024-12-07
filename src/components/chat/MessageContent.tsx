@@ -15,7 +15,7 @@ interface MessageContentProps {
   onTypingComplete?: () => void;
 }
 
-const MessageContent: React.FC<MessageContentProps> = ({ 
+export const MessageContent: React.FC<MessageContentProps> = ({ 
   message, 
   isAi,
   onListen,
@@ -100,4 +100,4 @@ const MessageContent: React.FC<MessageContentProps> = ({
   );
 };
 
-export default React.memo(MessageContent);
+export default MessageContent;
