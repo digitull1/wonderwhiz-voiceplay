@@ -69,6 +69,26 @@ export default {
         'block-desc': '14px', // Reduced from 16px
         'cta': '16px', // Reduced from 18px
       },
+      backgroundImage: {
+        'gradient-luxury': 'linear-gradient(135deg, #F5F5F7 0%, #E5E5E7 100%)',
+        'gradient-card': 'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.85) 100%)',
+        'gradient-block': 'linear-gradient(135deg, rgba(0,122,255,0.95) 0%, rgba(88,86,214,0.95) 100%)',
+      },
+      boxShadow: {
+        'luxury': '0 8px 32px -4px rgba(0, 0, 0, 0.1)',
+        'card': '0 4px 12px rgba(0, 0, 0, 0.05)',
+        'block': '0 8px 24px rgba(0, 0, 0, 0.1)',
+        'input': '0 2px 8px rgba(0, 0, 0, 0.05)',
+      },
+      keyframes: {
+        'fade-in': {
+          '0%': { opacity: '0', transform: 'translateY(5px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
+      },
+      animation: {
+        'fade-in': 'fade-in 0.2s ease-out',
+      },
     },
   },
   plugins: [require("tailwindcss-animate")],
