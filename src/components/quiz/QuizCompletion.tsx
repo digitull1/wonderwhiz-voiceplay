@@ -12,35 +12,35 @@ interface QuizCompletionProps {
 
 export const QuizCompletion = ({ correctAnswers, totalQuestions, currentTopic = "this topic" }: QuizCompletionProps) => {
   const generateRelatedBlocks = (topic: string): Block[] => {
-    // Safely handle topic splitting with fallback
-    const topicWords = topic ? topic.split(' ').filter(word => word.length > 3) : [];
-    const mainTopic = topicWords.length > 0 ? 
-      topicWords[Math.floor(Math.random() * topicWords.length)] : 
-      topic;
-    
+    // Format topic for better display
+    const formattedTopic = topic
+      .split('_')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ');
+
     return [
       {
-        title: `Want to learn more about ${topic}? Let's dive deeper! 🎯`,
-        description: "Explore deeper insights",
+        title: `Want to discover amazing facts about ${formattedTopic}? 🌟`,
+        description: "Explore fascinating details",
         metadata: {
           topic: topic,
           type: "fact"
         }
       },
       {
-        title: `Ready for another ${topic} quiz challenge? Test your knowledge! 🎮`,
-        description: "Test your knowledge further",
+        title: `Ready to see ${formattedTopic} come to life? Let's create art! 🎨`,
+        description: "Generate creative images",
+        metadata: {
+          topic: topic,
+          type: "image"
+        }
+      },
+      {
+        title: `Think you know everything about ${formattedTopic}? Try this! 🎯`,
+        description: "Test your knowledge",
         metadata: {
           topic: topic,
           type: "quiz"
-        }
-      },
-      {
-        title: `Curious about topics related to ${mainTopic}? Let's explore together! 🌟`,
-        description: "Discover connected subjects",
-        metadata: {
-          topic: mainTopic,
-          type: "fact"
         }
       }
     ];
@@ -104,7 +104,7 @@ export const QuizCompletion = ({ correctAnswers, totalQuestions, currentTopic = 
         transition={{ delay: 0.5 }}
       >
         <h4 className="text-white/90 text-lg font-medium mb-4">
-          Want to explore more about {currentTopic}? ✨
+          Want to explore more about {currentTopic.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}? ✨
         </h4>
         <ChatBlocks blocks={generateRelatedBlocks(currentTopic)} onBlockClick={() => {}} />
       </motion.div>
