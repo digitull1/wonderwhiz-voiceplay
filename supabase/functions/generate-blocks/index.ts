@@ -8,6 +8,54 @@ const corsHeaders = {
 
 const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
+function getAgeSpecificInstructions(ageGroup: string): string {
+  const [minAge, maxAge] = ageGroup.split('-').map(Number);
+  
+  if (minAge >= 5 && maxAge <= 7) {
+    return `
+      For young explorers (${ageGroup} years):
+      - Use very simple, playful language with basic words
+      - Start with fun questions or "Want to know..."
+      - Include magical and wonder-filled words
+      - Make comparisons to familiar things like toys or treats
+      - Keep sentences short and exciting
+      - Add fun, friendly emojis that match the content
+      - Focus on basic, fascinating facts that spark joy
+      - Make everything sound like a magical adventure
+      - Block 4 must start with "Want to see a cute picture of..."
+      - Block 5 must start with "Ready for a fun quiz about..."
+    `;
+  } else if (minAge >= 8 && maxAge <= 11) {
+    return `
+      For curious minds (${ageGroup} years):
+      - Use clear language with some interesting vocabulary
+      - Start with intriguing questions or "Did you know..."
+      - Include relatable examples from daily life
+      - Add silly comparisons that make learning fun
+      - Mix in some playful jokes and puns
+      - Use emojis that add meaning to the content
+      - Focus on the 'how' and 'why' of things
+      - Make everything sound like an exciting discovery
+      - Block 4 must start with "Want to see a cool picture of..."
+      - Block 5 must start with "Think you know about..."
+    `;
+  } else {
+    return `
+      For young scientists (${ageGroup} years):
+      - Use more sophisticated language while keeping it engaging
+      - Start with thought-provoking questions
+      - Include real-world applications and examples
+      - Add interesting scientific facts and connections
+      - Use cool analogies that respect their intelligence
+      - Choose emojis that complement the content
+      - Focus on deeper understanding and connections
+      - Make everything sound like scientific exploration
+      - Block 4 must start with "Let's visualize..."
+      - Block 5 must start with "Ready to test your knowledge..."
+    `;
+  }
+}
+
 async function retryWithBackoff<T>(operation: () => Promise<T>, retries = 3, baseDelay = 1000): Promise<T> {
   let lastError;
   for (let i = 0; i < retries; i++) {
@@ -27,52 +75,13 @@ async function retryWithBackoff<T>(operation: () => Promise<T>, retries = 3, bas
   throw lastError;
 }
 
-function getAgeSpecificInstructions(ageGroup: string): string {
-  const [minAge, maxAge] = ageGroup.split('-').map(Number);
-  
-  if (minAge >= 5 && maxAge <= 7) {
-    return `
-      For young explorers (${ageGroup} years):
-      - Use very simple, playful language
-      - Include lots of fun comparisons to familiar things
-      - Keep sentences short and exciting
-      - Use plenty of magical and wonder-filled words
-      - Add fun emojis that match the content
-      - Focus on basic, fascinating facts
-      - Make everything sound like a magical adventure
-    `;
-  } else if (minAge >= 8 && maxAge <= 11) {
-    return `
-      For curious minds (${ageGroup} years):
-      - Use clear language with some interesting vocabulary
-      - Include relatable examples from daily life
-      - Add silly comparisons that make learning fun
-      - Mix in some playful jokes and puns
-      - Use emojis that add meaning to the content
-      - Focus on the 'how' and 'why' of things
-      - Make everything sound like an exciting discovery
-    `;
-  } else {
-    return `
-      For young scientists (${ageGroup} years):
-      - Use more sophisticated language but keep it engaging
-      - Include real-world applications and examples
-      - Add interesting scientific facts
-      - Use cool analogies that respect their intelligence
-      - Choose emojis that complement the content
-      - Focus on deeper understanding and connections
-      - Make everything sound like an interesting exploration
-    `;
-  }
-}
-
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { query, context, age_group } = await req.json();
+    const { query, context, age_group = "8-11" } = await req.json();
     console.log("Generating blocks for:", { query, context, age_group });
 
     const ageSpecificInstructions = getAgeSpecificInstructions(age_group);
@@ -91,16 +100,15 @@ serve(async (req) => {
          - Be engaging for kids aged ${age_group}
          - Use warm, playful language
       3. 4th block MUST:
-         - Start with "Want to see..."
+         - Follow age-specific image prompt format
          - Choose ONE of these styles based on age:
-           * Ages 5-7: "a cute, friendly cartoon of..."
-           * Ages 8-11: "a colorful illustration of..."
-           * Ages 12-16: "a detailed educational image of..."
-         - Include whimsical elements for younger ages
+           * Ages 5-7: "Want to see a cute picture of..."
+           * Ages 8-11: "Want to see a cool picture of..."
+           * Ages 12-16: "Let's visualize..."
          - End with 🎨 emoji
       4. 5th block MUST:
-         - Start with "Ready to test your knowledge..."
-         - Make it fun and exciting with age-appropriate challenges
+         - Follow age-specific quiz prompt format
+         - Make it fun and exciting
          - End with 🎯 emoji
       5. MAINTAIN TOPIC RELEVANCE:
          - Each block must naturally continue the current topic
@@ -165,12 +173,12 @@ serve(async (req) => {
         throw new Error("Invalid blocks format in response");
       }
 
-      parsedContent.blocks = parsedContent.blocks.map(block => ({
+      parsedContent.blocks = parsedContent.blocks.map((block: any, index: number) => ({
         title: block.title?.trim().replace(/undefined|null/g, '').replace(/Click to explore more/gi, '') || 
                "Want to know something amazing? Let's explore! ✨",
         metadata: {
           topic: block.metadata?.topic || context,
-          type: block.metadata?.type || "fact"
+          type: index === 3 ? "image" : index === 4 ? "quiz" : "fact"
         }
       }));
 
