@@ -47,6 +47,11 @@ export const AuthForm = ({ onComplete }: AuthFormProps) => {
           
           if (signInError) {
             console.error('Sign in error:', signInError);
+            toast({
+              title: "Error signing in",
+              description: signInError.message,
+              variant: "destructive",
+            });
             throw signInError;
           }
           
@@ -57,6 +62,14 @@ export const AuthForm = ({ onComplete }: AuthFormProps) => {
           onComplete?.();
           return;
         }
+        
+        // Handle other signup errors
+        console.error('Sign up error:', signUpError);
+        toast({
+          title: "Error creating account",
+          description: signUpError.message,
+          variant: "destructive",
+        });
         throw signUpError;
       }
 

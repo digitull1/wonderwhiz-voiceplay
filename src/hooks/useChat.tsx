@@ -23,7 +23,7 @@ export const useChat = () => {
   
   const { toast } = useToast();
   const { isAuthenticated, tempUserId } = useAuth();
-  const { userProgress, updateUserProgress } = useUserProgress(tempUserId);
+  const { userProgress, updateUserProgress } = useUserProgress(tempUserId || "temp");
   const { generateDynamicBlocks } = useBlockGeneration();
   const { handleImageAnalysis, isAnalyzing } = useImageAnalysis();
   const { quizState, handleQuizAnswer, updateBlocksExplored } = useQuiz(updateUserProgress);
