@@ -62,7 +62,7 @@ export const MessageContent = ({
           <ActionIcon
             icon={BookOpen}
             tooltip="Take a quiz"
-            onClick={onQuizGenerated}
+            onClick={() => onQuizGenerated?.(message)}
             className="bg-gradient-to-br from-orange-500/20 to-yellow-500/20 text-white"
           />
           <ActionIcon
