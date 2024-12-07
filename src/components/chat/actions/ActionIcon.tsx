@@ -2,7 +2,12 @@ import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Loader2 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { 
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger 
+} from "@/components/ui/tooltip";
 
 interface ActionIconProps {
   icon: React.ElementType;
@@ -12,22 +17,21 @@ interface ActionIconProps {
   className?: string;
 }
 
-export const ActionIcon = ({ 
+export const ActionIcon: React.FC<ActionIconProps> = ({ 
   icon: Icon, 
   tooltip, 
   onClick, 
   isLoading,
   className 
-}: ActionIconProps) => {
-  console.log("ActionIcon rendered:", { isLoading });
-  
+}) => {
   return (
     <TooltipProvider>
       <Tooltip>
         <TooltipTrigger asChild>
           <motion.button 
             className={cn(
-              "relative p-2.5 rounded-full transition-all duration-300",
+              "action-icon",
+              "relative p-2 rounded-full transition-all duration-300",
               "bg-white/90 backdrop-blur-sm shadow-sm border border-white/20",
               "hover:bg-white hover:scale-110 active:scale-95",
               "focus:outline-none focus:ring-2 focus:ring-primary/20",
@@ -37,7 +41,6 @@ export const ActionIcon = ({
             whileTap={{ scale: 0.95 }}
             onClick={onClick}
             disabled={isLoading}
-            title={tooltip}
           >
             <AnimatePresence mode="wait">
               {isLoading ? (
@@ -47,10 +50,10 @@ export const ActionIcon = ({
                   exit={{ opacity: 0, scale: 0.8 }}
                   className="absolute inset-0 flex items-center justify-center"
                 >
-                  <Loader2 className="w-5 h-5 animate-spin text-primary" />
+                  <Loader2 className="w-4 h-4 animate-spin text-primary" />
                 </motion.div>
               ) : (
-                <Icon className="w-5 h-5 text-primary" />
+                <Icon className="w-4 h-4 text-primary" />
               )}
             </AnimatePresence>
           </motion.button>

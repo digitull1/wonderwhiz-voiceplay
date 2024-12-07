@@ -1,66 +1,63 @@
 import React from "react";
-import { Volume2, Camera, BookOpen, ImageIcon } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Volume2, BookOpen, ImageIcon, Trophy } from "lucide-react";
 import { ActionIcon } from "./actions/ActionIcon";
 import { QuizAction } from "./actions/QuizAction";
 import { ImageAction } from "./actions/ImageAction";
-import { ImageUpload } from "../ImageUpload";
 
 interface MessageActionsProps {
   onListen?: (text: string) => void;
   onQuizGenerated?: (quiz: any) => void;
-  onImageAnalyzed?: (response: string) => void;
-  showActions?: boolean;
+  onPanelOpen?: () => void;
   messageText: string;
 }
 
-export const MessageActions = ({ 
+export const MessageActions: React.FC<MessageActionsProps> = ({ 
   onListen, 
   onQuizGenerated,
-  onImageAnalyzed,
-  showActions = true,
+  onPanelOpen,
   messageText
-}: MessageActionsProps) => {
-  console.log("MessageActions rendered:", { showActions, hasListenHandler: !!onListen });
-
-  if (!showActions) return null;
+}) => {
+  console.log("MessageActions rendered:", { hasListenHandler: !!onListen });
 
   return (
-    <div className="post-chat-actions">
-      {onListen && (
-        <ActionIcon
-          icon={Volume2}
-          tooltip="Listen to this message!"
-          onClick={() => onListen(messageText)}
-          className="bg-gradient-to-br from-blue-500/5 to-cyan-500/5"
-        />
-      )}
+    <motion.div 
+      className="post-chat-actions"
+      initial={{ opacity: 0, y: 5 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -5 }}
+      transition={{ duration: 0.2, delay: 0.1 }}
+    >
+      <AnimatePresence mode="wait">
+        {onListen && (
+          <ActionIcon
+            icon={Volume2}
+            tooltip="Listen to this message!"
+            onClick={() => onListen(messageText)}
+            className="bg-gradient-to-br from-blue-500/5 to-cyan-500/5"
+          />
+        )}
 
-      {onImageAnalyzed && (
-        <>
-          <ImageUpload 
-            onImageAnalyzed={onImageAnalyzed}
-            className="hover:scale-110 transition-transform"
-          >
-            <ActionIcon
-              icon={Camera}
-              tooltip="Share pictures of your homework or anything you're curious about!"
-              onClick={() => {}}
-              className="bg-gradient-to-br from-green-500/5 to-blue-500/5"
-            />
-          </ImageUpload>
+        <ImageAction messageText={messageText} />
 
-          <ImageAction messageText={messageText} />
-        </>
-      )}
+        {onQuizGenerated && (
+          <QuizAction
+            onQuizGenerated={onQuizGenerated}
+            messageText={messageText}
+            icon={BookOpen}
+            tooltip="Let's have a fun quiz to test what you've learned!"
+          />
+        )}
 
-      {onQuizGenerated && (
-        <QuizAction
-          onQuizGenerated={onQuizGenerated}
-          messageText={messageText}
-          icon={BookOpen}
-          tooltip="Let's have a fun quiz to test what you've learned!"
-        />
-      )}
-    </div>
+        {onPanelOpen && (
+          <ActionIcon
+            icon={Trophy}
+            tooltip="Check your progress!"
+            onClick={onPanelOpen}
+            className="bg-gradient-to-br from-yellow-500/5 to-orange-500/5"
+          />
+        )}
+      </AnimatePresence>
+    </motion.div>
   );
 };
