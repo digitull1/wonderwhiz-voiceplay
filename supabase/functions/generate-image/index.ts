@@ -73,67 +73,45 @@ serve(async (req) => {
     }
 
     // Call OpenAI API
-    try {
-      console.log('Calling OpenAI DALL-E 3 API');
-      const response = await fetch('https://api.openai.com/v1/images/generations', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${openaiKey}`
-        },
-        body: JSON.stringify({
-          model: "dall-e-3",
-          prompt: prompt,
-          n: 1,
-          size: "1024x1024",
-          quality: "standard",
-          response_format: "b64_json"
-        })
-      });
+    console.log('Calling OpenAI DALL-E 3 API');
+    const openaiResponse = await fetch('https://api.openai.com/v1/images/generations', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${openaiKey}`
+      },
+      body: JSON.stringify({
+        model: "dall-e-3",
+        prompt: prompt,
+        n: 1,
+        size: "1024x1024",
+        quality: "standard",
+        response_format: "b64_json"
+      })
+    });
 
-      if (!response.ok) {
-        const error = await response.json();
-        console.error('OpenAI API Error:', error);
-        throw new Error(error.error?.message || 'Failed to generate image');
-      }
-
-      const data = await response.json();
-      console.log('Image generated successfully');
-
-      if (!data.data?.[0]?.b64_json) {
-        throw new Error('No image data in response');
-      }
-
-      return new Response(
-        JSON.stringify({
-          image: `data:image/png;base64,${data.data[0].b64_json}`,
-          success: true
-        }),
-        { 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      );
-    } catch (error) {
-      console.error('OpenAI API error:', error);
-      
-      // Check if it's a rate limit error
-      if (error.message?.includes('Rate limit') || response?.status === 429) {
-        return new Response(
-          JSON.stringify({
-            error: 'Rate limit exceeded',
-            details: error.message,
-            success: false,
-            isRateLimit: true
-          }),
-          { 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            status: 429 // Too Many Requests
-          }
-        );
-      }
-      
-      throw error; // Re-throw other errors to be caught by outer catch block
+    if (!openaiResponse.ok) {
+      const error = await openaiResponse.json();
+      console.error('OpenAI API Error:', error);
+      throw new Error(error.error?.message || 'Failed to generate image');
     }
+
+    const data = await openaiResponse.json();
+    console.log('Image generated successfully');
+
+    if (!data.data?.[0]?.b64_json) {
+      throw new Error('No image data in response');
+    }
+
+    return new Response(
+      JSON.stringify({
+        image: `data:image/png;base64,${data.data[0].b64_json}`,
+        success: true
+      }),
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      }
+    );
   } catch (error) {
     console.error('Error in generate-image function:', error);
     return new Response(
