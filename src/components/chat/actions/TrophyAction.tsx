@@ -26,7 +26,7 @@ export const TrophyAction = ({ onPanelOpen }: TrophyActionProps) => {
       icon={Trophy}
       tooltip="See your progress!"
       onClick={handlePanelOpen}
-      className="bg-gradient-to-br from-orange-500/5 to-yellow-500/5"
+      className="bg-gradient-to-br from-purple-500/20 to-pink-500/20 text-white"
     />
   );
 };

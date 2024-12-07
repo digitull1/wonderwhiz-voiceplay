@@ -60,7 +60,7 @@ export const QuizAction = ({ messageText, onQuizGenerated }: QuizActionProps) =>
       tooltip="Take a quiz!"
       onClick={handleQuizGeneration}
       isLoading={isGenerating}
-      className="bg-gradient-to-br from-green-500/5 to-teal-500/5"
+      className="bg-gradient-to-br from-orange-500/20 to-yellow-500/20 text-white"
     />
   );
 };

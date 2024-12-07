@@ -46,8 +46,7 @@
 
 /* Luxury Message Bubbles */
 .message-bubble-ai {
-  @apply backdrop-blur-xl shadow-luxury border border-white/20 animate-fade-in text-app-text-dark;
-  width: 100%;
+  @apply backdrop-blur-xl shadow-luxury border border-white/20 animate-fade-in text-white w-full;
   margin: 0;
   padding: 1.5rem;
   background: linear-gradient(
@@ -58,12 +57,10 @@
   box-shadow: 
     0 8px 32px rgba(0,0,0,0.1),
     inset 0 0 32px rgba(255,255,255,0.1);
-  border-radius: 0;
 }
 
 .message-bubble-user {
-  @apply backdrop-blur-lg shadow-card border border-white/10 text-app-text-dark;
-  width: 100%;
+  @apply backdrop-blur-lg shadow-card border border-white/10 text-app-text-dark w-full;
   margin: 0;
   padding: 1.5rem;
   background: linear-gradient(
@@ -74,7 +71,6 @@
   box-shadow: 
     0 4px 12px rgba(0,0,0,0.05),
     inset 0 0 24px rgba(255,255,255,0.5);
-  border-radius: 0;
 }
 
 /* Enhanced Post-Chat Actions */
