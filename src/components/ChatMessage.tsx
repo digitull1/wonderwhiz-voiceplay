@@ -44,7 +44,7 @@ export const ChatMessage = ({
           }
           return prev + 1;
         });
-      }, 50); // Faster typing speed
+      }, 50);
 
       return () => clearInterval(typingInterval);
     } else {
@@ -69,17 +69,17 @@ export const ChatMessage = ({
   return (
     <motion.div 
       className={cn(
-        "flex mb-4 px-4",
-        isAi ? "justify-start" : "justify-end"
+        "flex w-full",
+        isAi ? "bg-gradient-luxury" : "bg-white/5"
       )}
-      initial={{ opacity: 0, y: 5 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -5 }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
       transition={{ duration: 0.2 }}
     >
       <div className={cn(
-        "flex items-start gap-3 max-w-[85%] group",
-        isAi ? "w-full" : "w-full"
+        "w-full max-w-7xl mx-auto flex items-start gap-3 px-4 md:px-6",
+        isAi ? "py-6" : "py-4"
       )}>
         {isAi && (
           <motion.div
@@ -94,10 +94,8 @@ export const ChatMessage = ({
 
         <motion.div
           className={cn(
-            "relative p-4 rounded-2xl shadow-luxury backdrop-blur-xl",
-            isAi ? 
-              "message-bubble-ai rounded-tl-sm text-white" : 
-              "message-bubble-user rounded-tr-sm"
+            "relative flex-1",
+            isAi ? "text-white" : "text-app-text-dark"
           )}
           layout
         >
@@ -106,7 +104,7 @@ export const ChatMessage = ({
             {words.slice(0, currentWordIndex + 1).join(' ')}
             {isAi && !isTypingComplete && (
               <motion.span
-                className="inline-block w-1.5 h-4 bg-white ml-0.5"
+                className="inline-block w-1.5 h-4 bg-current ml-0.5"
                 animate={{ opacity: [1, 0] }}
                 transition={{ duration: 0.5, repeat: Infinity }}
               />
@@ -116,16 +114,16 @@ export const ChatMessage = ({
           {isAi && (
             <motion.button
               onClick={handleListen}
-              className="absolute top-3 right-3 opacity-70 hover:opacity-100 
+              className="absolute top-0 right-0 opacity-70 hover:opacity-100 
                 cursor-pointer transition-all p-1.5 rounded-full hover:bg-white/20
                 active:scale-95 z-20"
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.95 }}
             >
               {isPlaying ? (
-                <VolumeX className="w-4 h-4 text-white" />
+                <VolumeX className="w-4 h-4 text-current" />
               ) : (
-                <Volume2 className="w-4 h-4 text-white" />
+                <Volume2 className="w-4 h-4 text-current" />
               )}
             </motion.button>
           )}
