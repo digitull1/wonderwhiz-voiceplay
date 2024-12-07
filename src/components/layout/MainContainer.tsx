@@ -4,6 +4,7 @@ import { ChatHeader } from "@/components/ChatHeader";
 import { ChatContainer } from "@/components/ChatContainer";
 import { ChatInput } from "@/components/ChatInput";
 import { AuthForm } from "@/components/auth/AuthForm";
+import { CollapsiblePanel } from "@/components/CollapsiblePanel";
 
 interface MainContainerProps {
   messages: any[];
@@ -36,34 +37,20 @@ export const MainContainer: React.FC<MainContainerProps> = ({
 }) => {
   const [showAuthForm, setShowAuthForm] = React.useState(false);
 
-  const enhancedMessages = React.useMemo(() => {
-    if (!isAuthenticated && messages.length > 2) {
-      return [
-        ...messages,
-        {
-          text: "Want to save your progress and earn points? Sign up or log in!",
-          isAi: true,
-          blocks: [],
-          showAuthPrompt: true
-        }
-      ];
-    }
-    return messages;
-  }, [messages, isAuthenticated]);
-
   return (
     <motion.div 
-      className="min-h-screen w-full flex flex-col bg-white"
+      className="min-h-screen w-full flex flex-col relative overflow-hidden"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      role="main"
-      aria-label="WonderWhiz Chat Interface"
     >
-      <div className="w-full h-full flex flex-col flex-1">
+      <div className="absolute inset-0 bg-gradient-luxury opacity-50" />
+      <div className="absolute inset-0 bg-stars opacity-10 animate-float" />
+      
+      <div className="relative z-10 w-full h-full flex flex-col flex-1 px-4 md:px-6 py-4">
         <motion.div 
           className="flex-1 flex flex-col h-[calc(100vh-2rem)] relative overflow-hidden
-            focus-within:ring-2 focus-within:ring-primary/50 touch-pan-y"
+            rounded-2xl backdrop-blur-xl bg-white/10 border border-white/20 shadow-luxury"
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ 
@@ -76,7 +63,7 @@ export const MainContainer: React.FC<MainContainerProps> = ({
           <ChatHeader />
           
           <ChatContainer 
-            messages={enhancedMessages}
+            messages={messages}
             handleListen={handleListen}
             onBlockClick={handleBlockClick}
             quizState={quizState}
@@ -86,7 +73,8 @@ export const MainContainer: React.FC<MainContainerProps> = ({
 
           {showAuthForm && (
             <motion.div 
-              className="absolute inset-0 bg-white/95 backdrop-blur-sm p-4 flex items-center justify-center"
+              className="absolute inset-0 bg-white/95 backdrop-blur-xl p-4 
+                flex items-center justify-center z-50"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -94,7 +82,9 @@ export const MainContainer: React.FC<MainContainerProps> = ({
               <div className="w-full max-w-md">
                 <button 
                   onClick={() => setShowAuthForm(false)}
-                  className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+                  className="absolute top-4 right-4 text-gray-500 hover:text-gray-700
+                    w-8 h-8 flex items-center justify-center rounded-full
+                    hover:bg-gray-100 transition-colors"
                 >
                   ✕
                 </button>
@@ -111,11 +101,12 @@ export const MainContainer: React.FC<MainContainerProps> = ({
             isLoading={isLoading}
             currentTopic={currentTopic}
             onImageAnalyzed={handleImageAnalysis}
-            placeholder={`Ask me anything about ${currentTopic || 'space'}...`}
-            aria-label="Chat input"
+            placeholder="Ask me something magical..."
           />
         </motion.div>
       </div>
+
+      <CollapsiblePanel userProgress={userProgress} />
     </motion.div>
   );
 };
