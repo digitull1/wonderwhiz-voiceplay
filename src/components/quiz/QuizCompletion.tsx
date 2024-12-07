@@ -7,35 +7,41 @@ import { cn } from "@/lib/utils";
 interface QuizCompletionProps {
   correctAnswers: number;
   totalQuestions: number;
+  currentTopic: string;
 }
 
-export const QuizCompletion = ({ correctAnswers, totalQuestions }: QuizCompletionProps) => {
-  const relatedBlocks: Block[] = [
-    {
-      title: "Want to learn more about this topic? Let's dive deeper! 🎯",
-      description: "Explore more fascinating facts",
-      metadata: {
-        topic: "related_topic_1",
-        type: "fact"
+export const QuizCompletion = ({ correctAnswers, totalQuestions, currentTopic }: QuizCompletionProps) => {
+  const generateRelatedBlocks = (topic: string): Block[] => {
+    const topicWords = topic.split(' ').filter(word => word.length > 3);
+    const mainTopic = topicWords[Math.floor(Math.random() * topicWords.length)] || topic;
+    
+    return [
+      {
+        title: `Discover more fascinating facts about ${topic}! 🎯`,
+        description: "Explore deeper insights",
+        metadata: {
+          topic: topic,
+          type: "fact"
+        }
+      },
+      {
+        title: `Ready for another ${topic} quiz challenge? Let's go! 🎮`,
+        description: "Test your knowledge further",
+        metadata: {
+          topic: topic,
+          type: "quiz"
+        }
+      },
+      {
+        title: `Curious about topics related to ${mainTopic}? Let's explore! 🌟`,
+        description: "Discover connected subjects",
+        metadata: {
+          topic: mainTopic,
+          type: "fact"
+        }
       }
-    },
-    {
-      title: "Ready for another quiz challenge? Test your knowledge! 🎮",
-      description: "Take another quiz",
-      metadata: {
-        topic: "related_topic_2",
-        type: "quiz"
-      }
-    },
-    {
-      title: "Curious about similar topics? Let's explore together! 🌟",
-      description: "Discover related subjects",
-      metadata: {
-        topic: "related_topic_3",
-        type: "fact"
-      }
-    }
-  ];
+    ];
+  };
 
   const getCompletionMessage = () => {
     const percentage = (correctAnswers / totalQuestions) * 100;
@@ -95,9 +101,9 @@ export const QuizCompletion = ({ correctAnswers, totalQuestions }: QuizCompletio
         transition={{ delay: 0.5 }}
       >
         <h4 className="text-white/90 text-lg font-medium mb-4">
-          Want to explore more? Check out these exciting topics! ✨
+          Want to explore more about {currentTopic}? ✨
         </h4>
-        <ChatBlocks blocks={relatedBlocks} onBlockClick={() => {}} />
+        <ChatBlocks blocks={generateRelatedBlocks(currentTopic)} onBlockClick={() => {}} />
       </motion.div>
     </motion.div>
   );

@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { History, ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Tooltip,
   TooltipContent,
@@ -15,11 +16,43 @@ interface Topic {
 }
 
 interface TopicHistoryProps {
-  topics: Topic[];
   onTopicClick: (topic: string) => void;
 }
 
-export const TopicHistory = ({ topics, onTopicClick }: TopicHistoryProps) => {
+export const TopicHistory = ({ onTopicClick }: TopicHistoryProps) => {
+  const [topics, setTopics] = useState<Topic[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchTopics = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          setIsLoading(false);
+          return;
+        }
+
+        const { data, error } = await supabase
+          .from('explored_topics')
+          .select('topic, emoji, last_explored_at')
+          .eq('user_id', user.id)
+          .order('last_explored_at', { ascending: false })
+          .limit(5);
+
+        if (error) throw error;
+        setTopics(data || []);
+        setIsLoading(false);
+      } catch (error) {
+        console.error('Error fetching topics:', error);
+        setIsLoading(false);
+      }
+    };
+
+    fetchTopics();
+    const interval = setInterval(fetchTopics, 30000); // Refresh every 30 seconds
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <motion.div 
       className="bg-white/80 backdrop-blur-sm rounded-xl p-4 shadow-sm"
@@ -33,9 +66,21 @@ export const TopicHistory = ({ topics, onTopicClick }: TopicHistoryProps) => {
       </div>
 
       <div className="space-y-2">
-        {topics.length > 0 ? (
+        {isLoading ? (
+          <motion.div 
+            className="flex justify-center py-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+          >
+            <motion.div
+              className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full"
+              animate={{ rotate: 360 }}
+              transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+            />
+          </motion.div>
+        ) : topics.length > 0 ? (
           topics.map((topic, index) => (
-            <TooltipProvider key={topic.topic}>
+            <TooltipProvider key={topic.topic + index}>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <motion.button
