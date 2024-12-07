@@ -11,7 +11,7 @@ import { TrophyAction } from "./actions/TrophyAction";
 interface MessageContentProps {
   message: string;
   isAi?: boolean;
-  onListen?: () => void;
+  onListen?: (text: string) => void;  // Updated to match the expected signature
   onQuizGenerated?: (quiz: any) => void;
   onPanelOpen?: () => void;
   imageUrl?: string;
@@ -53,7 +53,7 @@ export const MessageContent = ({
           <ActionIcon
             icon={Volume2}
             tooltip="Listen to message"
-            onClick={onListen}
+            onClick={() => onListen?.(message)}  // Updated to pass the message
             className="bg-gradient-to-br from-blue-500/20 to-purple-500/20 text-white"
           />
           <ImageAction messageText={message} />
