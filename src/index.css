@@ -69,24 +69,40 @@
     rgba(255, 255, 255, 0.95) 100%
   );
   border-radius: 0;
-  color: #1D1D1F; /* Ensuring user messages are dark */
+  color: #1D1D1F; /* Dark color for user messages */
 }
 
-/* Enhanced Input Styling */
-.chat-input {
-  @apply bg-white/90 backdrop-blur-2xl px-6 py-4
-    border-t border-white/20 shadow-input
-    focus:outline-none focus:ring-2 focus:ring-primary/50
-    placeholder:text-gray-400
-    transition-all duration-300 ease-out;
-  border-radius: 0;
-  width: 100%;
+/* Points Animation */
+@keyframes points-pop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+.points-animation {
+  animation: points-pop 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Enhanced Block Animations */
+.block-hover {
+  @apply transition-all duration-300 ease-out;
+  transform-style: preserve-3d;
+  perspective: 1000px;
+}
+
+.block-hover:hover {
+  transform: translateY(-5px) rotateX(2deg);
 }
 
 /* Mobile Optimizations */
 @media (max-width: 640px) {
   .chat-container {
     margin-bottom: env(safe-area-inset-bottom);
+  }
+  
+  .message-bubble-ai,
+  .message-bubble-user {
+    padding: 1rem;
   }
 }
 
@@ -111,26 +127,4 @@
   .min-h-screen {
     min-height: -webkit-fill-available;
   }
-}
-
-/* Enhanced Block Animations */
-.block-hover {
-  @apply transition-all duration-300 ease-out;
-  transform-style: preserve-3d;
-  perspective: 1000px;
-}
-
-.block-hover:hover {
-  transform: translateY(-5px) rotateX(2deg);
-}
-
-/* Points Animation */
-@keyframes points-pop {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.2); }
-  100% { transform: scale(1); }
-}
-
-.points-animation {
-  animation: points-pop 0.5s cubic-bezier(0.4, 0, 0.2, 1);
 }

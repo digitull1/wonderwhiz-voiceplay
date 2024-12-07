@@ -1,160 +1,130 @@
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
 import { UserProgress } from "@/types/chat";
-import { mapDatabaseToUserProgress, getInitialUserProgress } from "@/utils/progressUtils";
-import { createLevelUpToast, createPointsEarnedToast, createErrorToast } from "@/utils/progressToasts";
+import { useToast } from "@/hooks/use-toast";
+import confetti from "canvas-confetti";
 
-export const useUserProgress = (tempUserId?: string | null) => {
+export const useUserProgress = () => {
+  const [userProgress, setUserProgress] = useState<UserProgress>({
+    points: 0,
+    level: 1,
+    streak_days: 0,
+    last_interaction_date: new Date().toISOString().split('T')[0],
+    topicsExplored: 0,
+    questionsAsked: 0,
+    quizScore: 0
+  });
+  
   const { toast } = useToast();
-  const [userProgress, setUserProgress] = useState<UserProgress>(getInitialUserProgress());
 
-  useEffect(() => {
-    const setupSubscription = async () => {
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user && !tempUserId) {
-          console.log('No user found for progress tracking');
-          return;
-        }
+  const showLevelUpToast = (newLevel: number) => {
+    toast({
+      title: "Level Up! 🎉",
+      description: `Congratulations! You've reached level ${newLevel}!`,
+      className: "bg-primary text-white"
+    });
+    
+    confetti({
+      particleCount: 100,
+      spread: 70,
+      origin: { y: 0.6 }
+    });
+  };
 
-        if (tempUserId) {
-          const storedProgress = localStorage.getItem(`progress_${tempUserId}`);
-          if (storedProgress) {
-            setUserProgress(JSON.parse(storedProgress));
-          }
-          return;
-        }
+  const showPointsToast = (points: number) => {
+    toast({
+      title: "Points Earned! ⭐",
+      description: `You've earned ${points} points!`,
+      className: "bg-secondary text-white"
+    });
+  };
 
-        const { data: initialProgress, error: fetchError } = await supabase
-          .from('user_progress')
-          .select('*')
-          .eq('user_id', user.id)
-          .single();
+  const showStreakToast = (days: number) => {
+    toast({
+      title: "Streak Updated! 🔥",
+      description: `You're on a ${days} day streak!`,
+      className: "bg-accent text-white"
+    });
+  };
 
-        if (fetchError) {
-          console.error('Error fetching initial progress:', fetchError);
-          return;
-        }
+  const fetchUserProgress = async () => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
 
-        if (initialProgress) {
-          console.log('Initial progress loaded:', initialProgress);
-          setUserProgress(mapDatabaseToUserProgress(initialProgress));
-        }
+    const { data, error } = await supabase
+      .from('user_progress')
+      .select('*')
+      .eq('user_id', user.id)
+      .single();
 
-        const channel = supabase
-          .channel(`user_progress_${user.id}`)
-          .on(
-            'postgres_changes',
-            {
-              event: '*',
-              schema: 'public',
-              table: 'user_progress',
-              filter: `user_id=eq.${user.id}`
-            },
-            (payload) => {
-              console.log('Progress update received:', payload);
-              if (payload.new) {
-                setUserProgress(mapDatabaseToUserProgress(payload.new));
-              }
-            }
-          )
-          .subscribe();
+    if (error) {
+      console.error('Error fetching user progress:', error);
+      return;
+    }
 
-        return () => {
-          console.log('Cleaning up subscription');
-          channel.unsubscribe();
-        };
-      } catch (error) {
-        console.error('Error in setupSubscription:', error);
-        toast(createErrorToast());
-      }
-    };
+    if (data) {
+      setUserProgress(data);
+    }
+  };
 
-    setupSubscription();
-  }, [toast, tempUserId]);
-
-  const updateUserProgress = async (pointsToAdd: number): Promise<void> => {
+  const updateUserProgress = async (points: number) => {
     try {
-      console.log('Updating user progress with points:', pointsToAdd);
-      
-      if (tempUserId) {
-        const newPoints = userProgress.points + pointsToAdd;
-        const newProgress = {
-          ...userProgress,
-          points: newPoints,
-          last_interaction_date: new Date().toISOString()
-        };
-        localStorage.setItem(`progress_${tempUserId}`, JSON.stringify(newProgress));
-        setUserProgress(newProgress);
-        return;
-      }
-
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        console.log('No user found');
-        return;
+      if (!user) return;
+
+      const newPoints = userProgress.points + points;
+      const currentLevel = userProgress.level;
+      const pointsForNextLevel = currentLevel * 100;
+
+      let newLevel = currentLevel;
+      if (newPoints >= pointsForNextLevel) {
+        newLevel = currentLevel + 1;
+        showLevelUpToast(newLevel);
       }
 
-      const { data: currentProgress, error: fetchError } = await supabase
+      const { data, error } = await supabase
         .from('user_progress')
-        .select('*')
-        .eq('user_id', user.id)
-        .single();
-
-      if (fetchError) {
-        console.error('Error fetching current progress:', fetchError);
-        throw fetchError;
-      }
-
-      const newPoints = (currentProgress?.points || 0) + pointsToAdd;
-      console.log('Calculating new points:', currentProgress?.points, '+', pointsToAdd, '=', newPoints);
-      
-      const { data: pointsData } = await supabase
-        .rpc('calculate_next_level_points', {
-          current_level: currentProgress?.level || 1
-        });
-
-      const pointsNeeded = pointsData ?? 100;
-      console.log('Points needed for next level:', pointsNeeded);
-
-      const shouldLevelUp = newPoints >= pointsNeeded;
-      const newLevel = shouldLevelUp ? (currentProgress?.level || 1) + 1 : (currentProgress?.level || 1);
-
-      const { data, error: updateError } = await supabase
-        .from('user_progress')
-        .upsert({ 
-          user_id: user.id,
+        .update({
           points: newPoints,
           level: newLevel,
-          last_interaction_date: new Date().toISOString(),
-          topics_explored: currentProgress?.topics_explored || 0,
-          questions_asked: currentProgress?.questions_asked || 0,
-          quiz_score: currentProgress?.quiz_score || 0
+          last_interaction_date: new Date().toISOString().split('T')[0]
         })
+        .eq('user_id', user.id)
         .select()
         .single();
 
-      if (updateError) {
-        console.error('Error updating progress:', updateError);
-        throw updateError;
-      }
+      if (error) throw error;
 
       if (data) {
-        setUserProgress(mapDatabaseToUserProgress(data));
-        
-        if (shouldLevelUp) {
-          toast(createLevelUpToast(newLevel));
-        } else {
-          const remainingPoints = pointsNeeded - newPoints;
-          toast(createPointsEarnedToast(pointsToAdd, remainingPoints, currentProgress?.level + 1));
+        setUserProgress(prev => ({
+          ...prev,
+          points: newPoints,
+          level: newLevel,
+          last_interaction_date: data.last_interaction_date
+        }));
+
+        showPointsToast(points);
+
+        if (data.streak_days > userProgress.streak_days) {
+          showStreakToast(data.streak_days);
         }
       }
     } catch (error) {
       console.error('Error updating progress:', error);
-      toast(createErrorToast());
+      toast({
+        title: "Error",
+        description: "Failed to update progress",
+        variant: "destructive"
+      });
     }
   };
 
-  return { userProgress, updateUserProgress };
+  useEffect(() => {
+    fetchUserProgress();
+  }, []);
+
+  return {
+    userProgress,
+    updateUserProgress
+  };
 };

@@ -46,9 +46,11 @@ export const EnhancedBlockCard = ({
           tracking-tight break-words text-left max-w-full">
           {block.title}
         </h3>
-        <p className="text-block-desc opacity-90 font-medium">
-          {block.description || "Click to explore more!"}
-        </p>
+        {block.description && !block.description.includes("Click to explore") && (
+          <p className="text-block-desc opacity-90 font-medium">
+            {block.description}
+          </p>
+        )}
       </div>
 
       {/* Interactive background elements */}
