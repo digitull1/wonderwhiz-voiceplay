@@ -37,31 +37,37 @@ serve(async (req) => {
     console.log("Generating blocks for:", { query, context, age_group });
 
     const prompt = `
-      Based on "${query}" and topic "${context}", generate 5 engaging, educational blocks.
+      Based on "${query}" and topic "${context}", generate 5 engaging, educational blocks following these guidelines:
       
       RULES:
-      1. Each block must be EXACTLY ONE LINE and 75 CHARACTERS or LESS (including emoji)
+      1. Each block must be EXACTLY ONE LINE and UNDER 75 CHARACTERS (including emoji)
       2. First 3 blocks MUST:
-         - Start with "Did you know" or an exciting question
-         - Include ONE fascinating fact DIRECTLY RELATED to the topic
+         - Start with an exciting question or "Want to know..."
+         - Include ONE fascinating fact with a silly comparison
          - End with ONE relevant emoji
          - Be engaging for kids aged ${age_group}
+         - Use warm, playful language
       3. 4th block MUST:
-         - Be an exciting image generation prompt
-         - Start with "Would you like to see..."
-         - Make it super detailed and creative for amazing AI image generation
+         - Start with "Want to see..."
+         - Make it super detailed and creative for AI image generation
+         - Include whimsical elements (e.g., "a penguin wearing a top hat")
          - End with 🎨 emoji
       4. 5th block MUST:
-         - Be a quiz challenge
          - Start with "Ready to test your knowledge..."
-         - Make it fun and exciting
+         - Make it fun and exciting with a silly twist
          - End with 🎯 emoji
       5. MAINTAIN TOPIC RELEVANCE:
          - Each block must naturally continue the current topic
          - Focus on related subtopics
          - Ensure logical connections between blocks
-      6. NO undefined values or spelling mistakes allowed
-      7. DO NOT include phrases like 'Click to explore more'
+      6. TONE & STYLE:
+         - Be warm and enthusiastic
+         - Use simple, kid-friendly language
+         - Add light humor or silly comparisons
+         - Celebrate curiosity
+      7. NO undefined values or spelling mistakes allowed
+      8. DO NOT include phrases like 'Click to explore more'
+      9. ENSURE each block fits on ONE line and is UNDER 75 characters
 
       Format response as:
       {
@@ -89,7 +95,7 @@ serve(async (req) => {
           messages: [
             {
               role: "system",
-              content: "You are WonderWhiz, generating exciting educational content for kids. Ensure all text is spell-checked and contains no undefined values."
+              content: "You are WonderWhiz, generating exciting educational content for kids. Be warm, playful, and encouraging!"
             },
             { role: "user", content: prompt }
           ],
@@ -115,7 +121,7 @@ serve(async (req) => {
 
       parsedContent.blocks = parsedContent.blocks.map(block => ({
         title: block.title?.trim().replace(/undefined|null/g, '').replace(/Click to explore more/gi, '') || 
-               "Did you know? Let's explore something amazing! ✨",
+               "Want to know something amazing? Let's explore! ✨",
         metadata: {
           topic: block.metadata?.topic || context,
           type: block.metadata?.type || "fact"

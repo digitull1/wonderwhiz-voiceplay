@@ -13,12 +13,6 @@ interface BlockCardProps {
 
 export const BlockCard = ({ block, index, onClick, color }: BlockCardProps) => {
   const isMobile = useIsMobile();
-  const CONTENT_LIMIT = 75;
-
-  const truncateContent = (text: string) => {
-    if (text.length <= CONTENT_LIMIT) return text;
-    return text.substring(0, CONTENT_LIMIT - 3) + "...";
-  };
 
   // Different gradients based on block type
   const getBlockGradient = () => {
@@ -47,7 +41,7 @@ export const BlockCard = ({ block, index, onClick, color }: BlockCardProps) => {
       <motion.button
         onClick={onClick}
         className={`block-hover flex flex-col items-center justify-center p-6 
-          rounded-xl w-full h-[160px] transition-all hover:shadow-block 
+          rounded-xl w-full min-h-[160px] transition-all hover:shadow-block 
           shadow-block relative overflow-hidden text-white snap-center 
           group bg-gradient-to-br ${getBlockGradient()}`}
         initial={{ y: 20, opacity: 0 }}
@@ -59,11 +53,11 @@ export const BlockCard = ({ block, index, onClick, color }: BlockCardProps) => {
           delay: index * 0.1
         }}
       >
-        <div className="relative z-10 h-full flex flex-col items-center 
+        <div className="relative z-10 h-full w-full flex flex-col items-center 
           justify-center text-center space-y-3">
-          <h3 className="text-block-title font-bold line-clamp-2 
-            text-app-text-light">
-            {truncateContent(block.title)}
+          <h3 className="text-block-title font-bold text-app-text-light 
+            break-words whitespace-pre-wrap px-2">
+            {block.title}
           </h3>
         </div>
         
