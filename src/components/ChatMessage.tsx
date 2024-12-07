@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Block } from "@/types/chat";
@@ -22,30 +22,34 @@ export const ChatMessage = ({
   onBlockClick 
 }: ChatMessageProps) => {
   const [isPlaying, setIsPlaying] = useState(false);
-  const [displayedText, setDisplayedText] = useState("");
+  const [words, setWords] = useState<string[]>([]);
+  const [currentWordIndex, setCurrentWordIndex] = useState(0);
   const [isTypingComplete, setIsTypingComplete] = useState(!isAi);
   
   useEffect(() => {
     if (isAi) {
-      setDisplayedText("");
+      const cleanedMessage = message?.replace(/undefined|null/g, '').trim() || 
+        "Hi! I'm WonderWhiz! What's your name? 😊";
+      const messageWords = cleanedMessage.split(' ');
+      setWords(messageWords);
+      setCurrentWordIndex(0);
       setIsTypingComplete(false);
-      let index = 0;
-      
-      const cleanedMessage = message?.replace(/undefined|null/g, '').trim() || "Hi! I'm WonderWhiz! What's your name? 😊";
-      
+
       const typingInterval = setInterval(() => {
-        if (index < cleanedMessage.length) {
-          setDisplayedText(prev => prev + cleanedMessage[index]);
-          index++;
-        } else {
-          clearInterval(typingInterval);
-          setIsTypingComplete(true);
-        }
-      }, 30);
+        setCurrentWordIndex(prev => {
+          if (prev >= messageWords.length - 1) {
+            clearInterval(typingInterval);
+            setIsTypingComplete(true);
+            return prev;
+          }
+          return prev + 1;
+        });
+      }, 100); // Adjust speed here
 
       return () => clearInterval(typingInterval);
     } else {
-      setDisplayedText(message || "");
+      setWords(message ? message.split(' ') : []);
+      setCurrentWordIndex(message ? message.split(' ').length - 1 : 0);
       setIsTypingComplete(true);
     }
   }, [message, isAi]);
@@ -95,19 +99,19 @@ export const ChatMessage = ({
 
         <motion.div
           className={cn(
-            "relative p-4 rounded-2xl shadow-luxury",
+            "relative p-4 rounded-2xl shadow-luxury backdrop-blur-xl",
             isAi ? 
-              "message-bubble-ai rounded-tl-sm" : 
+              "message-bubble-ai rounded-tl-sm bg-chat-ai" : 
               "message-bubble-user rounded-tr-sm"
           )}
           layout
         >
           <p className="text-[15px] leading-relaxed tracking-wide font-medium
             text-gray-800 whitespace-pre-wrap relative z-10">
-            {displayedText}
+            {words.slice(0, currentWordIndex + 1).join(' ')}
             {isAi && !isTypingComplete && (
               <motion.span
-                className="inline-block w-1.5 h-4 bg-primary/50 ml-0.5"
+                className="inline-block w-1.5 h-4 bg-primary ml-0.5"
                 animate={{ opacity: [1, 0] }}
                 transition={{ duration: 0.5, repeat: Infinity }}
               />
@@ -124,9 +128,9 @@ export const ChatMessage = ({
               whileTap={{ scale: 0.95 }}
             >
               {isPlaying ? (
-                <VolumeX className="w-4 h-4 text-primary" />
+                <VolumeX className="w-4 h-4 text-white" />
               ) : (
-                <Volume2 className="w-4 h-4 text-primary" />
+                <Volume2 className="w-4 h-4 text-white" />
               )}
             </motion.button>
           )}

@@ -25,33 +25,33 @@ export default {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: {
-          DEFAULT: "#D3C8F0",
-          hover: "#A0CFEF",
+          DEFAULT: "#007AFF", // iOS Blue
+          hover: "#0063CC",
           foreground: "#ffffff",
         },
         secondary: {
-          DEFAULT: "#A8E6CF",
+          DEFAULT: "#5856D6", // iOS Purple
           foreground: "#ffffff",
         },
         accent: {
-          DEFAULT: "#F8D568",
+          DEFAULT: "#FF2D55", // iOS Pink
           foreground: "#ffffff",
         },
         chat: {
           user: "rgba(255, 255, 255, 0.95)",
-          ai: "rgba(211, 200, 240, 0.95)",
+          ai: "rgba(0, 122, 255, 0.95)", // iOS Blue with opacity
         },
         block: {
-          orange: "#F8D568",
-          blue: "#A0CFEF",
-          purple: "#D3C8F0",
+          orange: "#FF9500", // iOS Orange
+          blue: "#007AFF", // iOS Blue
+          purple: "#5856D6", // iOS Purple
         },
         app: {
-          background: "#E8E8FF",
-          accent: "#A8E6CF",
-          cta: "#F8D568",
+          background: "#F5F5F7", // Apple Light Gray
+          accent: "#5856D6", // iOS Purple
+          cta: "#FF2D55", // iOS Pink
           text: {
-            dark: "#333333",
+            dark: "#1D1D1F", // Apple Dark Gray
             light: "#FFFFFF",
           }
         }

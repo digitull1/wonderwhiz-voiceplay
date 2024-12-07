@@ -73,7 +73,6 @@ serve(async (req) => {
          - Include ONE fascinating fact DIRECTLY RELATED to the current topic
          - End with ONE relevant emoji
          - Be engaging and fun for kids aged ${age_group}
-         - Make them want to click to learn more
       4. MAINTAIN TOPIC RELEVANCE:
          - Each block must be a natural continuation of the current topic
          - Focus on related subtopics that expand on the current discussion
@@ -102,6 +101,7 @@ serve(async (req) => {
       - Build upon the previous response to maintain conversation flow!
       - Adapt language complexity for age ${age_group}!
       - NO undefined values or spelling mistakes allowed!
+      - DO NOT include phrases like 'Click to explore more'!
     `;
 
     console.log("Sending request to Groq API");
