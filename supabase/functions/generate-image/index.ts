@@ -56,9 +56,27 @@ serve(async (req) => {
 
     console.log('Processing prompt:', prompt);
 
+    // Check if we have the Hugging Face token
+    const hfToken = Deno.env.get("HUGGING_FACE_ACCESS_TOKEN");
+    if (!hfToken) {
+      console.error('Hugging Face token not found');
+      return new Response(
+        JSON.stringify({
+          error: 'Configuration error',
+          details: 'Hugging Face token not configured',
+          success: false
+        }),
+        { 
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
+    }
+
     // Call Hugging Face API
-    const hf = new HfInference(Deno.env.get("HUGGING_FACE_ACCESS_TOKEN"))
+    const hf = new HfInference(hfToken);
     try {
+      console.log('Calling Hugging Face API with model: stabilityai/stable-diffusion-2');
       const image = await hf.textToImage({
         inputs: prompt,
         model: "stabilityai/stable-diffusion-2",
