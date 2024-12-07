@@ -12,7 +12,7 @@ interface MessageContentProps {
   message: string;
   isAi?: boolean;
   onListen?: (text: string) => void;
-  onQuizGenerated?: (quiz: any) => void;  // Updated type to accept quiz parameter
+  onQuizGenerated?: (quiz: any) => void;
   onPanelOpen?: () => void;
   imageUrl?: string;
   showActions?: boolean;
@@ -48,7 +48,6 @@ export const MessageContent = ({
           currentIndex++;
         } else {
           setIsTyping(false);
-          // Only show blocks after typing is complete
           setTimeout(() => setShowBlocks(true), 500);
           clearInterval(interval);
         }
@@ -101,7 +100,7 @@ export const MessageContent = ({
       {isAi && showActions && !isTyping && showBlocks && (
         <MessageActions
           onListen={() => onListen?.(message)}
-          onQuizGenerated={onQuizGenerated}
+          onQuizGenerated={quiz => onQuizGenerated?.(quiz)}
           messageText={message}
         />
       )}
