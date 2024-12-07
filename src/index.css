@@ -16,7 +16,7 @@
   }
 
   body {
-    @apply text-body leading-relaxed text-app-text-dark antialiased;
+    @apply text-[16px] leading-relaxed text-app-text-dark antialiased;
     background-image: url('/stars-pattern.svg');
     background-repeat: repeat;
     background-size: 400px;
