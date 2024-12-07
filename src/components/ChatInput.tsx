@@ -14,6 +14,7 @@ interface ChatInputProps {
   isLoading: boolean;
   currentTopic: string;
   onImageAnalyzed: (response: string) => void;
+  placeholder?: string; // Added this optional prop
 }
 
 export const ChatInput = ({
@@ -22,7 +23,8 @@ export const ChatInput = ({
   handleSend,
   isLoading,
   currentTopic,
-  onImageAnalyzed
+  onImageAnalyzed,
+  placeholder
 }: ChatInputProps) => {
   const [isListening, setIsListening] = useState(false);
   const { toast } = useToast();
@@ -138,7 +140,7 @@ export const ChatInput = ({
 
         <div className="flex-1 relative">
           <Input
-            placeholder={isLoading ? "Thinking..." : `Ask me anything about ${currentTopic}...`}
+            placeholder={placeholder || (isLoading ? "Thinking..." : `Ask me anything about ${currentTopic}...`)}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={(e) => e.key === "Enter" && handleSubmit()}
