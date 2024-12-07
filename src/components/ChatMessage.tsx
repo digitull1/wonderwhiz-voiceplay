@@ -74,7 +74,7 @@ export const ChatMessage = ({
   return (
     <motion.div 
       className={cn(
-        "flex mb-8 px-4 md:px-6",
+        "flex mb-4 px-4 w-full",
         isAi ? "justify-start" : "justify-end"
       )}
       initial="hidden"
@@ -85,15 +85,15 @@ export const ChatMessage = ({
       layout
     >
       <div className={cn(
-        "flex items-start gap-4",
-        isAi ? "max-w-[95%]" : "max-w-[90%]",
-        "md:max-w-[80%] group"
+        "flex items-start gap-3 max-w-[95%] group",
+        isAi ? "w-full md:max-w-[80%]" : "max-w-[85%] md:max-w-[70%]"
       )}>
         {isAi && (
           <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ type: "spring", stiffness: 260, damping: 20 }}
+            className="flex-shrink-0 mt-1"
           >
             <ChatAvatar />
           </motion.div>
@@ -101,35 +101,34 @@ export const ChatMessage = ({
 
         <motion.div
           className={cn(
-            "space-y-4 p-6 rounded-2xl shadow-lg relative overflow-hidden",
-            "transition-all duration-300",
+            "space-y-3 p-4 rounded-2xl shadow-sm relative overflow-hidden min-h-[48px] w-full",
             isAi ? 
-              "bg-gradient-to-br from-[#E8E8FF]/90 via-[#F4F4FF]/95 to-[#FFFFFF]/90 text-foreground" : 
-              "bg-gradient-to-br from-[#FFFFFF]/90 via-[#FAFAFA]/95 to-[#F8F8F8]/90 text-foreground",
-            "hover:shadow-xl min-h-[48px]"
+              "bg-gradient-to-br from-[#E8E8FF]/90 via-[#F4F4FF]/95 to-[#FFFFFF]/90 rounded-tl-sm" : 
+              "bg-gradient-to-br from-[#FFFFFF]/90 via-[#FAFAFA]/95 to-[#F8F8F8]/90 rounded-tr-sm",
+            "hover:shadow-md transition-shadow duration-200"
           )}
           layout
         >
           <p className="text-[14px] leading-relaxed whitespace-pre-wrap relative z-10 
-            tracking-wide font-medium md:text-[16px]">
+            tracking-wide font-medium md:text-[16px] text-gray-800">
             {formattedMessage}
           </p>
           
           {isAi && onListen && (
-            <motion.div 
+            <motion.button 
               className="absolute top-3 right-3 opacity-70 hover:opacity-100 
-                cursor-pointer transition-opacity"
+                cursor-pointer transition-opacity p-2 rounded-full hover:bg-white/50"
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.95 }}
               onClick={onListen}
             >
               <Speaker className="w-4 h-4 text-primary" />
-            </motion.div>
+            </motion.button>
           )}
           
           {isAi && (
             <motion.div 
-              className="flex flex-col gap-4 mt-6 relative z-10"
+              className="flex flex-col gap-4 mt-4 relative z-10"
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
@@ -153,6 +152,8 @@ export const ChatMessage = ({
               )}
             </motion.div>
           )}
+
+          <div className="absolute inset-0 bg-gradient-to-br from-transparent to-white/5 pointer-events-none" />
         </motion.div>
       </div>
     </motion.div>

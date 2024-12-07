@@ -25,9 +25,9 @@ export const EnhancedBlockCard = ({
 
   const getBlockGradient = () => {
     const gradients = [
-      "from-[#FF6B6B] to-[#FF8E8E]",
-      "from-[#4CABFF] to-[#6DBDFF]",
-      "from-[#F4E7FE] to-[#E5D0FF]"
+      "from-[#FF6B6B] to-[#FF8E8E]", // Warm Red
+      "from-[#4CABFF] to-[#6DBDFF]", // Ocean Blue
+      "from-[#BFAAFF] to-[#E5D0FF]"  // Soft Purple
     ];
     return gradients[index % gradients.length];
   };
@@ -42,8 +42,8 @@ export const EnhancedBlockCard = ({
       whileTap={{ scale: 0.98 }}
       onClick={onClick}
       className={cn(
-        "flex flex-col justify-between p-6 rounded-xl",
-        "w-[90vw] min-h-[100px] max-h-[160px]",
+        "flex flex-col justify-between p-6 rounded-2xl",
+        "w-[90vw] min-h-[120px]",
         "transition-all duration-300 relative overflow-hidden",
         "text-white snap-center group",
         "shadow-lg hover:shadow-xl",
@@ -51,16 +51,16 @@ export const EnhancedBlockCard = ({
         getBlockGradient()
       )}
     >
-      <div className="flex flex-col gap-2">
-        <h3 className="text-lg font-bold leading-tight line-clamp-2">
+      <div className="flex flex-col gap-3">
+        <h3 className="text-lg font-bold leading-tight line-clamp-2 text-left">
           {truncateContent(block.title)}
         </h3>
-        <p className="text-sm opacity-90 line-clamp-2">
+        <p className="text-sm opacity-90 line-clamp-2 text-left">
           {block.description || "Click to explore more!"}
         </p>
       </div>
 
-      <div className="flex items-center justify-end mt-2 text-sm font-medium">
+      <div className="flex items-center justify-end mt-3 text-sm font-medium">
         Read More
         <ChevronRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
       </div>

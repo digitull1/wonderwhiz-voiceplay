@@ -96,7 +96,7 @@ export const ChatInput = ({
 
   return (
     <motion.div 
-      className="flex flex-col gap-4 relative px-4 pb-safe-bottom"
+      className="flex flex-col gap-4 relative px-4 pb-safe-bottom w-full max-w-3xl mx-auto"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, delay: 0.2 }}
@@ -116,12 +116,14 @@ export const ChatInput = ({
 
           <Button
             onClick={isListening ? stopListening : startListening}
-            className={`bg-gradient-to-r min-h-[48px] min-w-[48px] ${
+            className={cn(
+              "bg-gradient-to-r min-h-[48px] min-w-[48px]",
               isListening 
                 ? "from-red-500/90 to-red-600/90 hover:from-red-500 hover:to-red-600" 
-                : "from-[#6DBDFF]/90 to-[#4CABFF]/90 hover:from-[#6DBDFF] hover:to-[#4CABFF]"
-            } text-white p-3 rounded-xl shadow-lg transition-all duration-300 
-            hover:scale-105 active:scale-95 relative border border-white/20 backdrop-blur-sm`}
+                : "from-[#6DBDFF]/90 to-[#4CABFF]/90 hover:from-[#6DBDFF] hover:to-[#4CABFF]",
+              "text-white p-3 rounded-xl shadow-lg transition-all duration-300",
+              "hover:scale-105 active:scale-95 relative border border-white/20 backdrop-blur-sm"
+            )}
           >
             {isListening ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
           </Button>
