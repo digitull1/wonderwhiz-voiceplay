@@ -73,10 +73,11 @@ export const ChatBlocks = ({ blocks, onBlockClick }: ChatBlocksProps) => {
       try {
         console.log('Generating quiz for topic:', block.title);
         const { data: quizData, error: quizError } = await supabase.functions.invoke('generate-quiz', {
-          body: { topic: block.title }
+          body: { topic: block.metadata.topic || block.title }
         });
 
         if (quizError) throw quizError;
+        console.log('Quiz data received:', quizData);
 
         if (quizData?.question) {
           // Dispatch a custom event with the quiz data

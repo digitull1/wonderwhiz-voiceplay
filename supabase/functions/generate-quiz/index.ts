@@ -12,18 +12,25 @@ serve(async (req) => {
 
   try {
     const { topic } = await req.json();
+    console.log('Generating quiz for topic:', topic);
 
     const prompt = `Generate 5 different multiple choice quiz questions about ${topic}. 
     Make them progressively more challenging.
+    Each question must:
+    - Be clear and engaging
+    - Have 4 options
+    - Have only one correct answer
+    - Be age-appropriate for children
+    - Include fun facts or interesting information
+    
     The response should be in JSON format with the following structure:
     {
-      "questions": [
-        {
-          "question": "string",
-          "options": ["string", "string", "string", "string"],
-          "correctAnswer": number (0-3)
-        }
-      ]
+      "question": {
+        "question": "string",
+        "options": ["string", "string", "string", "string"],
+        "correctAnswer": number (0-3),
+        "topic": "${topic}"
+      }
     }`;
 
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -34,11 +41,21 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         model: "mixtral-8x7b-32768",
-        messages: [{ role: "user", content: prompt }],
+        messages: [
+          {
+            role: "system",
+            content: "You are a friendly educational quiz generator for children. Create engaging and fun questions!"
+          },
+          { role: "user", content: prompt }
+        ],
         temperature: 0.7,
         max_tokens: 1000,
       }),
     });
+
+    if (!response.ok) {
+      throw new Error('Failed to generate quiz');
+    }
 
     const data = await response.json();
     console.log("Quiz generation response:", data);
@@ -48,9 +65,10 @@ serve(async (req) => {
     }
 
     const quizData = JSON.parse(data.choices[0].message.content);
+    console.log("Parsed quiz data:", quizData);
 
     return new Response(
-      JSON.stringify({ questions: quizData.questions }),
+      JSON.stringify(quizData),
       { 
         headers: { 
           ...corsHeaders,
@@ -61,9 +79,21 @@ serve(async (req) => {
   } catch (error) {
     console.error("Error generating quiz:", error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message,
+        question: {
+          question: "What is your favorite thing about learning?",
+          options: [
+            "Making new discoveries",
+            "Solving puzzles",
+            "Learning with friends",
+            "All of the above"
+          ],
+          correctAnswer: 3,
+          topic: "learning"
+        }
+      }),
       { 
-        status: 500,
         headers: { 
           ...corsHeaders,
           'Content-Type': 'application/json'
