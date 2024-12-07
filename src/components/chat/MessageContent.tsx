@@ -67,7 +67,6 @@ export const MessageContent: React.FC<MessageContentProps> = ({
       {isAi && showActions && !isTyping && (
         <div className="mt-4">
           <MessageActions 
-            onListen={onListen}
             onQuizGenerated={onQuizGenerated}
             messageText={message}
             onPanelOpen={onPanelOpen}
