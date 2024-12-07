@@ -6,7 +6,6 @@ import { useToast } from "@/hooks/use-toast";
 
 interface QuizActionProps {
   messageText: string;
-  onQuizGenerated?: (quiz: any) => void;
 }
 
 export const QuizAction = ({ messageText }: QuizActionProps) => {

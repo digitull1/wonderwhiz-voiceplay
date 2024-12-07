@@ -12,6 +12,7 @@ interface Message {
   blocks?: Block[];
   showAuthPrompt?: boolean;
   imageUrl?: string;
+  quizState?: QuizState;
 }
 
 interface ChatContainerProps {
@@ -79,6 +80,8 @@ export const ChatContainer = ({
             blocks={message.blocks}
             onBlockClick={onBlockClick}
             imageUrl={message.imageUrl}
+            quizState={message.quizState}
+            onQuizAnswer={onQuizAnswer}
           />
           {message.showAuthPrompt && (
             <div className="flex justify-center gap-2 my-2">
@@ -92,13 +95,6 @@ export const ChatContainer = ({
           )}
         </React.Fragment>
       ))}
-      
-      {quizState?.isActive && quizState.currentQuestion && (
-        <QuizCard
-          question={quizState.currentQuestion}
-          onAnswer={onQuizAnswer || (() => {})}
-        />
-      )}
       <div ref={messagesEndRef} className="h-4" />
     </div>
   );
