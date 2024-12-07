@@ -105,6 +105,12 @@
   );
   backdrop-filter: blur(8px);
   border-top: 1px solid rgba(255, 255, 255, 0.05);
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+}
+
+.group:hover .post-chat-actions {
+  opacity: 1;
 }
 
 .action-icon {
