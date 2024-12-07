@@ -3,6 +3,7 @@ import { ChatMessage } from "./ChatMessage";
 import { QuizCard } from "./quiz/QuizCard";
 import { Block, QuizState } from "@/types/chat";
 import { Button } from "./ui/button";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface Message {
   text: string;
@@ -30,6 +31,7 @@ export const ChatContainer = ({
 }: ChatContainerProps) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const isMobile = useIsMobile();
 
   const scrollToBottom = () => {
     if (messagesEndRef.current && containerRef.current) {
@@ -66,7 +68,11 @@ export const ChatContainer = ({
   return (
     <div 
       ref={containerRef}
-      className="flex-1 overflow-y-auto space-y-3 mb-4 px-2 chat-container"
+      className={cn(
+        "flex-1 overflow-y-auto space-y-3 chat-container",
+        "pb-[80px] md:pb-[100px]", // Account for fixed chat input
+        isMobile ? "px-2" : "px-4"
+      )}
     >
       {filteredMessages.map((message, index) => (
         <React.Fragment key={index}>
@@ -96,7 +102,7 @@ export const ChatContainer = ({
           onAnswer={onQuizAnswer || (() => {})}
         />
       )}
-      <div ref={messagesEndRef} />
+      <div ref={messagesEndRef} className="h-4" />
     </div>
   );
 };
