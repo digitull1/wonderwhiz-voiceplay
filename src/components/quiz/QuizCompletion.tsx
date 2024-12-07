@@ -8,9 +8,15 @@ interface QuizCompletionProps {
   correctAnswers: number;
   totalQuestions: number;
   currentTopic: string;
+  onBlockClick?: (block: Block) => void;
 }
 
-export const QuizCompletion = ({ correctAnswers, totalQuestions, currentTopic = "this topic" }: QuizCompletionProps) => {
+export const QuizCompletion = ({ 
+  correctAnswers, 
+  totalQuestions, 
+  currentTopic = "this topic",
+  onBlockClick 
+}: QuizCompletionProps) => {
   const generateRelatedBlocks = (topic: string): Block[] => {
     // Format topic for better display
     const formattedTopic = topic
@@ -52,6 +58,13 @@ export const QuizCompletion = ({ correctAnswers, totalQuestions, currentTopic = 
     if (percentage >= 80) return "Fantastic job! You're super smart! 🎉";
     if (percentage >= 60) return "Great effort! Keep learning and growing! 💪";
     return "Good try! Every question is a chance to learn something new! 🌱";
+  };
+
+  const handleBlockClick = (block: Block) => {
+    console.log('Quiz completion block clicked:', block);
+    if (onBlockClick) {
+      onBlockClick(block);
+    }
   };
 
   return (
@@ -106,7 +119,7 @@ export const QuizCompletion = ({ correctAnswers, totalQuestions, currentTopic = 
         <h4 className="text-white/90 text-lg font-medium mb-4">
           Want to explore more about {currentTopic.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}? ✨
         </h4>
-        <ChatBlocks blocks={generateRelatedBlocks(currentTopic)} onBlockClick={() => {}} />
+        <ChatBlocks blocks={generateRelatedBlocks(currentTopic)} onBlockClick={handleBlockClick} />
       </motion.div>
     </motion.div>
   );
