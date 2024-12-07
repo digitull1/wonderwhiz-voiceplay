@@ -6,7 +6,7 @@ import { ChatAvatar } from "./chat/ChatAvatar";
 import { MessageActions } from "./chat/MessageActions";
 import { RelatedBlocks } from "./chat/RelatedBlocks";
 import { ImageGenerator } from "./ImageGenerator";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Speaker } from "lucide-react";
 
 interface ChatMessageProps {
   isAi?: boolean;
@@ -84,7 +84,11 @@ export const ChatMessage = ({
       whileHover="hover"
       layout
     >
-      <div className="flex items-start gap-4 max-w-[85%] md:max-w-[80%] group">
+      <div className={cn(
+        "flex items-start gap-4",
+        isAi ? "max-w-[95%]" : "max-w-[90%]",
+        "md:max-w-[80%] group"
+      )}>
         {isAi && (
           <motion.div
             initial={{ scale: 0 }}
@@ -102,17 +106,26 @@ export const ChatMessage = ({
             isAi ? 
               "bg-gradient-to-br from-[#E8E8FF]/90 via-[#F4F4FF]/95 to-[#FFFFFF]/90 text-foreground" : 
               "bg-gradient-to-br from-[#FFFFFF]/90 via-[#FAFAFA]/95 to-[#F8F8F8]/90 text-foreground",
-            "hover:shadow-xl",
-            "before:absolute before:inset-0 before:bg-gradient-to-br before:from-white/5 before:to-transparent before:opacity-0 before:transition-opacity before:duration-300",
-            "group-hover:before:opacity-100",
-            "border border-white/20",
-            "backdrop-blur-sm"
+            "hover:shadow-xl min-h-[48px]"
           )}
           layout
         >
-          <p className="text-body leading-relaxed whitespace-pre-wrap relative z-10 tracking-wide font-medium">
+          <p className="text-[14px] leading-relaxed whitespace-pre-wrap relative z-10 
+            tracking-wide font-medium md:text-[16px]">
             {formattedMessage}
           </p>
+          
+          {isAi && onListen && (
+            <motion.div 
+              className="absolute top-3 right-3 opacity-70 hover:opacity-100 
+                cursor-pointer transition-opacity"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={onListen}
+            >
+              <Speaker className="w-4 h-4 text-primary" />
+            </motion.div>
+          )}
           
           {isAi && (
             <motion.div 
@@ -140,21 +153,6 @@ export const ChatMessage = ({
               )}
             </motion.div>
           )}
-
-          <motion.div 
-            className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-            animate={{ 
-              rotate: [0, 10, -10, 0],
-              scale: [1, 1.1, 1]
-            }}
-            transition={{ 
-              duration: 2, 
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
-          >
-            <Sparkles className="w-4 h-4 text-primary/40" />
-          </motion.div>
         </motion.div>
       </div>
     </motion.div>

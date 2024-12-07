@@ -100,46 +100,33 @@ export const ChatInput = ({
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, delay: 0.2 }}
     >
-      <div className="flex gap-3 items-end relative">
-        <div className="flex gap-2">
-          <motion.div className="flex gap-2">
-            <ImageUpload 
-              onImageAnalyzed={onImageAnalyzed}
-              className="bg-gradient-to-r from-primary/90 to-secondary/90 
-                hover:from-primary hover:to-secondary text-white p-3 rounded-xl 
-                shadow-lg transition-all duration-300 hover:scale-105 active:scale-95 
-                disabled:opacity-50 disabled:hover:scale-100 flex items-center justify-center
-                border border-white/20 backdrop-blur-sm"
-            >
-              <ImagePlus className="w-5 h-5" />
-            </ImageUpload>
+      <div className="flex flex-col gap-3">
+        <div className="flex gap-2 justify-center">
+          <ImageUpload 
+            onImageAnalyzed={onImageAnalyzed}
+            className="bg-gradient-to-r from-[#4CABFF]/90 to-[#6DBDFF]/90 
+              hover:from-[#4CABFF] hover:to-[#6DBDFF] text-white p-3 rounded-xl 
+              shadow-lg transition-all duration-300 hover:scale-105 active:scale-95 
+              disabled:opacity-50 disabled:hover:scale-100 min-h-[48px] min-w-[48px]
+              flex items-center justify-center border border-white/20 backdrop-blur-sm"
+          >
+            <ImagePlus className="w-5 h-5" />
+          </ImageUpload>
 
-            <Button
-              onClick={isListening ? stopListening : startListening}
-              className={`bg-gradient-to-r ${
-                isListening 
-                  ? "from-red-500/90 to-red-600/90 hover:from-red-500 hover:to-red-600" 
-                  : "from-secondary/90 to-cyan-600/90 hover:from-secondary hover:to-cyan-600"
-              } text-white p-3 rounded-xl shadow-lg transition-all duration-300 
-              hover:scale-105 active:scale-95 relative border border-white/20 backdrop-blur-sm`}
-            >
-              {isListening ? (
-                <>
-                  <MicOff className="w-5 h-5 animate-pulse" />
-                  <motion.div
-                    className="absolute inset-0 rounded-xl bg-secondary/20"
-                    animate={{ scale: [1, 1.2, 1] }}
-                    transition={{ duration: 1.5, repeat: Infinity }}
-                  />
-                </>
-              ) : (
-                <Mic className="w-5 h-5" />
-              )}
-            </Button>
-          </motion.div>
+          <Button
+            onClick={isListening ? stopListening : startListening}
+            className={`bg-gradient-to-r min-h-[48px] min-w-[48px] ${
+              isListening 
+                ? "from-red-500/90 to-red-600/90 hover:from-red-500 hover:to-red-600" 
+                : "from-[#6DBDFF]/90 to-[#4CABFF]/90 hover:from-[#6DBDFF] hover:to-[#4CABFF]"
+            } text-white p-3 rounded-xl shadow-lg transition-all duration-300 
+            hover:scale-105 active:scale-95 relative border border-white/20 backdrop-blur-sm`}
+          >
+            {isListening ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+          </Button>
         </div>
 
-        <div className="flex-1 relative">
+        <div className="relative w-full">
           <Input
             placeholder={placeholder || (isLoading ? "Thinking..." : `Ask me anything about ${currentTopic}...`)}
             value={input}
@@ -147,7 +134,8 @@ export const ChatInput = ({
             onKeyPress={(e) => e.key === "Enter" && handleSubmit()}
             className="w-full bg-gradient-to-r from-white/80 to-white/90 backdrop-blur-sm 
               border-2 border-primary/30 focus:border-primary/60 rounded-2xl pl-12 pr-4 py-6 
-              text-lg shadow-lg transition-all duration-300 placeholder:text-primary/40 
+              text-[14px] md:text-[16px] shadow-lg transition-all duration-300 
+              placeholder:text-primary/40 min-h-[48px]
               hover:shadow-xl hover:scale-[1.01] focus:scale-[1.01] focus:shadow-xl
               focus:ring-2 focus:ring-primary/20 focus:outline-none"
             disabled={isLoading}
@@ -173,9 +161,10 @@ export const ChatInput = ({
           className="bg-gradient-to-r from-primary/90 to-secondary/90 
             hover:from-primary hover:to-secondary text-white px-6 py-6 rounded-xl 
             shadow-lg transition-all duration-300 hover:scale-105 active:scale-95 
-            disabled:opacity-50 disabled:hover:scale-100 border border-white/20 backdrop-blur-sm"
+            disabled:opacity-50 disabled:hover:scale-100 min-h-[48px]
+            border border-white/20 backdrop-blur-sm self-end"
         >
-          <Send className={`w-5 h-5 ${isLoading ? "animate-pulse" : ""}`} />
+          <Send className={cn("w-5 h-5", isLoading && "animate-pulse")} />
         </Button>
       </div>
 

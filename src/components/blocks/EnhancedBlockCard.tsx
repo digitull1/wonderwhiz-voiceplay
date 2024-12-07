@@ -2,19 +2,18 @@ import React from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Block } from "@/types/chat";
+import { ChevronRight } from "lucide-react";
 
 interface EnhancedBlockCardProps {
   block: Block;
   index: number;
   onClick: () => void;
-  gradient: string;
 }
 
 export const EnhancedBlockCard = ({ 
   block, 
   index, 
-  onClick, 
-  gradient 
+  onClick 
 }: EnhancedBlockCardProps) => {
   const CONTENT_LIMIT = 75;
 
@@ -24,15 +23,13 @@ export const EnhancedBlockCard = ({
     return text.substring(0, CONTENT_LIMIT - 3) + "...";
   };
 
-  // Get topic-based gradient
-  const getTopicGradient = (topic: string) => {
-    const topics: Record<string, string> = {
-      science: "from-[#4CABFF] to-[#5EC4FF]",
-      history: "from-[#FFAB4C] to-[#FF6B6B]",
-      space: "from-[#F4E7FE] to-[#DABFFF]",
-      default: "from-[#4ECDC4] to-[#6EE7E7]"
-    };
-    return topics[topic.toLowerCase()] || topics.default;
+  const getBlockGradient = () => {
+    const gradients = [
+      "from-[#FF6B6B] to-[#FF8E8E]",
+      "from-[#4CABFF] to-[#6DBDFF]",
+      "from-[#F4E7FE] to-[#E5D0FF]"
+    ];
+    return gradients[index % gradients.length];
   };
 
   return (
@@ -41,29 +38,32 @@ export const EnhancedBlockCard = ({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
       transition={{ delay: index * 0.1 }}
-      whileHover={{ 
-        scale: 1.03,
-        boxShadow: "0 10px 30px -10px rgba(0,0,0,0.2)"
-      }}
+      whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
       onClick={onClick}
       className={cn(
-        "flex items-center justify-center p-6 rounded-xl",
-        "w-[400px] min-w-[400px] h-[120px]",
+        "flex flex-col justify-between p-6 rounded-xl",
+        "w-[90vw] min-h-[100px] max-h-[160px]",
         "transition-all duration-300 relative overflow-hidden",
         "text-white snap-center group",
-        "hover:shadow-xl hover:ring-2 hover:ring-white/20",
+        "shadow-lg hover:shadow-xl",
         "bg-gradient-to-br",
-        getTopicGradient(block.metadata?.topic || 'default')
+        getBlockGradient()
       )}
     >
-      <p className={cn(
-        "font-bold text-center transition-all duration-300",
-        "text-[20px] leading-tight font-poppins tracking-wide",
-        "px-4"
-      )}>
-        {truncateContent(block.title)}
-      </p>
+      <div className="flex flex-col gap-2">
+        <h3 className="text-lg font-bold leading-tight line-clamp-2">
+          {truncateContent(block.title)}
+        </h3>
+        <p className="text-sm opacity-90 line-clamp-2">
+          {block.description || "Click to explore more!"}
+        </p>
+      </div>
+
+      <div className="flex items-center justify-end mt-2 text-sm font-medium">
+        Read More
+        <ChevronRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+      </div>
 
       <div className="absolute bottom-0 right-0 w-32 h-32 opacity-20 
         bg-white rounded-tl-full transform translate-x-8 translate-y-8 
@@ -83,9 +83,6 @@ export const EnhancedBlockCard = ({
       >
         <span className="text-2xl">✨</span>
       </motion.div>
-
-      <div className="absolute inset-0 bg-white/0 group-hover:bg-white/5 
-        transition-colors duration-300" />
     </motion.button>
   );
 };

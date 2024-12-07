@@ -13,37 +13,28 @@ interface ChatBlocksProps {
 export const ChatBlocks = ({ blocks, onBlockClick }: ChatBlocksProps) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [currentScrollIndex, setCurrentScrollIndex] = useState(0);
-  const visibleBlocksCount = 3;
+  const visibleBlocksCount = 1; // Show one block at a time on mobile
 
   const handleScroll = (direction: 'left' | 'right') => {
     if (!scrollContainerRef.current) return;
-    const scrollAmount = direction === 'left' ? -320 : 320;
-    const newScrollPosition = scrollContainerRef.current.scrollLeft + scrollAmount;
+    const blockWidth = scrollContainerRef.current.offsetWidth * 0.9; // 90% of container width
+    const scrollAmount = direction === 'left' ? -blockWidth : blockWidth;
     
     scrollContainerRef.current.scrollTo({
-      left: newScrollPosition,
+      left: scrollContainerRef.current.scrollLeft + scrollAmount,
       behavior: 'smooth'
     });
 
-    // Update current scroll index
-    const newIndex = Math.floor(newScrollPosition / 320);
-    setCurrentScrollIndex(Math.max(0, Math.min(newIndex, Math.ceil(blocks.length / visibleBlocksCount) - 1)));
-  };
-
-  const getBlockGradient = (index: number) => {
-    const gradients = [
-      "bg-gradient-to-br from-[#FF6B6B] to-[#FF8E8E] via-[#FFA5A5]", // Red/Orange
-      "bg-gradient-to-br from-[#4CABFF] to-[#6DBDFF] via-[#85CAFF]", // Blue
-      "bg-gradient-to-br from-[#F4E7FE] to-[#E5D0FF] via-[#EAD9FF]"  // Purple
-    ];
-    return gradients[index % gradients.length];
+    const newIndex = Math.floor((scrollContainerRef.current.scrollLeft + scrollAmount) / blockWidth);
+    setCurrentScrollIndex(Math.max(0, Math.min(newIndex, blocks.length - 1)));
   };
 
   useEffect(() => {
     const handleScrollEvent = () => {
       if (!scrollContainerRef.current) return;
-      const newIndex = Math.floor(scrollContainerRef.current.scrollLeft / 320);
-      setCurrentScrollIndex(Math.max(0, Math.min(newIndex, Math.ceil(blocks.length / visibleBlocksCount) - 1)));
+      const blockWidth = scrollContainerRef.current.offsetWidth * 0.9;
+      const newIndex = Math.floor(scrollContainerRef.current.scrollLeft / blockWidth);
+      setCurrentScrollIndex(Math.max(0, Math.min(newIndex, blocks.length - 1)));
     };
 
     const container = scrollContainerRef.current;
@@ -51,20 +42,22 @@ export const ChatBlocks = ({ blocks, onBlockClick }: ChatBlocksProps) => {
       container.addEventListener('scroll', handleScrollEvent);
       return () => container.removeEventListener('scroll', handleScrollEvent);
     }
-  }, [blocks.length, visibleBlocksCount]);
+  }, [blocks.length]);
 
   return (
-    <div className="relative w-full">
+    <div className="relative w-full px-4">
       <AnimatePresence>
         {blocks.length > 0 && (
           <>
             <BlockNavigationButton 
               direction="left" 
               onClick={() => handleScroll('left')} 
+              className="left-2"
             />
             <BlockNavigationButton 
               direction="right" 
               onClick={() => handleScroll('right')} 
+              className="right-2"
             />
           </>
         )}
@@ -72,7 +65,7 @@ export const ChatBlocks = ({ blocks, onBlockClick }: ChatBlocksProps) => {
 
       <div 
         ref={scrollContainerRef}
-        className="flex gap-6 overflow-x-auto pb-6 pt-2 px-2 snap-x snap-mandatory hide-scrollbar"
+        className="flex gap-4 overflow-x-auto pb-6 pt-2 snap-x snap-mandatory hide-scrollbar"
       >
         <AnimatePresence>
           {blocks.map((block, index) => (
@@ -81,7 +74,6 @@ export const ChatBlocks = ({ blocks, onBlockClick }: ChatBlocksProps) => {
               block={block}
               index={index}
               onClick={() => onBlockClick(block)}
-              gradient={getBlockGradient(index)}
             />
           ))}
         </AnimatePresence>
