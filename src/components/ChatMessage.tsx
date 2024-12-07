@@ -122,17 +122,15 @@ export const ChatMessage = ({
           </p>
           
           {isAi && (
-            <Button
+            <motion.button
               onClick={handleListen}
-              size="sm"
-              variant="ghost"
               className="absolute top-2.5 right-2.5 opacity-70 hover:opacity-100 
                 cursor-pointer transition-all p-1.5 rounded-full hover:bg-white/50
                 active:scale-95"
               aria-label="Listen to message"
             >
               <Volume2 className="w-4 h-4 text-primary" />
-            </Button>
+            </motion.button>
           )}
           
           {isAi && (
@@ -142,20 +140,6 @@ export const ChatMessage = ({
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
             >
-              <MessageActions 
-                onListen={() => onListen?.(message)} 
-                messageText={message} 
-              />
-              {shouldShowImageGen && (
-                <ImageGenerator 
-                  prompt={message} 
-                  onResponse={(response, newBlocks) => {
-                    if (blocks && onBlockClick && newBlocks) {
-                      onBlockClick(newBlocks[0]);
-                    }
-                  }} 
-                />
-              )}
               {blocks && blocks.length > 0 && onBlockClick && (
                 <RelatedBlocks blocks={blocks} onBlockClick={onBlockClick} />
               )}

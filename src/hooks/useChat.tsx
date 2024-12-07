@@ -32,18 +32,14 @@ export const useChat = () => {
 
   const handleBlockClick = useCallback(async (block: Block) => {
     setCurrentTopic(block.metadata.topic);
-    setMessages(prev => [...prev, {
-      text: `Tell me about ${block.title}`,
-      isAi: false
-    }]);
-    
     setIsLoading(true);
+    
     try {
       const detailedContent = await getGroqResponse(block.title, 100);
       const blocks = await generateDynamicBlocks(block.title, block.metadata.topic);
       
       setMessages(prev => [...prev, {
-        text: `Let me tell you about ${block.title}! 🌟\n\n${detailedContent}`,
+        text: detailedContent,
         isAi: true,
         blocks
       }]);
