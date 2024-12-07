@@ -5,7 +5,6 @@ import { Block } from "@/types/chat";
 import { ChatAvatar } from "./chat/ChatAvatar";
 import { RelatedBlocks } from "./chat/RelatedBlocks";
 import { MessageContent } from "./chat/MessageContent";
-import { PostChatActions } from "./chat/PostChatActions";
 
 interface ChatMessageProps {
   isAi?: boolean;
@@ -13,6 +12,8 @@ interface ChatMessageProps {
   onListen?: (text: string) => void;
   blocks?: Block[];
   onBlockClick?: (block: Block) => void;
+  onQuizGenerated?: (quiz: any) => void;
+  onPanelOpen?: () => void;
 }
 
 export const ChatMessage = ({ 
@@ -20,7 +21,9 @@ export const ChatMessage = ({
   message, 
   onListen,
   blocks,
-  onBlockClick 
+  onBlockClick,
+  onQuizGenerated,
+  onPanelOpen
 }: ChatMessageProps) => {
   return (
     <motion.div 
@@ -58,7 +61,9 @@ export const ChatMessage = ({
           <MessageContent 
             message={message} 
             isAi={isAi} 
-            onListen={() => onListen?.(message)} 
+            onListen={() => onListen?.(message)}
+            onQuizGenerated={onQuizGenerated}
+            onPanelOpen={onPanelOpen}
           />
           
           {isAi && blocks && blocks.length > 0 && onBlockClick && (
@@ -71,8 +76,6 @@ export const ChatMessage = ({
               <RelatedBlocks blocks={blocks} onBlockClick={onBlockClick} />
             </motion.div>
           )}
-
-          {isAi && <PostChatActions messageText={message} />}
         </motion.div>
       </div>
     </motion.div>
