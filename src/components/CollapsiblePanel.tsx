@@ -1,19 +1,10 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { motion } from "framer-motion";
-import { Menu } from "lucide-react";
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from "@/components/ui/sheet";
-import { supabase } from "@/integrations/supabase/client";
 import { TimeTracker } from "./panel/TimeTracker";
 import { RecentTopics } from "./panel/RecentTopics";
 import { ProgressCard } from "./panel/ProgressCard";
 import { TalkToWizzy } from "./panel/TalkToWizzy";
-import { useToast } from "./ui/use-toast";
+import { SheetHeader, SheetTitle } from "@/components/ui/sheet";
 
 interface CollapsiblePanelProps {
   userProgress: {
@@ -21,163 +12,49 @@ interface CollapsiblePanelProps {
     level: number;
     streak_days: number;
   };
-  role?: string;
-  "aria-label"?: string;
 }
 
-interface ExploredTopic {
-  topic: string;
-  emoji: string;
-  last_explored_at: string;
-}
-
-export const CollapsiblePanel = ({ 
-  userProgress, 
-  role,
-  "aria-label": ariaLabel 
-}: CollapsiblePanelProps) => {
-  const [recentTopics, setRecentTopics] = useState<ExploredTopic[]>([]);
-  const [timeSpent, setTimeSpent] = useState({
-    today: 0,
-    week: 0,
-  });
-  const { toast } = useToast();
-
-  useEffect(() => {
-    const fetchUserData = async () => {
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
-          console.log('No authenticated user found');
-          return;
-        }
-
-        // Fetch recent topics
-        const { data: topicsData, error: topicsError } = await supabase
-          .from('explored_topics')
-          .select('topic, emoji, last_explored_at')
-          .eq('user_id', user.id)
-          .order('last_explored_at', { ascending: false })
-          .limit(3);
-
-        if (topicsError) {
-          console.error('Error fetching topics:', topicsError);
-          toast({
-            title: "Error",
-            description: "Failed to load recent topics",
-            variant: "destructive",
-          });
-        } else {
-          setRecentTopics(topicsData || []);
-        }
-
-        // Fetch learning time
-        const today = new Date().toISOString().split('T')[0];
-        const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
-          .toISOString()
-          .split('T')[0];
-
-        const { data: timeData, error: timeError } = await supabase
-          .from('learning_time')
-          .select('minutes_spent, date')
-          .eq('user_id', user.id)
-          .gte('date', weekAgo)
-          .lte('date', today);
-
-        if (timeError) {
-          console.error('Error fetching learning time:', timeError);
-          toast({
-            title: "Error",
-            description: "Failed to load learning time",
-            variant: "destructive",
-          });
-        } else {
-          const todayMinutes = timeData?.find(d => d.date === today)?.minutes_spent || 0;
-          const weekMinutes = timeData?.reduce((acc, curr) => acc + (curr.minutes_spent || 0), 0) || 0;
-
-          setTimeSpent({
-            today: todayMinutes,
-            week: weekMinutes,
-          });
-        }
-      } catch (error) {
-        console.error('Error fetching user data:', error);
-        toast({
-          title: "Error",
-          description: "Failed to load user data",
-          variant: "destructive",
-        });
-      }
-    };
-
-    fetchUserData();
-    // Set up real-time subscription for updates
-    const subscription = supabase
-      .channel('user_data_changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'explored_topics',
-        },
-        () => {
-          fetchUserData(); // Refresh data when changes occur
-        }
-      )
-      .subscribe();
-
-    return () => {
-      subscription.unsubscribe();
-    };
-  }, [toast]);
-
+export const CollapsiblePanel = ({ userProgress }: CollapsiblePanelProps) => {
   return (
-    <Sheet>
-      <SheetContent 
-        className="w-[90vw] sm:w-[400px] bg-gradient-to-br from-purple-50 to-blue-50"
-        role={role}
-        aria-label={ariaLabel}
-      >
-        <SheetHeader>
-          <SheetTitle className="text-2xl font-bold text-primary">
-            Your Progress
-          </SheetTitle>
-        </SheetHeader>
+    <div className="h-full flex flex-col gap-6 pt-6">
+      <SheetHeader>
+        <SheetTitle className="text-2xl font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
+          Your Progress
+        </SheetTitle>
+      </SheetHeader>
 
-        <div className="mt-6 space-y-6">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-          >
-            <ProgressCard userProgress={userProgress} />
-          </motion.div>
+      <div className="space-y-6">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+        >
+          <ProgressCard userProgress={userProgress} />
+        </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-          >
-            <TimeTracker timeSpent={timeSpent} />
-          </motion.div>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+        >
+          <TimeTracker timeSpent={{ today: 30, week: 120 }} />
+        </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-          >
-            <RecentTopics topics={recentTopics} />
-          </motion.div>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
+          <RecentTopics topics={[]} />
+        </motion.div>
 
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-          >
-            <TalkToWizzy />
-          </motion.div>
-        </div>
-      </SheetContent>
-    </Sheet>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+        >
+          <TalkToWizzy />
+        </motion.div>
+      </div>
+    </div>
   );
 };

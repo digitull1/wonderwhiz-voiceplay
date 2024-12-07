@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback } from "react";
 import { useQuiz } from "./useQuiz";
 import { useUserProgress } from "./useUserProgress";
 import { Block } from "@/types/chat";
@@ -64,7 +64,6 @@ export const useChat = () => {
     setIsLoading(true);
 
     try {
-      // Handle initial name input
       if (!userName) {
         setUserName(message);
         setMessages(prev => [...prev, {
@@ -75,7 +74,6 @@ export const useChat = () => {
         return;
       }
 
-      // Handle age input
       if (!userAge && userName) {
         const age = parseInt(message);
         if (isNaN(age) || age < 4 || age > 12) {
@@ -97,12 +95,11 @@ export const useChat = () => {
         return;
       }
 
-      // Handle regular chat messages
       const detailedContent = await getGroqResponse(message, 100);
-      const blocks = await generateDynamicBlocks(message, currentTopic || "general");
+      const blocks = await generateDynamicBlocks(message, currentTopic || message);
       
       setMessages(prev => [...prev, {
-        text: `${detailedContent} 🌟`,
+        text: detailedContent,
         isAi: true,
         blocks
       }]);
