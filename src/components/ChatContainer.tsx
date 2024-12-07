@@ -20,8 +20,10 @@ interface ChatContainerProps {
   onBlockClick?: (block: Block) => void;
   quizState?: QuizState;
   onQuizAnswer?: (isCorrect: boolean) => void;
+  onQuizGenerated?: (quiz: any) => void;
   onAuthPromptClick?: () => void;
   onPanelOpen?: () => void;
+  onImageAnalyzed?: (response: string) => void;
 }
 
 export const ChatContainer: React.FC<ChatContainerProps> = ({ 
@@ -30,8 +32,10 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
   onBlockClick,
   quizState,
   onQuizAnswer,
+  onQuizGenerated,
   onAuthPromptClick,
-  onPanelOpen
+  onPanelOpen,
+  onImageAnalyzed
 }) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -83,8 +87,10 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
             imageUrl={message.imageUrl}
             quizState={message.quizState}
             onQuizAnswer={onQuizAnswer}
+            onQuizGenerated={onQuizGenerated}
             messageIndex={index}
             onPanelOpen={onPanelOpen}
+            onImageAnalyzed={onImageAnalyzed}
           />
           {message.showAuthPrompt && (
             <div className="flex justify-center gap-2 my-2">
