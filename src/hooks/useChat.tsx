@@ -26,7 +26,7 @@ export const useChat = () => {
   const { userProgress, updateUserProgress } = useUserProgress(tempUserId || "temp");
   const { generateDynamicBlocks } = useBlockGeneration();
   const { handleImageAnalysis, isAnalyzing } = useImageAnalysis();
-  const { quizState, handleQuizAnswer, updateBlocksExplored } = useQuiz(updateUserProgress);
+  const { quizState, handleQuizAnswer, updateBlocksExplored } = useQuiz({ updateProgress: updateUserProgress });
 
   const sendMessage = async (messageText: string, skipUserMessage: boolean = false) => {
     if (!messageText.trim() || isLoading) return;
