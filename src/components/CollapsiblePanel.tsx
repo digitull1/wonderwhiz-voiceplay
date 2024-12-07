@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
-import { Star } from "lucide-react";
+import { Menu } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -136,12 +136,12 @@ export const CollapsiblePanel = ({
     <Sheet>
       <SheetTrigger asChild>
         <motion.button
-          className="fixed top-4 right-4 bg-white/90 backdrop-blur-sm p-2 rounded-full shadow-lg
-            hover:shadow-xl transition-all duration-300 z-50"
+          className="fixed top-4 right-4 bg-gradient-to-r from-primary via-secondary to-accent p-2 rounded-full shadow-lg
+            hover:shadow-xl transition-all duration-300 z-50 text-white"
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
         >
-          <Star className="w-6 h-6 text-primary" />
+          <Menu className="w-6 h-6" />
         </motion.button>
       </SheetTrigger>
       <SheetContent 

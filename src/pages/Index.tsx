@@ -26,7 +26,7 @@ const Index = () => {
   return (
     <AnimatePresence>
       <motion.div 
-        className="min-h-screen gradient-bg flex flex-col relative overflow-hidden"
+        className="min-h-screen gradient-bg flex flex-col relative overflow-hidden px-2 sm:px-4"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
