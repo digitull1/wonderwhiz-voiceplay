@@ -6,8 +6,6 @@ import { BackgroundDecorations } from "@/components/layout/BackgroundDecorations
 import { useChat } from "@/hooks/useChat";
 import {
   TooltipProvider,
-  TooltipContent,
-  TooltipTrigger,
 } from "@/components/ui/tooltip";
 
 const Index = () => {

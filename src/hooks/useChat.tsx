@@ -28,14 +28,19 @@ export const useChat = () => {
   const { handleImageAnalysis, isAnalyzing } = useImageAnalysis();
   const { quizState, handleQuizAnswer, updateBlocksExplored } = useQuiz(updateUserProgress);
 
+  // Track learning time
   useEffect(() => {
     const trackLearningTime = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          console.log('No user found for learning time tracking');
+          return;
+        }
 
-      const interval = setInterval(async () => {
-        try {
+        const interval = setInterval(async () => {
           const today = new Date().toISOString().split('T')[0];
+          
           const { data: existingTime, error: fetchError } = await supabase
             .from('learning_time')
             .select('*')
@@ -48,34 +53,32 @@ export const useChat = () => {
             return;
           }
 
-          if (existingTime) {
-            await supabase
-              .from('learning_time')
-              .update({ 
-                minutes_spent: (existingTime.minutes_spent || 0) + 1 
-              })
-              .eq('id', existingTime.id);
-          } else {
-            await supabase
-              .from('learning_time')
-              .insert([{ 
-                minutes_spent: 1,
+          const { error: upsertError } = await supabase
+            .from('learning_time')
+            .upsert([
+              {
+                user_id: user.id,
                 date: today,
-                user_id: user.id
-              }]);
-          }
-        } catch (error) {
-          console.error('Error updating learning time:', error);
-        }
-      }, 60000); // Update every minute
+                minutes_spent: (existingTime?.minutes_spent || 0) + 1
+              }
+            ]);
 
-      return () => clearInterval(interval);
+          if (upsertError) {
+            console.error('Error updating learning time:', upsertError);
+          }
+        }, 60000); // Update every minute
+
+        return () => clearInterval(interval);
+      } catch (error) {
+        console.error('Error in learning time tracking:', error);
+      }
     };
 
     trackLearningTime();
   }, []);
 
   const handleListen = (text: string) => {
+    console.log('Speaking text:', text);
     const utterance = new SpeechSynthesisUtterance(text);
     window.speechSynthesis.speak(utterance);
   };
@@ -111,7 +114,10 @@ export const useChat = () => {
     try {
       const previousMessages = messages.slice(-3).map(m => m.text).join(" ");
       const response = await getGroqResponse(messageText);
+      console.log('Received response:', response);
+      
       const blocks = await generateDynamicBlocks(response, currentTopic, previousMessages);
+      console.log('Generated blocks:', blocks);
       
       setMessages(prev => [...prev, { 
         text: response, 

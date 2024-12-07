@@ -12,7 +12,7 @@ import { Button } from "./ui/button";
 interface ChatMessageProps {
   isAi?: boolean;
   message: string;
-  onListen?: () => void;
+  onListen?: (text: string) => void;
   blocks?: Block[];
   onBlockClick?: (block: Block) => void;
 }
@@ -60,7 +60,7 @@ export const ChatMessage = ({
 
   const handleListen = () => {
     if (onListen) {
-      onListen();
+      onListen(message);
     }
   };
 
@@ -68,7 +68,7 @@ export const ChatMessage = ({
     .split(/([.!?])\s*/)
     .map((part, i, arr) => {
       if (i < arr.length - 1) {
-        return part + arr[i + 1] + '\n\n';
+        return part + arr[i + 1] + ' ';
       }
       return part;
     })
@@ -116,7 +116,7 @@ export const ChatMessage = ({
           )}
           layout
         >
-          <p className="text-[14px] leading-[1.4] whitespace-pre-wrap relative z-10 
+          <p className="text-[14px] leading-[1.3] whitespace-pre-wrap relative z-10 
             tracking-wide font-medium text-gray-800">
             {formattedMessage}
           </p>
@@ -143,7 +143,7 @@ export const ChatMessage = ({
               transition={{ delay: 0.2 }}
             >
               <MessageActions 
-                onListen={onListen} 
+                onListen={() => onListen?.(message)} 
                 messageText={message} 
               />
               {shouldShowImageGen && (
