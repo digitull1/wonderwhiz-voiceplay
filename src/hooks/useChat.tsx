@@ -22,8 +22,8 @@ export const useChat = () => {
   const [isLoading, setIsLoading] = useState(false);
   
   const { toast } = useToast();
-  const { isAuthenticated, tempUserId } = useAuth();
-  const { userProgress, updateUserProgress } = useUserProgress(tempUserId);
+  const { isAuthenticated } = useAuth();
+  const { userProgress, updateUserProgress } = useUserProgress(null);
   const { generateDynamicBlocks } = useBlockGeneration();
   const { handleImageAnalysis, isAnalyzing } = useImageAnalysis();
   const { quizState, handleQuizAnswer, updateBlocksExplored } = useQuiz(updateUserProgress);
@@ -51,7 +51,7 @@ export const useChat = () => {
         blocks 
       }]);
       
-      if (isAuthenticated || tempUserId) {
+      if (isAuthenticated) {
         await updateUserProgress(5);
       }
       
@@ -84,7 +84,7 @@ export const useChat = () => {
 
   const handleImageUploadSuccess = async (response: string) => {
     if (response) {
-      if (isAuthenticated || tempUserId) {
+      if (isAuthenticated) {
         await updateUserProgress(15);
         
         toast({
