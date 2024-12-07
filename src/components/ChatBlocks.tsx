@@ -13,11 +13,11 @@ interface ChatBlocksProps {
 export const ChatBlocks = ({ blocks, onBlockClick }: ChatBlocksProps) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [currentScrollIndex, setCurrentScrollIndex] = useState(0);
-  const visibleBlocksCount = 1; // Show one block at a time on mobile
+  const visibleBlocksCount = 1;
 
   const handleScroll = (direction: 'left' | 'right') => {
     if (!scrollContainerRef.current) return;
-    const blockWidth = scrollContainerRef.current.offsetWidth * 0.9; // 90% of container width
+    const blockWidth = scrollContainerRef.current.offsetWidth * 0.9;
     const scrollAmount = direction === 'left' ? -blockWidth : blockWidth;
     
     scrollContainerRef.current.scrollTo({
@@ -45,19 +45,19 @@ export const ChatBlocks = ({ blocks, onBlockClick }: ChatBlocksProps) => {
   }, [blocks.length]);
 
   return (
-    <div className="relative w-full px-4">
+    <div className="relative w-full px-2">
       <AnimatePresence>
         {blocks.length > 0 && (
           <>
             <BlockNavigationButton 
               direction="left" 
               onClick={() => handleScroll('left')} 
-              className="left-2"
+              className="left-0"
             />
             <BlockNavigationButton 
               direction="right" 
               onClick={() => handleScroll('right')} 
-              className="right-2"
+              className="right-0"
             />
           </>
         )}
@@ -65,7 +65,7 @@ export const ChatBlocks = ({ blocks, onBlockClick }: ChatBlocksProps) => {
 
       <div 
         ref={scrollContainerRef}
-        className="flex gap-4 overflow-x-auto pb-6 pt-2 snap-x snap-mandatory hide-scrollbar"
+        className="flex gap-3 overflow-x-auto pb-4 pt-1 snap-x snap-mandatory hide-scrollbar"
       >
         <AnimatePresence>
           {blocks.map((block, index) => (

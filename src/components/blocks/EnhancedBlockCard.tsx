@@ -42,25 +42,25 @@ export const EnhancedBlockCard = ({
       whileTap={{ scale: 0.98 }}
       onClick={onClick}
       className={cn(
-        "flex flex-col justify-between p-6 rounded-2xl",
+        "flex flex-col justify-between p-4 rounded-2xl",
         "w-[90vw] min-h-[120px]",
         "transition-all duration-300 relative overflow-hidden",
         "text-white snap-center group",
-        "shadow-lg hover:shadow-xl",
+        "shadow-lg hover:shadow-xl border border-white/20",
         "bg-gradient-to-br",
         getBlockGradient()
       )}
     >
-      <div className="flex flex-col gap-3">
-        <h3 className="text-lg font-bold leading-tight line-clamp-2 text-left">
+      <div className="flex flex-col gap-2">
+        <h3 className="text-[16px] font-bold leading-tight line-clamp-2 text-left">
           {truncateContent(block.title)}
         </h3>
-        <p className="text-sm opacity-90 line-clamp-2 text-left">
+        <p className="text-[14px] opacity-90 line-clamp-2 text-left">
           {block.description || "Click to explore more!"}
         </p>
       </div>
 
-      <div className="flex items-center justify-end mt-3 text-sm font-medium">
+      <div className="flex items-center justify-end mt-2 text-sm font-medium">
         Read More
         <ChevronRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
       </div>
