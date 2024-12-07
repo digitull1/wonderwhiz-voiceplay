@@ -25,34 +25,34 @@ export default {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: {
-          DEFAULT: "#007AFF", // iOS Blue
-          hover: "#0063CC",
-          foreground: "#ffffff",
+          DEFAULT: "#9b87f5", // Lavender
+          hover: "#7E69AB",
+          foreground: "#1A1F2C", // Dark text for contrast
         },
         secondary: {
-          DEFAULT: "#5856D6", // iOS Purple
-          foreground: "#ffffff",
+          DEFAULT: "#33C3F0", // Teal
+          foreground: "#1A1F2C",
         },
         accent: {
-          DEFAULT: "#FF2D55", // iOS Pink
-          foreground: "#ffffff",
+          DEFAULT: "#FEC6A1", // Coral
+          foreground: "#1A1F2C",
         },
         chat: {
           user: "rgba(255, 255, 255, 0.95)",
-          ai: "rgba(0, 122, 255, 0.95)", // iOS Blue with opacity
+          ai: "rgba(155, 135, 245, 0.95)", // Lavender with opacity
         },
         block: {
-          orange: "#FF9500", // iOS Orange
-          blue: "#007AFF", // iOS Blue
-          purple: "#5856D6", // iOS Purple
+          orange: "#FEC6A1", // Coral
+          blue: "#33C3F0", // Teal
+          purple: "#9b87f5", // Lavender
         },
         app: {
-          background: "#F5F5F7", // Apple Light Gray
-          accent: "#5856D6", // iOS Purple
-          cta: "#FF2D55", // iOS Pink
+          background: "#F5F5F7", // Light background
+          accent: "#9b87f5", // Lavender
+          cta: "#FEC6A1", // Coral
           text: {
-            dark: "#1D1D1F", // Apple Dark Gray
-            light: "#FFFFFF",
+            dark: "#1A1F2C", // Dark text
+            light: "#F6F6F7", // Light text
           }
         }
       },
@@ -72,7 +72,7 @@ export default {
       backgroundImage: {
         'gradient-luxury': 'linear-gradient(135deg, #F5F5F7 0%, #E5E5E7 100%)',
         'gradient-card': 'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.85) 100%)',
-        'gradient-block': 'linear-gradient(135deg, rgba(0,122,255,0.95) 0%, rgba(88,86,214,0.95) 100%)',
+        'gradient-block': 'linear-gradient(135deg, rgba(155,135,245,0.95) 0%, rgba(51,195,240,0.95) 100%)',
       },
       boxShadow: {
         'luxury': '0 8px 32px -4px rgba(0, 0, 0, 0.1)',
