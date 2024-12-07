@@ -1,10 +1,10 @@
-import React from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Block } from "@/types/chat";
 import { ChatAvatar } from "./chat/ChatAvatar";
 import { RelatedBlocks } from "./chat/RelatedBlocks";
-import { Volume2 } from "lucide-react";
+import { Volume2, VolumeX } from "lucide-react";
 
 interface ChatMessageProps {
   isAi?: boolean;
@@ -21,6 +21,7 @@ export const ChatMessage = ({
   blocks,
   onBlockClick 
 }: ChatMessageProps) => {
+  const [isPlaying, setIsPlaying] = useState(false);
   const messageVariants = {
     hidden: { 
       opacity: 0, 
@@ -48,8 +49,14 @@ export const ChatMessage = ({
   };
 
   const handleListen = () => {
-    if (onListen) {
-      onListen(message);
+    if (onListen && !isPlaying) {
+      setIsPlaying(true);
+      const utterance = new SpeechSynthesisUtterance(message);
+      utterance.onend = () => setIsPlaying(false);
+      window.speechSynthesis.speak(utterance);
+    } else if (isPlaying) {
+      window.speechSynthesis.cancel();
+      setIsPlaying(false);
     }
   };
 
@@ -101,11 +108,15 @@ export const ChatMessage = ({
               className="absolute top-2.5 right-2.5 opacity-70 hover:opacity-100 
                 cursor-pointer transition-all p-1.5 rounded-full hover:bg-white/50
                 active:scale-95 z-20"
-              aria-label="Listen to message"
+              aria-label={isPlaying ? "Stop speaking" : "Listen to message"}
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.95 }}
             >
-              <Volume2 className="w-4 h-4 text-primary" />
+              {isPlaying ? (
+                <VolumeX className="w-4 h-4 text-primary" />
+              ) : (
+                <Volume2 className="w-4 h-4 text-primary" />
+              )}
             </motion.button>
           )}
           

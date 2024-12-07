@@ -44,17 +44,20 @@ export const useChat = () => {
         blocks
       }]);
 
-      setBlocksExplored(prev => prev + 1);
-      if (blocksExplored >= 3) {
-        updateBlocksExplored(block.metadata.topic);
-        setBlocksExplored(0);
-      }
+      setBlocksExplored(prev => {
+        const newCount = prev + 1;
+        if (newCount >= 4) {
+          updateBlocksExplored(block.metadata.topic);
+          return 0;
+        }
+        return newCount;
+      });
     } catch (error) {
       console.error('Error handling block click:', error);
     } finally {
       setIsLoading(false);
     }
-  }, [generateDynamicBlocks, blocksExplored, updateBlocksExplored]);
+  }, [generateDynamicBlocks, updateBlocksExplored]);
 
   const sendMessage = useCallback(async (message: string) => {
     if (!message.trim() || isLoading) return;
@@ -96,7 +99,7 @@ export const useChat = () => {
       }
 
       const detailedContent = await getGroqResponse(message, 100);
-      const blocks = await generateDynamicBlocks(message, currentTopic || message);
+      const blocks = await generateDynamicBlocks(message, message);
       
       setMessages(prev => [...prev, {
         text: detailedContent,
@@ -104,11 +107,14 @@ export const useChat = () => {
         blocks
       }]);
 
-      setBlocksExplored(prev => prev + 1);
-      if (blocksExplored >= 3) {
-        updateBlocksExplored(currentTopic || "general");
-        setBlocksExplored(0);
-      }
+      setBlocksExplored(prev => {
+        const newCount = prev + 1;
+        if (newCount >= 4) {
+          updateBlocksExplored(currentTopic || "general");
+          return 0;
+        }
+        return newCount;
+      });
     } catch (error) {
       console.error('Error sending message:', error);
     } finally {
