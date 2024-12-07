@@ -40,7 +40,7 @@ export const QuestionDisplay = ({
       </div>
 
       <motion.h3 
-        className="text-lg sm:text-xl font-semibold mb-6 text-white"
+        className="text-xl sm:text-2xl font-semibold mb-6 text-white leading-relaxed"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.2 }}
@@ -49,7 +49,7 @@ export const QuestionDisplay = ({
       </motion.h3>
       
       <div className="grid gap-3">
-        <AnimatePresence>
+        <AnimatePresence mode="wait">
           {question.options.map((option, index) => {
             const isSelected = selectedAnswer === index;
             const isCorrect = index === question.correctAnswer;
@@ -69,17 +69,17 @@ export const QuestionDisplay = ({
                   className={cn(
                     "w-full text-left justify-start p-4 relative overflow-hidden",
                     "transition-all duration-300",
-                    "bg-white/10 text-white border-white/10 backdrop-blur-sm hover:bg-white/20",
+                    "bg-white/10 text-white border-white/20 backdrop-blur-xl hover:bg-white/20",
                     showResult && isCorrect && "bg-green-500/90 text-white border-white/20",
                     showResult && isSelected && !isCorrect && "bg-red-500/90 text-white border-white/20",
-                    "sm:text-base text-sm group"
+                    "sm:text-lg text-base group font-medium"
                   )}
                   onClick={() => !showCorrect && onAnswerClick(index)}
                   disabled={showCorrect}
                 >
-                  <span className="relative z-10 flex items-center gap-2">
-                    <span className="text-sm font-medium">
-                      {String.fromCharCode(65 + index)}.
+                  <span className="relative z-10 flex items-center gap-3">
+                    <span className="text-sm font-bold px-2 py-1 bg-white/20 rounded">
+                      {String.fromCharCode(65 + index)}
                     </span>
                     <span className="flex-1">{option}</span>
                     {showResult && (

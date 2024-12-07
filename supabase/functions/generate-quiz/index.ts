@@ -14,14 +14,14 @@ serve(async (req) => {
     const { topic } = await req.json();
     console.log('Generating quiz for topic:', topic);
 
-    const prompt = `Generate 5 different multiple choice quiz questions about ${topic}. 
-    Make them progressively more challenging.
-    Each question must:
-    - Be clear and engaging
-    - Have 4 options
-    - Have only one correct answer
-    - Be age-appropriate for children
-    - Include fun facts or interesting information
+    const prompt = `Generate 5 engaging and educational quiz questions about ${topic}. 
+    The questions should:
+    - Be specifically about ${topic}, not general knowledge
+    - Start with easier questions and progressively get more challenging
+    - Include interesting facts in the questions and options
+    - Be age-appropriate for children (8-12 years)
+    - Have clear, unambiguous correct answers
+    - Include fun and engaging language
     
     The response should be in JSON format with the following structure:
     {
@@ -35,7 +35,7 @@ serve(async (req) => {
       ]
     }
     
-    IMPORTANT: Generate exactly 5 questions, each with unique content.`;
+    IMPORTANT: Generate exactly 5 questions, each with unique content about ${topic}.`;
 
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
@@ -48,7 +48,7 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: "You are a friendly educational quiz generator for children. Create engaging and fun questions!"
+            content: "You are an educational quiz generator for children. Create fun, engaging, and topic-specific questions!"
           },
           { role: "user", content: prompt }
         ],

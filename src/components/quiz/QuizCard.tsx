@@ -6,6 +6,7 @@ import { QuizCompletion } from "./QuizCompletion";
 import { cn } from "@/lib/utils";
 import { RewardAnimation } from "../rewards/RewardAnimation";
 import { QuizQuestion } from "@/types/quiz";
+import confetti from "canvas-confetti";
 
 interface QuizCardProps {
   questions: QuizQuestion | QuizQuestion[];
@@ -20,7 +21,6 @@ export const QuizCard = ({ questions, onAnswer }: QuizCardProps) => {
   const [quizComplete, setQuizComplete] = useState(false);
   const [correctAnswers, setCorrectAnswers] = useState(0);
 
-  // Convert single question to array if needed
   const questionsArray = Array.isArray(questions) ? questions : [questions];
   console.log("Questions array:", questionsArray);
 
@@ -33,6 +33,11 @@ export const QuizCard = ({ questions, onAnswer }: QuizCardProps) => {
     if (isCorrect) {
       setCorrectAnswers(prev => prev + 1);
       setShowReward(true);
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 }
+      });
       setTimeout(() => setShowReward(false), 2000);
     }
     
@@ -58,9 +63,9 @@ export const QuizCard = ({ questions, onAnswer }: QuizCardProps) => {
         exit={{ opacity: 0, y: -20 }}
         className={cn(
           "w-full max-w-2xl mx-auto",
-          "bg-gradient-to-br from-primary/95 to-secondary/95",
-          "rounded-xl shadow-luxury border border-white/10",
-          "backdrop-blur-sm overflow-hidden"
+          "bg-gradient-to-br from-primary to-secondary",
+          "rounded-xl shadow-luxury border border-white/20",
+          "backdrop-blur-xl overflow-hidden"
         )}
       >
         <ScrollArea className="h-[400px] w-full p-4 sm:p-6">
