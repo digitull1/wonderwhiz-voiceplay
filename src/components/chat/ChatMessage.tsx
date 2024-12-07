@@ -2,7 +2,6 @@ import React from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Block } from "@/types/chat";
-import { ChatAvatar } from "./ChatAvatar";
 import { RelatedBlocks } from "./RelatedBlocks";
 import { MessageContent } from "./MessageContent";
 import { LoaderCircle } from "lucide-react";

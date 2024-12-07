@@ -1,6 +1,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { Block } from "@/types/chat";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface BlockCardProps {
   block: Block;
@@ -10,6 +11,7 @@ interface BlockCardProps {
 }
 
 export const BlockCard = ({ block, index, onClick, color }: BlockCardProps) => {
+  const isMobile = useIsMobile();
   const CONTENT_LIMIT = 75;
 
   const truncateContent = (text: string) => {

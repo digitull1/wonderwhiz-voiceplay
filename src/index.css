@@ -46,10 +46,7 @@
 
 /* Luxury Message Bubbles */
 .message-bubble-ai {
-  @apply backdrop-blur-xl shadow-luxury border border-white/20 animate-fade-in text-white;
-  width: 100%;
-  max-width: 100%;
-  margin: 0;
+  @apply backdrop-blur-xl shadow-luxury border border-white/20 animate-fade-in text-white w-full;
   background: linear-gradient(
     135deg,
     rgba(155, 135, 245, 0.98) 0%,
@@ -61,10 +58,7 @@
 }
 
 .message-bubble-user {
-  @apply backdrop-blur-lg shadow-card border border-white/10 text-app-text-dark;
-  width: 100%;
-  max-width: 100%;
-  margin: 0;
+  @apply backdrop-blur-lg shadow-card border border-white/10 text-app-text-dark w-full;
   background: linear-gradient(
     135deg,
     rgba(245, 245, 247, 0.98) 0%,
@@ -83,7 +77,7 @@
   
   .message-bubble-ai,
   .message-bubble-user {
-    padding: 0.75rem;
+    @apply px-3 py-4 mx-0 w-full;
   }
 
   .block-hover {
@@ -93,7 +87,7 @@
   }
   
   .blocks-container {
-    padding: 0 0.5rem;
+    @apply px-2;
   }
   
   .block-card {
