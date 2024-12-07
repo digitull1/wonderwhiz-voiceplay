@@ -11,6 +11,7 @@ interface Message {
   isAi: boolean;
   blocks?: Block[];
   showAuthPrompt?: boolean;
+  imageUrl?: string;
 }
 
 interface ChatContainerProps {
@@ -60,22 +61,16 @@ export const ChatContainer = ({
     return () => clearTimeout(timeoutId);
   }, [messages, quizState?.currentQuestion]);
 
-  const filteredMessages = messages.filter((message, index) => {
-    if (index === 0) return true;
-    const prevMessage = messages[index - 1];
-    return !(prevMessage && !prevMessage.isAi && message.text.startsWith('Tell me about'));
-  });
-
   return (
     <div 
       ref={containerRef}
       className={cn(
-        "flex-1 overflow-y-auto space-y-3 chat-container",
+        "flex-1 overflow-y-auto space-y-3 chat-container w-full",
         "pb-[80px] md:pb-[100px]", // Account for fixed chat input
         isMobile ? "px-2" : "px-4"
       )}
     >
-      {filteredMessages.map((message, index) => (
+      {messages.map((message, index) => (
         <React.Fragment key={index}>
           <ChatMessage
             message={message.text}
@@ -83,6 +78,7 @@ export const ChatContainer = ({
             onListen={() => handleListen(message.text)}
             blocks={message.blocks}
             onBlockClick={onBlockClick}
+            imageUrl={message.imageUrl}
           />
           {message.showAuthPrompt && (
             <div className="flex justify-center gap-2 my-2">

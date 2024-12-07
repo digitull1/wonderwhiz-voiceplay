@@ -46,7 +46,9 @@
 
 /* Luxury Message Bubbles */
 .message-bubble-ai {
-  @apply backdrop-blur-xl shadow-luxury border border-white/20 animate-fade-in text-white w-full;
+  @apply backdrop-blur-xl shadow-luxury border border-white/20 animate-fade-in text-white;
+  width: 100%;
+  max-width: 100%;
   margin: 0;
   padding: 1.5rem;
   background: linear-gradient(
@@ -60,7 +62,9 @@
 }
 
 .message-bubble-user {
-  @apply backdrop-blur-lg shadow-card border border-white/10 text-app-text-dark w-full;
+  @apply backdrop-blur-lg shadow-card border border-white/10 text-app-text-dark;
+  width: 100%;
+  max-width: 100%;
   margin: 0;
   padding: 1.5rem;
   background: linear-gradient(
@@ -71,6 +75,23 @@
   box-shadow: 
     0 4px 12px rgba(0,0,0,0.05),
     inset 0 0 24px rgba(255,255,255,0.5);
+}
+
+/* Mobile Optimizations */
+@media (max-width: 640px) {
+  .chat-container {
+    margin-bottom: env(safe-area-inset-bottom);
+  }
+  
+  .message-bubble-ai,
+  .message-bubble-user {
+    padding: 1rem;
+  }
+
+  .block-hover {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
 }
 
 /* Enhanced Post-Chat Actions */

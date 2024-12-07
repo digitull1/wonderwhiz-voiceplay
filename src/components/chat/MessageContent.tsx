@@ -4,11 +4,14 @@ import { cn } from "@/lib/utils";
 import { Volume2, Image, BookOpen, Trophy } from "lucide-react";
 import { ActionIcon } from "./actions/ActionIcon";
 import { GeneratedImage } from "../image/GeneratedImage";
+import { ImageAction } from "./actions/ImageAction";
+import { QuizAction } from "./actions/QuizAction";
+import { TrophyAction } from "./actions/TrophyAction";
 
 interface MessageContentProps {
   message: string;
   isAi?: boolean;
-  onListen?: (text: string) => void;
+  onListen?: () => void;
   onQuizGenerated?: (quiz: any) => void;
   onPanelOpen?: () => void;
   imageUrl?: string;
@@ -50,27 +53,15 @@ export const MessageContent = ({
           <ActionIcon
             icon={Volume2}
             tooltip="Listen to message"
-            onClick={() => onListen?.(message)}
+            onClick={onListen}
             className="bg-gradient-to-br from-blue-500/20 to-purple-500/20 text-white"
           />
-          <ActionIcon
-            icon={Image}
-            tooltip="Generate an image"
-            onClick={() => {}} // Will be implemented in ImageAction component
-            className="bg-gradient-to-br from-green-500/20 to-teal-500/20 text-white"
+          <ImageAction messageText={message} />
+          <QuizAction 
+            messageText={message}
+            onQuizGenerated={onQuizGenerated}
           />
-          <ActionIcon
-            icon={BookOpen}
-            tooltip="Take a quiz"
-            onClick={() => onQuizGenerated?.(message)}
-            className="bg-gradient-to-br from-orange-500/20 to-yellow-500/20 text-white"
-          />
-          <ActionIcon
-            icon={Trophy}
-            tooltip="View progress"
-            onClick={onPanelOpen}
-            className="bg-gradient-to-br from-purple-500/20 to-pink-500/20 text-white"
-          />
+          <TrophyAction onPanelOpen={onPanelOpen} />
         </div>
       )}
     </motion.div>

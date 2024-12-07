@@ -9,11 +9,12 @@ import { MessageContent } from "./chat/MessageContent";
 interface ChatMessageProps {
   isAi?: boolean;
   message: string;
-  onListen?: (text: string) => void;
+  onListen?: () => void;
   blocks?: Block[];
   onBlockClick?: (block: Block) => void;
   onQuizGenerated?: (quiz: any) => void;
   onPanelOpen?: () => void;
+  imageUrl?: string;
 }
 
 export const ChatMessage = ({ 
@@ -23,7 +24,8 @@ export const ChatMessage = ({
   blocks,
   onBlockClick,
   onQuizGenerated,
-  onPanelOpen
+  onPanelOpen,
+  imageUrl
 }: ChatMessageProps) => {
   return (
     <motion.div 
@@ -61,9 +63,10 @@ export const ChatMessage = ({
           <MessageContent 
             message={message} 
             isAi={isAi} 
-            onListen={() => onListen?.(message)}
+            onListen={onListen}
             onQuizGenerated={onQuizGenerated}
             onPanelOpen={onPanelOpen}
+            imageUrl={imageUrl}
           />
           
           {isAi && blocks && blocks.length > 0 && onBlockClick && (

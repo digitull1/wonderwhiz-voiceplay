@@ -18,6 +18,8 @@ export const TrophyAction = ({ onPanelOpen }: TrophyActionProps) => {
         description: "Check out your learning journey!",
         className: "bg-primary text-white"
       });
+    } else {
+      console.error('onPanelOpen callback is not defined');
     }
   };
 
