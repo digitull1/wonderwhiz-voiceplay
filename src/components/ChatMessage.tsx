@@ -6,7 +6,7 @@ import { ChatAvatar } from "./chat/ChatAvatar";
 import { MessageActions } from "./chat/MessageActions";
 import { RelatedBlocks } from "./chat/RelatedBlocks";
 import { ImageGenerator } from "./ImageGenerator";
-import { Speaker } from "lucide-react";
+import { Volume2 } from "lucide-react";
 
 interface ChatMessageProps {
   isAi?: boolean;
@@ -122,8 +122,9 @@ export const ChatMessage = ({
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={onListen}
+              aria-label="Listen to message"
             >
-              <Speaker className="w-4 h-4 text-primary" />
+              <Volume2 className="w-4 h-4 text-primary" />
             </motion.button>
           )}
           

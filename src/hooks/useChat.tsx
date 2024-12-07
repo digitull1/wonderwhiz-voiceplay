@@ -67,6 +67,7 @@ export const useChat = () => {
         blocks 
       }]);
       
+      // Award points for engaging in conversation
       await updateUserProgress(5);
       
       toast({
@@ -104,6 +105,7 @@ export const useChat = () => {
 
   const handleImageUploadSuccess = async (response: string) => {
     if (response) {
+      // Award points for sharing an image
       await updateUserProgress(15);
       
       toast({
