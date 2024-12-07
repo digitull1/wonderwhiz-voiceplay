@@ -6,6 +6,40 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+// Utility function to wait for a specified time
+const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+
+// Retry function with exponential backoff
+async function retryWithBackoff<T>(
+  operation: () => Promise<T>,
+  retries = 3,
+  baseDelay = 1000,
+): Promise<T> {
+  let lastError;
+  
+  for (let i = 0; i < retries; i++) {
+    try {
+      return await operation();
+    } catch (error) {
+      lastError = error;
+      
+      // If it's a rate limit error, wait for the specified time
+      if (error.message?.includes('Rate limit reached')) {
+        const waitTime = parseFloat(error.message.match(/try again in (\d+\.?\d*)s/)?.[1] || '1') * 1000;
+        console.log(`Rate limit hit, waiting for ${waitTime}ms before retry ${i + 1}`);
+        await wait(waitTime);
+      } else {
+        // For other errors, use exponential backoff
+        const delay = baseDelay * Math.pow(2, i);
+        console.log(`Operation failed, retrying in ${delay}ms (attempt ${i + 1})`);
+        await wait(delay);
+      }
+    }
+  }
+  
+  throw lastError;
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
@@ -65,55 +99,79 @@ serve(async (req) => {
 
     console.log("Sending request to Groq API with prompt:", prompt);
 
-    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "mixtral-8x7b-32768",
-        messages: [
-          {
-            role: "system",
-            content: `You are WonderWhiz, an exciting AI tutor that makes learning feel like an adventure!
-            Your task is to generate EXACTLY 3 blocks of content that:
-            1. Are EXACTLY 75 characters or less (including spaces and emoji)
-            2. Use simple language for kids
-            3. Include ONE relevant emoji at the end
-            4. Make kids curious to learn more
-            5. Follow the clickbait-style format perfectly
-            6. MUST be directly related to the current topic
-            7. Build upon previous responses to maintain context`
-          },
-          {
-            role: "user",
-            content: prompt
-          }
-        ],
-        temperature: 0.7,
-        max_tokens: 500,
-      }),
-    })
+    const makeRequest = async () => {
+      const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: "mixtral-8x7b-32768",
+          messages: [
+            {
+              role: "system",
+              content: `You are WonderWhiz, an exciting AI tutor that makes learning feel like an adventure!
+              Your task is to generate EXACTLY 3 blocks of content that:
+              1. Are EXACTLY 75 characters or less (including spaces and emoji)
+              2. Use simple language for kids
+              3. Include ONE relevant emoji at the end
+              4. Make kids curious to learn more
+              5. Follow the clickbait-style format perfectly
+              6. MUST be directly related to the current topic
+              7. Build upon previous responses to maintain context`
+            },
+            {
+              role: "user",
+              content: prompt
+            }
+          ],
+          temperature: 0.7,
+          max_tokens: 500,
+        }),
+      });
 
-    if (!response.ok) {
-      const error = await response.json();
-      console.error("Groq API Error:", error);
-      throw new Error(error.error?.message || "Failed to get response from Groq");
-    }
+      if (!response.ok) {
+        const error = await response.json();
+        console.error("Groq API Error:", error);
+        
+        // Enhanced error handling for rate limits
+        if (error.error?.message?.includes('Rate limit reached')) {
+          throw new Error(error.error.message);
+        }
+        
+        throw new Error(error.error?.message || "Failed to get response from Groq");
+      }
 
-    const data = await response.json()
-    console.log("Generated blocks:", data)
+      return await response.json();
+    };
+
+    // Use the retry function for the API call
+    const data = await retryWithBackoff(makeRequest);
+    console.log("Generated blocks:", data);
 
     return new Response(
       JSON.stringify(data),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
+    );
   } catch (error) {
-    console.error('Error:', error)
+    console.error('Error:', error);
+    
+    // Provide more informative error messages
+    const errorMessage = error.message?.includes('Rate limit reached')
+      ? 'Service is temporarily busy. Please try again in a few seconds.'
+      : error.message;
+    
     return new Response(
-      JSON.stringify({ error: error.message }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
-    )
+      JSON.stringify({ 
+        error: errorMessage,
+        details: error.message,
+        success: false 
+      }),
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }, 
+        status: 500 
+      }
+    );
   }
 })
