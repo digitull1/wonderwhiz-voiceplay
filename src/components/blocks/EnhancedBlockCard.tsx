@@ -2,7 +2,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Block } from "@/types/chat";
-import { ChevronRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 
 interface EnhancedBlockCardProps {
   block: Block;
@@ -15,14 +15,6 @@ export const EnhancedBlockCard = ({
   index, 
   onClick 
 }: EnhancedBlockCardProps) => {
-  const CONTENT_LIMIT = 75;
-
-  const truncateContent = (text: string | undefined) => {
-    if (!text) return "";
-    if (text.length <= CONTENT_LIMIT) return text;
-    return text.substring(0, CONTENT_LIMIT - 3) + "...";
-  };
-
   const getBlockGradient = () => {
     const gradients = [
       "from-[#FF6B6B] to-[#FF8E8E]", // Warm Red
@@ -38,31 +30,40 @@ export const EnhancedBlockCard = ({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
       transition={{ delay: index * 0.1 }}
+      whileHover={{ scale: 1.02, y: -5 }}
       whileTap={{ scale: 0.98 }}
       onClick={onClick}
       className={cn(
-        "flex flex-col justify-between p-4 rounded-2xl w-full",
-        "min-h-[110px] transition-all duration-300",
-        "relative overflow-hidden text-white snap-center group",
+        "group flex flex-col justify-between w-full min-h-[120px] p-4",
+        "rounded-2xl transition-all duration-300",
+        "relative overflow-hidden text-white",
         "shadow-lg hover:shadow-xl border border-white/20",
-        "bg-gradient-to-br",
+        "bg-gradient-to-br cursor-pointer",
+        "active:scale-95",
         getBlockGradient()
       )}
     >
-      <div className="flex flex-col gap-1.5">
-        <h3 className="text-[15px] font-semibold leading-snug line-clamp-2 text-left">
-          {truncateContent(block.title)}
+      <div className="flex flex-col gap-2 relative z-10">
+        <h3 className="text-[15px] md:text-[16px] font-semibold leading-snug 
+          tracking-tight line-clamp-2 text-left">
+          {block.title}
         </h3>
-        <p className="text-[13px] opacity-90 line-clamp-2 text-left">
-          {block.description || "Click to explore more!"}
-        </p>
       </div>
 
-      <div className="flex items-center justify-end mt-2 text-sm font-medium">
-        Read More
-        <ChevronRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
-      </div>
+      <motion.div 
+        className="flex items-center mt-2 text-sm font-medium opacity-80 
+          group-hover:opacity-100 transition-opacity"
+        initial={false}
+        animate={{ x: 0 }}
+        whileHover={{ x: 5 }}
+      >
+        <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
+      </motion.div>
 
+      {/* Interactive background elements */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent 
+        opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+      
       <div className="absolute bottom-0 right-0 w-32 h-32 opacity-20 
         bg-white rounded-tl-full transform translate-x-8 translate-y-8 
         group-hover:scale-110 transition-transform duration-500" />

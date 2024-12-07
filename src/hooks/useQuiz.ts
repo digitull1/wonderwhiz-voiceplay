@@ -87,15 +87,18 @@ export const useQuiz = ({ updateProgress }: UseQuizProps) => {
   };
 
   const updateBlocksExplored = (topic: string) => {
-    console.log('Updating blocks explored for topic:', topic);
     setQuizState(prev => {
       const newBlocksExplored = prev.currentTopic === topic ? prev.blocksExplored + 1 : 1;
-      const shouldTriggerQuiz = newBlocksExplored >= 4;
+      console.log('Blocks explored for topic:', topic, 'Count:', newBlocksExplored);
       
-      console.log('Blocks explored:', newBlocksExplored, 'Should trigger quiz:', shouldTriggerQuiz);
-      
-      if (shouldTriggerQuiz) {
+      if (newBlocksExplored >= 4) {
+        console.log('Triggering quiz for topic:', topic);
         generateQuizQuestion(topic);
+        return {
+          ...prev,
+          blocksExplored: 0,
+          currentTopic: topic
+        };
       }
       
       return {
