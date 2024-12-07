@@ -1,11 +1,9 @@
 import React from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Sparkles } from "lucide-react";
-import { useUserProgress } from "@/hooks/useUserProgress";
+import { motion } from "framer-motion";
+import { Menu } from "lucide-react";
+import { Sheet, SheetTrigger } from "@/components/ui/sheet";
 
 export const ChatHeader = () => {
-  const { userProgress } = useUserProgress();
-  
   return (
     <motion.div 
       className="flex justify-between items-center mb-6 bg-gradient-to-r from-primary/10 via-secondary/10 to-accent/10 
@@ -15,24 +13,28 @@ export const ChatHeader = () => {
       transition={{ duration: 0.5 }}
     >
       <div className="flex items-center gap-3">
-        <motion.div
-          className="relative"
-          animate={{ rotate: [0, 10, -10, 0] }}
-          transition={{ duration: 2, repeat: Infinity }}
+        <motion.h1 
+          className="text-title font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.2 }}
         >
-          <Sparkles className="w-8 h-8 text-primary" />
-        </motion.div>
-        <div>
-          <motion.h1 
-            className="text-title font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
-          >
-            WonderWhiz
-          </motion.h1>
-        </div>
+          WonderWhiz
+        </motion.h1>
       </div>
+      
+      <Sheet>
+        <SheetTrigger asChild>
+          <motion.button
+            className="bg-gradient-to-r from-primary via-secondary to-accent p-2 rounded-full shadow-lg
+              hover:shadow-xl transition-all duration-300 text-white"
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <Menu className="w-5 h-5" />
+          </motion.button>
+        </SheetTrigger>
+      </Sheet>
     </motion.div>
   );
 };

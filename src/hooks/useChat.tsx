@@ -20,6 +20,7 @@ export const useChat = () => {
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [userAge, setUserAge] = useState<number | null>(null);
   
   const { toast } = useToast();
   const { isAuthenticated, tempUserId } = useAuth();
@@ -40,12 +41,66 @@ export const useChat = () => {
     setIsLoading(true);
 
     try {
+      // Handle name input
+      if (messages.length === 1) {
+        setMessages(prev => [
+          ...prev,
+          { 
+            text: `Nice to meet you, ${messageText}! How old are you? This helps me make everything just right for you! 🎯`, 
+            isAi: true,
+            blocks: []
+          }
+        ]);
+        setIsLoading(false);
+        return;
+      }
+
+      // Handle age input
+      if (messages.length === 3) {
+        const age = parseInt(messageText);
+        if (isNaN(age) || age < 4 || age > 12) {
+          setMessages(prev => [
+            ...prev,
+            { 
+              text: "Oops! Please tell me your age as a number between 4 and 12! 🎈", 
+              isAi: true,
+              blocks: []
+            }
+          ]);
+          setIsLoading(false);
+          return;
+        }
+        setUserAge(age);
+        const previousMessages = messages.slice(-3).map(m => m.text).join(" ");
+        const response = await getGroqResponse(
+          `As a friendly AI tutor talking to a ${age} year old child, respond to: ${messageText}`,
+          100
+        );
+        
+        const blocks = await generateDynamicBlocks(response, "space", previousMessages);
+        
+        setMessages(prev => [
+          ...prev,
+          { 
+            text: `Wow! ${age} is a perfect age for amazing discoveries! 🌟 I've got some mind-blowing facts that will blow your socks off! Check these out and click on what interests you the most! 🚀`,
+            isAi: true,
+            blocks
+          }
+        ]);
+        
+        if (isAuthenticated) {
+          await updateUserProgress(10);
+        }
+        
+        setIsLoading(false);
+        return;
+      }
+
       const previousMessages = messages.slice(-3).map(m => m.text).join(" ");
-      const response = await getGroqResponse(messageText, 100);
-      console.log('Received response:', response);
+      const ageContext = userAge ? `As a friendly AI tutor talking to a ${userAge} year old child, ` : "";
+      const response = await getGroqResponse(ageContext + messageText, 100);
       
       const blocks = await generateDynamicBlocks(response, "space", previousMessages);
-      console.log('Generated blocks:', blocks);
       
       setMessages(prev => [...prev, { 
         text: response, 

@@ -60,14 +60,14 @@ serve(async (req) => {
       generate 3 engaging, educational blocks that are DIRECTLY RELATED to the current topic.
       Previous response for context: "${previous_response}"
 
-      IMPORTANT FORMATTING AND CONTEXT RULES:
+      IMPORTANT FORMATTING AND CONTENT RULES:
       1. Each block must be EXACTLY ONE LINE of clickbait-style content
       2. Each line MUST be EXACTLY 75 CHARACTERS or LESS (including spaces and emoji)
       3. Each line MUST:
          - Start with "Did you know" or an exciting question
          - Include ONE fascinating fact DIRECTLY RELATED to the current topic
          - End with ONE relevant emoji
-         - Be engaging and fun for kids
+         - Be engaging and fun for kids aged ${age_group}
          - Make them want to click to learn more
       4. MAINTAIN TOPIC RELEVANCE:
          - Each block must be a natural continuation of the current topic
@@ -95,6 +95,7 @@ serve(async (req) => {
       - Double-check that each title is 75 characters or less INCLUDING the emoji!
       - Ensure each block is directly related to the current topic!
       - Build upon the previous response to maintain conversation flow!
+      - Adapt language complexity for age ${age_group}!
     `
 
     console.log("Sending request to Groq API with prompt:", prompt);
