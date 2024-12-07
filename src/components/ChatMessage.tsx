@@ -79,7 +79,7 @@ export const ChatMessage = ({
 
         <motion.div
           className={cn(
-            "relative flex-1 w-full",
+            "relative flex-1 w-full group",
             isAi ? "message-bubble-ai" : "message-bubble-user",
             "rounded-xl p-4 sm:p-6"
           )}

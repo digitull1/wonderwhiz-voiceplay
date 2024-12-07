@@ -22,7 +22,7 @@ export const MessageActions = ({
   if (!showActions) return null;
 
   return (
-    <div className="post-chat-actions">
+    <div className="flex items-center gap-2 mt-2 opacity-0 group-hover:opacity-100 transition-opacity">
       {onListen && (
         <ActionIcon
           icon={Volume2}
