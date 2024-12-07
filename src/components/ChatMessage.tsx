@@ -31,10 +31,30 @@ export const ChatMessage = ({
     message.toLowerCase().includes("planet") ||
     message.toLowerCase().includes("animal");
 
-  const containerVariants = {
-    hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0 },
-    exit: { opacity: 0, y: -20 }
+  const messageVariants = {
+    hidden: { 
+      opacity: 0, 
+      y: 20,
+      scale: 0.95
+    },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      scale: 1,
+      transition: {
+        type: "spring",
+        stiffness: 500,
+        damping: 25
+      }
+    },
+    hover: {
+      scale: 1.02,
+      transition: {
+        type: "spring",
+        stiffness: 400,
+        damping: 10
+      }
+    }
   };
 
   const formattedMessage = message
@@ -57,11 +77,12 @@ export const ChatMessage = ({
         "flex mb-8 px-4 md:px-6",
         isAi ? "justify-start" : "justify-end"
       )}
-      variants={containerVariants}
       initial="hidden"
       animate="visible"
-      exit="exit"
-      transition={{ duration: 0.3 }}
+      exit={{ opacity: 0, scale: 0.9 }}
+      variants={messageVariants}
+      whileHover="hover"
+      layout
     >
       <div className="flex items-start gap-4 max-w-[85%] md:max-w-[80%] group">
         {isAi && (
@@ -79,16 +100,15 @@ export const ChatMessage = ({
             "space-y-4 p-6 rounded-2xl shadow-lg relative overflow-hidden",
             "transition-all duration-300",
             isAi ? 
-              "bg-gradient-to-br from-chat-ai/90 to-chat-ai via-chat-ai/95 text-foreground" : 
-              "bg-gradient-to-br from-chat-user/90 to-chat-user via-chat-user/95 text-foreground",
+              "bg-gradient-to-br from-[#E8E8FF]/90 via-[#F4F4FF]/95 to-[#FFFFFF]/90 text-foreground" : 
+              "bg-gradient-to-br from-[#FFFFFF]/90 via-[#FAFAFA]/95 to-[#F8F8F8]/90 text-foreground",
             "hover:shadow-xl",
             "before:absolute before:inset-0 before:bg-gradient-to-br before:from-white/5 before:to-transparent before:opacity-0 before:transition-opacity before:duration-300",
-            "group-hover:before:opacity-100"
+            "group-hover:before:opacity-100",
+            "border border-white/20",
+            "backdrop-blur-sm"
           )}
           layout
-          initial={{ scale: 0.95, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ type: "spring", stiffness: 200, damping: 20 }}
         >
           <p className="text-body leading-relaxed whitespace-pre-wrap relative z-10 tracking-wide font-medium">
             {formattedMessage}

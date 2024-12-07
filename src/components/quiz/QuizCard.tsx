@@ -20,12 +20,15 @@ export const QuizCard = ({ question, onAnswer }: QuizCardProps) => {
     const isCorrect = index === question.correctAnswer;
     
     if (isCorrect) {
-      // Trigger confetti animation
       confetti({
-        particleCount: 100,
-        spread: 70,
+        particleCount: 150,
+        spread: 80,
         origin: { y: 0.6 },
-        colors: ['#BFAAFF', '#38C9C9', '#FF6F61', '#FFDD57']
+        colors: ['#BFAAFF', '#38C9C9', '#FF6F61', '#FFDD57'],
+        ticks: 200,
+        gravity: 0.8,
+        scalar: 1.2,
+        shapes: ["circle", "square"]
       });
     }
     
@@ -37,7 +40,8 @@ export const QuizCard = ({ question, onAnswer }: QuizCardProps) => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      className="bg-gradient-to-br from-[#F4E7FE] to-[#E8E8FF] rounded-xl p-6 shadow-lg space-y-4"
+      className="bg-gradient-to-br from-[#F4E7FE]/90 via-[#E8E8FF]/95 to-[#FFFFFF]/90 
+        rounded-xl p-6 shadow-lg space-y-4 border border-white/20 backdrop-blur-sm"
     >
       <motion.h3 
         className="text-lg font-semibold mb-4"
@@ -61,7 +65,7 @@ export const QuizCard = ({ question, onAnswer }: QuizCardProps) => {
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: index * 0.1 }}
-                whileHover={!showCorrect ? { scale: 1.02 } : {}}
+                whileHover={!showCorrect ? { scale: 1.02, x: 4 } : {}}
                 whileTap={!showCorrect ? { scale: 0.98 } : {}}
               >
                 <Button
@@ -69,11 +73,12 @@ export const QuizCard = ({ question, onAnswer }: QuizCardProps) => {
                   className={cn(
                     "w-full text-left justify-start p-4 relative overflow-hidden",
                     "transition-all duration-300",
-                    showResult && isCorrect ? "bg-green-500 text-white" :
-                    showResult && isSelected ? "bg-red-500 text-white" :
-                    index % 3 === 0 ? "bg-[#4CABFF]" :
-                    index % 3 === 1 ? "bg-[#FF6B6B]" : "bg-[#C7F6D5]",
-                    "text-white font-medium"
+                    showResult && isCorrect ? 
+                      "bg-gradient-to-r from-green-500/90 to-green-400/90 text-white border-white/20" :
+                    showResult && isSelected ? 
+                      "bg-gradient-to-r from-red-500/90 to-red-400/90 text-white border-white/20" :
+                    "bg-gradient-to-r from-white/80 to-white/90 border-white/20 backdrop-blur-sm",
+                    "hover:shadow-lg focus:ring-2 focus:ring-primary/20 focus:outline-none"
                   )}
                   onClick={() => !showCorrect && handleAnswerClick(index)}
                   disabled={showCorrect}
@@ -88,13 +93,16 @@ export const QuizCard = ({ question, onAnswer }: QuizCardProps) => {
                     transition={{ duration: 0.5, repeat: Infinity }}
                   />
                   
-                  <span className="relative z-10">
-                    {String.fromCharCode(65 + index)}. {option}
+                  <span className="relative z-10 flex items-center gap-2">
+                    <span className="text-sm font-medium">
+                      {String.fromCharCode(65 + index)}.
+                    </span>
+                    <span className="flex-1">{option}</span>
                     {showResult && (
                       <motion.span
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        className="ml-2"
+                        initial={{ scale: 0, rotate: -180 }}
+                        animate={{ scale: 1, rotate: 0 }}
+                        className="text-xl"
                       >
                         {isCorrect ? "✨" : isSelected ? "❌" : ""}
                       </motion.span>
@@ -117,11 +125,17 @@ export const QuizCard = ({ question, onAnswer }: QuizCardProps) => {
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ type: "spring", stiffness: 200, damping: 15 }}
+            className={cn(
+              "p-3 rounded-lg",
+              selectedAnswer === question.correctAnswer ?
+                "bg-gradient-to-r from-green-500/20 to-green-400/20 text-green-700" :
+                "bg-gradient-to-r from-primary/20 to-secondary/20 text-primary"
+            )}
           >
             {selectedAnswer === question.correctAnswer ? (
-              <span className="text-green-500">Amazing job! You got it right! 🎉</span>
+              <span>Amazing job! You got it right! 🎉</span>
             ) : (
-              <span className="text-primary">
+              <span>
                 The correct answer was: {question.options[question.correctAnswer]} ✨
               </span>
             )}

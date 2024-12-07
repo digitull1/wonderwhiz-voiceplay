@@ -14,7 +14,7 @@ interface ChatInputProps {
   isLoading: boolean;
   currentTopic: string;
   onImageAnalyzed: (response: string) => void;
-  placeholder?: string; // Added this optional prop
+  placeholder?: string;
 }
 
 export const ChatInput = ({
@@ -105,10 +105,11 @@ export const ChatInput = ({
           <motion.div className="flex gap-2">
             <ImageUpload 
               onImageAnalyzed={onImageAnalyzed}
-              className="bg-gradient-to-r from-primary via-purple-500 to-purple-600 
-                hover:from-primary/90 hover:to-purple-600/90 text-white p-3 rounded-xl 
+              className="bg-gradient-to-r from-primary/90 to-secondary/90 
+                hover:from-primary hover:to-secondary text-white p-3 rounded-xl 
                 shadow-lg transition-all duration-300 hover:scale-105 active:scale-95 
-                disabled:opacity-50 disabled:hover:scale-100 flex items-center justify-center"
+                disabled:opacity-50 disabled:hover:scale-100 flex items-center justify-center
+                border border-white/20 backdrop-blur-sm"
             >
               <ImagePlus className="w-5 h-5" />
             </ImageUpload>
@@ -117,10 +118,10 @@ export const ChatInput = ({
               onClick={isListening ? stopListening : startListening}
               className={`bg-gradient-to-r ${
                 isListening 
-                  ? "from-red-500 to-red-600" 
-                  : "from-secondary to-cyan-600"
+                  ? "from-red-500/90 to-red-600/90 hover:from-red-500 hover:to-red-600" 
+                  : "from-secondary/90 to-cyan-600/90 hover:from-secondary hover:to-cyan-600"
               } text-white p-3 rounded-xl shadow-lg transition-all duration-300 
-              hover:scale-105 active:scale-95 relative`}
+              hover:scale-105 active:scale-95 relative border border-white/20 backdrop-blur-sm`}
             >
               {isListening ? (
                 <>
@@ -144,10 +145,11 @@ export const ChatInput = ({
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={(e) => e.key === "Enter" && handleSubmit()}
-            className="w-full bg-gradient-to-r from-purple-50 to-blue-50 backdrop-blur-sm 
+            className="w-full bg-gradient-to-r from-white/80 to-white/90 backdrop-blur-sm 
               border-2 border-primary/30 focus:border-primary/60 rounded-2xl pl-12 pr-4 py-6 
               text-lg shadow-lg transition-all duration-300 placeholder:text-primary/40 
-              hover:shadow-xl hover:scale-[1.01] focus:scale-[1.01] focus:shadow-xl"
+              hover:shadow-xl hover:scale-[1.01] focus:scale-[1.01] focus:shadow-xl
+              focus:ring-2 focus:ring-primary/20 focus:outline-none"
             disabled={isLoading}
           />
           <motion.div 
@@ -168,10 +170,10 @@ export const ChatInput = ({
         <Button 
           onClick={handleSubmit}
           disabled={isLoading || !input.trim()} 
-          className="bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 
-            hover:to-purple-600/90 text-white px-6 py-6 rounded-xl shadow-lg transition-all 
-            duration-300 hover:scale-105 active:scale-95 disabled:opacity-50 
-            disabled:hover:scale-100"
+          className="bg-gradient-to-r from-primary/90 to-secondary/90 
+            hover:from-primary hover:to-secondary text-white px-6 py-6 rounded-xl 
+            shadow-lg transition-all duration-300 hover:scale-105 active:scale-95 
+            disabled:opacity-50 disabled:hover:scale-100 border border-white/20 backdrop-blur-sm"
         >
           <Send className={`w-5 h-5 ${isLoading ? "animate-pulse" : ""}`} />
         </Button>
