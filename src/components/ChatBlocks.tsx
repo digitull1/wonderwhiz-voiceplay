@@ -5,6 +5,8 @@ import { BlockNavigationButton } from "./blocks/BlockNavigationButton";
 import { ScrollProgressDots } from "./blocks/ScrollProgressDots";
 import { EnhancedBlockCard } from "./blocks/EnhancedBlockCard";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "./ui/use-toast";
 
 interface ChatBlocksProps {
   blocks: Block[];
@@ -16,6 +18,7 @@ export const ChatBlocks = ({ blocks, onBlockClick }: ChatBlocksProps) => {
   const [currentScrollIndex, setCurrentScrollIndex] = useState(0);
   const isMobile = useIsMobile();
   const visibleBlocksCount = isMobile ? 1 : 3;
+  const { toast } = useToast();
 
   const handleScroll = (direction: 'left' | 'right') => {
     if (!scrollContainerRef.current) return;
@@ -29,6 +32,46 @@ export const ChatBlocks = ({ blocks, onBlockClick }: ChatBlocksProps) => {
 
     const newIndex = Math.floor((scrollContainerRef.current.scrollLeft + scrollAmount) / blockWidth);
     setCurrentScrollIndex(Math.max(0, Math.min(newIndex, blocks.length - visibleBlocksCount)));
+  };
+
+  const handleBlockClick = async (block: Block) => {
+    if (block.metadata.type === 'image') {
+      try {
+        console.log('Generating image for prompt:', block.title);
+        const { data: imageData, error: imageError } = await supabase.functions.invoke('generate-image', {
+          body: { prompt: block.title }
+        });
+
+        if (imageError) throw imageError;
+
+        if (imageData?.image) {
+          // Dispatch a custom event with the image URL
+          const event = new CustomEvent('wonderwhiz:newMessage', {
+            detail: {
+              text: "Here's what I imagined based on your request! What do you think? ✨",
+              isAi: true,
+              imageUrl: imageData.image
+            }
+          });
+          window.dispatchEvent(event);
+
+          toast({
+            title: "Image created! ✨",
+            description: "Here's what I imagined!",
+            className: "bg-primary text-white"
+          });
+        }
+      } catch (error) {
+        console.error('Error generating image:', error);
+        toast({
+          title: "Oops!",
+          description: "Couldn't create an image right now. Try again!",
+          variant: "destructive"
+        });
+      }
+    } else {
+      onBlockClick(block);
+    }
   };
 
   useEffect(() => {
@@ -88,7 +131,7 @@ export const ChatBlocks = ({ blocks, onBlockClick }: ChatBlocksProps) => {
               <EnhancedBlockCard
                 block={block}
                 index={index}
-                onClick={() => onBlockClick(block)}
+                onClick={() => handleBlockClick(block)}
               />
             </div>
           ))}
