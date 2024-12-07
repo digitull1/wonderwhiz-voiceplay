@@ -15,6 +15,7 @@ interface MessageContentProps {
   onQuizGenerated?: (quiz: any) => void;
   onPanelOpen?: () => void;
   imageUrl?: string;
+  showActions?: boolean;
 }
 
 export const MessageContent = ({ 
@@ -23,7 +24,8 @@ export const MessageContent = ({
   onListen,
   onQuizGenerated,
   onPanelOpen,
-  imageUrl
+  imageUrl,
+  showActions = true
 }: MessageContentProps) => {
   const [displayedText, setDisplayedText] = React.useState("");
   const [isTyping, setIsTyping] = React.useState(false);
@@ -59,7 +61,9 @@ export const MessageContent = ({
     <motion.div 
       className={cn(
         "relative p-3 sm:p-4 rounded-lg w-full",
-        isAi ? "message-bubble-ai" : "message-bubble-user"
+        isAi ? 
+          "message-bubble-ai" : 
+          "bg-gradient-to-br from-primary/10 to-secondary/10 backdrop-blur-sm border border-white/10 shadow-lg"
       )}
       layout
     >
@@ -89,7 +93,7 @@ export const MessageContent = ({
         </motion.div>
       )}
       
-      {isAi && (
+      {isAi && showActions && (
         <div className="flex items-center gap-2 mt-3">
           <ActionIcon
             icon={Volume2}
@@ -98,7 +102,7 @@ export const MessageContent = ({
             className="bg-gradient-to-br from-blue-500/20 to-purple-500/20 text-white"
           />
           <ImageAction messageText={message} />
-          <QuizAction messageText={message} />
+          <QuizAction messageText={message} onQuizGenerated={onQuizGenerated} />
           <TrophyAction onPanelOpen={onPanelOpen} />
         </div>
       )}

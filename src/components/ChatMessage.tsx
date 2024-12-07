@@ -19,6 +19,7 @@ interface ChatMessageProps {
   isTyping?: boolean;
   quizState?: QuizState;
   onQuizAnswer?: (isCorrect: boolean) => void;
+  messageIndex?: number;
 }
 
 export const ChatMessage = ({ 
@@ -32,8 +33,12 @@ export const ChatMessage = ({
   imageUrl,
   isTyping,
   quizState,
-  onQuizAnswer
+  onQuizAnswer,
+  messageIndex = 0
 }: ChatMessageProps) => {
+  // Only show action buttons after the first two AI messages
+  const showActions = !isAi || messageIndex > 3;
+
   return (
     <motion.div 
       className={cn(
@@ -71,10 +76,11 @@ export const ChatMessage = ({
           <MessageContent 
             message={message} 
             isAi={isAi} 
-            onListen={onListen}
-            onQuizGenerated={onQuizGenerated}
-            onPanelOpen={onPanelOpen}
+            onListen={showActions ? onListen : undefined}
+            onQuizGenerated={showActions ? onQuizGenerated : undefined}
+            onPanelOpen={showActions ? onPanelOpen : undefined}
             imageUrl={imageUrl}
+            showActions={showActions}
           />
           
           {isAi && blocks && blocks.length > 0 && onBlockClick && (

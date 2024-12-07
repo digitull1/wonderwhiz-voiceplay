@@ -82,6 +82,7 @@ export const ChatContainer = ({
             imageUrl={message.imageUrl}
             quizState={message.quizState}
             onQuizAnswer={onQuizAnswer}
+            messageIndex={index}
           />
           {message.showAuthPrompt && (
             <div className="flex justify-center gap-2 my-2">
