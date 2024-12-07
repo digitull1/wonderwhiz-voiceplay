@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { Button } from './ui/button';
-import { Image as ImageIcon, Sparkles } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from './ui/use-toast';
 import { GeneratedImage } from './image/GeneratedImage';
 import { useBlockGeneration } from '@/hooks/useBlockGeneration';
-import { motion, AnimatePresence } from 'framer-motion';
 
 interface ImageGeneratorProps {
   prompt: string;
@@ -95,7 +95,7 @@ export const ImageGenerator = ({ prompt, onResponse }: ImageGeneratorProps) => {
               }}
               className="mb-4"
             >
-              <Sparkles className="w-8 h-8 text-primary" />
+              <Sparkles className="w-8 h-8 text-primary animate-sparkle" />
             </motion.div>
             <motion.p
               animate={{ opacity: [0.5, 1, 0.5] }}
@@ -111,7 +111,7 @@ export const ImageGenerator = ({ prompt, onResponse }: ImageGeneratorProps) => {
             disabled={isLoading}
             className="bg-gradient-to-r from-primary via-secondary to-accent hover:opacity-90 text-white shadow-lg"
           >
-            <ImageIcon className="mr-2 h-4 w-4" />
+            <Sparkles className="mr-2 h-4 w-4" />
             Generate Image
           </Button>
         )}
