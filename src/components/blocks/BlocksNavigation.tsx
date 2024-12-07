@@ -1,39 +1,49 @@
 import React from "react";
 import { Button } from "../ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { motion } from "framer-motion";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface BlocksNavigationProps {
-  onScroll: (direction: 'left' | 'right') => void;
-  canScrollLeft: boolean;
-  canScrollRight: boolean;
+  direction: 'left' | 'right';
+  onClick: () => void;
+  className?: string;
 }
 
 export const BlocksNavigation = ({ 
-  onScroll, 
-  canScrollLeft, 
-  canScrollRight 
+  direction, 
+  onClick,
+  className 
 }: BlocksNavigationProps) => {
+  const isMobile = useIsMobile();
+  const Icon = direction === 'left' ? ChevronLeft : ChevronRight;
+  
+  if (isMobile) return null;
+  
   return (
-    <>
-      <Button 
-        variant="ghost" 
-        className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white/80 
-          hover:bg-white/90 transition-all duration-300"
-        onClick={() => onScroll('left')}
-        disabled={!canScrollLeft}
+    <motion.div
+      initial={{ opacity: 0, x: direction === 'left' ? -20 : 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: direction === 'left' ? -20 : 20 }}
+      className={cn(
+        "absolute top-1/2 -translate-y-1/2 z-10",
+        direction === 'left' ? "left-0" : "right-0",
+        className
+      )}
+    >
+      <Button
+        variant="ghost"
+        className={cn(
+          "bg-white/90 hover:bg-white shadow-lg",
+          "rounded-full p-3 transition-all duration-300",
+          "border border-gray-200",
+          "group"
+        )}
+        onClick={onClick}
       >
-        <ChevronLeft className="h-4 w-4" />
+        <Icon className="h-5 w-5 text-gray-700 group-hover:scale-110 transition-transform" />
       </Button>
-
-      <Button 
-        variant="ghost" 
-        className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white/80 
-          hover:bg-white/90 transition-all duration-300"
-        onClick={() => onScroll('right')}
-        disabled={!canScrollRight}
-      >
-        <ChevronRight className="h-4 w-4" />
-      </Button>
-    </>
+    </motion.div>
   );
 };

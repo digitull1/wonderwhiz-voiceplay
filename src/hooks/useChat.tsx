@@ -7,6 +7,7 @@ import { useUserProgress } from "./useUserProgress";
 import { useBlockGeneration } from "./useBlockGeneration";
 import { useImageAnalysis } from "./useImageAnalysis";
 import { useQuiz } from "./useQuiz";
+import { useBlockInteractions } from "./useBlockInteractions";
 import { supabase } from "@/integrations/supabase/client";
 
 export const useChat = () => {
@@ -19,7 +20,6 @@ export const useChat = () => {
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [currentTopic, setCurrentTopic] = useState("space");
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   
   const { toast } = useToast();
@@ -27,16 +27,6 @@ export const useChat = () => {
   const { generateDynamicBlocks } = useBlockGeneration(userProfile);
   const { handleImageAnalysis, isAnalyzing } = useImageAnalysis();
   const { quizState, handleQuizAnswer, updateBlocksExplored } = useQuiz(updateUserProgress);
-
-  const getPointsForAction = (action: string): number => {
-    switch (action) {
-      case 'question': return 5;  // Basic question
-      case 'image_upload': return 15;  // Image analysis
-      case 'block_exploration': return 10;  // Clicking on a block
-      case 'long_conversation': return 8;  // Multiple messages in a row
-      default: return 5;
-    }
-  };
 
   const sendMessage = async (messageText: string, skipUserMessage: boolean = false) => {
     if (!messageText.trim() || isLoading) return;
@@ -67,67 +57,6 @@ export const useChat = () => {
     setIsLoading(true);
 
     try {
-      // Get current user
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        console.error('No authenticated user found');
-        return;
-      }
-
-      // Track learning time
-      const today = new Date().toISOString().split('T')[0];
-      
-      // First check if there's an existing entry for today
-      const { data: existingTime, error: timeError } = await supabase
-        .from('learning_time')
-        .select('*')
-        .eq('date', today)
-        .eq('user_id', user.id)
-        .single();
-
-      console.log('Existing time entry:', existingTime);
-
-      if (existingTime) {
-        const { error: updateError } = await supabase
-          .from('learning_time')
-          .update({ 
-            minutes_spent: (existingTime.minutes_spent || 0) + 1 
-          })
-          .eq('id', existingTime.id);
-
-        if (updateError) {
-          console.error('Error updating learning time:', updateError);
-        }
-      } else {
-        const { error: insertError } = await supabase
-          .from('learning_time')
-          .insert([{ 
-            minutes_spent: 1,
-            date: today,
-            user_id: user.id
-          }]);
-
-        if (insertError) {
-          console.error('Error inserting learning time:', insertError);
-        }
-      }
-
-      // Track explored topic
-      const { error: topicError } = await supabase
-        .from('explored_topics')
-        .upsert({
-          user_id: user.id,
-          topic: currentTopic,
-          emoji: '🌟', // Default emoji
-          last_explored_at: new Date().toISOString()
-        }, {
-          onConflict: 'user_id,topic'
-        });
-
-      if (topicError) {
-        console.error('Error tracking topic:', topicError);
-      }
-
       const previousMessages = messages.slice(-3).map(m => m.text).join(" ");
       const response = await getGroqResponse(messageText);
       const blocks = await generateDynamicBlocks(response, currentTopic, previousMessages);
@@ -138,14 +67,11 @@ export const useChat = () => {
         blocks 
       }]);
       
-      const points = getPointsForAction(
-        messages.length > 3 ? 'long_conversation' : 'question'
-      );
-      await updateUserProgress(points);
+      await updateUserProgress(5);
       
       toast({
         title: "Points Earned! ⭐",
-        description: `You've earned ${points} points for exploring and learning!`,
+        description: "You've earned 5 points for exploring and learning!",
         className: "bg-primary text-white",
       });
       
@@ -170,30 +96,19 @@ export const useChat = () => {
     }
   };
 
-  const handleBlockClick = async (block: Block) => {
-    const topic = block?.metadata?.topic || currentTopic;
-    console.log('Block clicked:', block);
-    setCurrentTopic(topic);
-    updateBlocksExplored(topic);
-    
-    await updateUserProgress(getPointsForAction('block_exploration'));
-    
-    toast({
-      title: "Great exploring! 🚀",
-      description: `You've earned ${getPointsForAction('block_exploration')} points for your curiosity!`,
-      className: "bg-secondary text-white",
-    });
-    
-    await sendMessage(`Tell me about "${block?.title || 'this topic'}"`, true);
-  };
+  const { currentTopic, handleBlockClick } = useBlockInteractions(
+    updateUserProgress,
+    updateBlocksExplored,
+    sendMessage
+  );
 
   const handleImageUploadSuccess = async (response: string) => {
     if (response) {
-      await updateUserProgress(getPointsForAction('image_upload'));
+      await updateUserProgress(15);
       
       toast({
         title: "Image analyzed! 🎨",
-        description: `You've earned ${getPointsForAction('image_upload')} points for sharing an image!`,
+        description: "You've earned 15 points for sharing an image!",
         className: "bg-accent text-white",
       });
       
