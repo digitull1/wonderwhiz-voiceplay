@@ -1,14 +1,25 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { Image, BookOpen, Star, Trophy } from "lucide-react";
+import { Image, BookOpen, Trophy } from "lucide-react";
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from "../ui/tooltip";
+import { useToast } from "../ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
+import { ImageGenerator } from "../ImageGenerator";
+import { useBlockGeneration } from "@/hooks/useBlockGeneration";
+
+interface PostChatActionsProps {
+  messageText: string;
+  onPanelOpen?: () => void;
+}
 
 const ActionButton = ({ 
   icon: Icon, 
-  tooltip 
+  tooltip,
+  onClick
 }: { 
-  icon: React.ElementType; 
+  icon: React.ElementType;
   tooltip: string;
+  onClick: () => void;
 }) => (
   <TooltipProvider>
     <Tooltip>
@@ -18,8 +29,9 @@ const ActionButton = ({
             hover:from-primary/30 hover:to-secondary/30"
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.95 }}
+          onClick={onClick}
         >
-          <Icon className="w-5 h-5 text-white" />
+          <Icon className="w-5 h-5 text-primary" />
         </motion.button>
       </TooltipTrigger>
       <TooltipContent>
@@ -29,12 +41,56 @@ const ActionButton = ({
   </TooltipProvider>
 );
 
-export const PostChatActions = () => {
+export const PostChatActions = ({ messageText, onPanelOpen }: PostChatActionsProps) => {
+  const [showImageGenerator, setShowImageGenerator] = React.useState(false);
+  const { toast } = useToast();
+  const { generateDynamicBlocks } = useBlockGeneration(null);
+
+  const handleImageGeneration = () => {
+    setShowImageGenerator(true);
+  };
+
+  const handleQuizGeneration = async () => {
+    try {
+      const { data, error } = await supabase.functions.invoke('generate-quiz', {
+        body: { topic: messageText }
+      });
+
+      if (error) throw error;
+
+      // Generate explanation and blocks based on the answer
+      const explanation = await supabase.functions.invoke('generate-response', {
+        body: { 
+          prompt: `Explain why this answer is correct: ${data.question.options[data.question.correctAnswer]}`,
+          max_words: 100
+        }
+      });
+
+      const blocks = await generateDynamicBlocks(
+        explanation.data.response,
+        messageText
+      );
+
+      toast({
+        title: "Quiz time! 🎯",
+        description: "Let's test your knowledge!",
+        className: "bg-primary text-white"
+      });
+
+    } catch (error) {
+      console.error('Error generating quiz:', error);
+      toast({
+        title: "Oops!",
+        description: "Couldn't generate a quiz right now. Try again!",
+        variant: "destructive"
+      });
+    }
+  };
+
   const actions = [
-    { icon: Image, tooltip: "Create a picture for this!" },
-    { icon: BookOpen, tooltip: "Test your knowledge!" },
-    { icon: Star, tooltip: "You've earned points for learning!" },
-    { icon: Trophy, tooltip: "Level up your adventures!" }
+    { icon: Image, tooltip: "Create a picture for this!", onClick: handleImageGeneration },
+    { icon: BookOpen, tooltip: "Test your knowledge!", onClick: handleQuizGeneration },
+    { icon: Trophy, tooltip: "Check your progress!", onClick: onPanelOpen }
   ];
 
   return (
@@ -47,6 +103,18 @@ export const PostChatActions = () => {
       {actions.map((action, index) => (
         <ActionButton key={index} {...action} />
       ))}
+
+      {showImageGenerator && (
+        <div className="mt-4">
+          <ImageGenerator 
+            prompt={messageText}
+            onResponse={(response, blocks) => {
+              setShowImageGenerator(false);
+              // Handle the response and blocks
+            }}
+          />
+        </div>
+      )}
     </motion.div>
   );
 };
