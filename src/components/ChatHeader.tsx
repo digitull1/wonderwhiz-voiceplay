@@ -1,7 +1,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { Menu } from "lucide-react";
-import { Sheet, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetTrigger, SheetContent } from "@/components/ui/sheet";
 import { CollapsiblePanel } from "./CollapsiblePanel";
 
 export const ChatHeader = () => {
@@ -36,6 +36,13 @@ export const ChatHeader = () => {
             <Menu className="w-5 h-5" />
           </motion.button>
         </SheetTrigger>
+        <SheetContent>
+          <CollapsiblePanel userProgress={{
+            points: 0,
+            level: 1,
+            streak_days: 0
+          }} />
+        </SheetContent>
       </Sheet>
     </motion.div>
   );
