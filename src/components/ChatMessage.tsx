@@ -72,7 +72,7 @@ export const ChatMessage = ({
             </motion.div>
           )}
 
-          {isAi && <PostChatActions />}
+          {isAi && <PostChatActions messageText={message} />}
         </motion.div>
       </div>
     </motion.div>

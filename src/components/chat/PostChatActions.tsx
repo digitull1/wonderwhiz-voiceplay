@@ -46,8 +46,26 @@ export const PostChatActions = ({ messageText, onPanelOpen }: PostChatActionsPro
   const { toast } = useToast();
   const { generateDynamicBlocks } = useBlockGeneration(null);
 
-  const handleImageGeneration = () => {
-    setShowImageGenerator(true);
+  const handleImageGeneration = async () => {
+    try {
+      console.log('Generating image for prompt:', messageText);
+      if (!messageText?.trim()) {
+        toast({
+          title: "Oops!",
+          description: "I need some context to create an image. Try asking a question first!",
+          variant: "destructive"
+        });
+        return;
+      }
+      setShowImageGenerator(true);
+    } catch (error) {
+      console.error('Error initiating image generation:', error);
+      toast({
+        title: "Oops!",
+        description: "Couldn't start image generation. Try again!",
+        variant: "destructive"
+      });
+    }
   };
 
   const handleQuizGeneration = async () => {

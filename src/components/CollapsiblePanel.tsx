@@ -7,6 +7,7 @@ import { UserProgress } from "@/types/chat";
 import { ProgressCard } from "./panel/ProgressCard";
 import { TalkToWizzy } from "./panel/TalkToWizzy";
 import { TopicHistory } from "./panel/TopicHistory";
+import { supabase } from "@/integrations/supabase/client";
 
 interface CollapsiblePanelProps {
   userProgress?: UserProgress;
@@ -18,6 +19,25 @@ export const CollapsiblePanel: React.FC<CollapsiblePanelProps> = ({
   className
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [topics, setTopics] = useState([]);
+
+  const handleTopicClick = async (topic: string) => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        // Update last explored topic
+        await supabase
+          .from('explored_topics')
+          .upsert({
+            user_id: user.id,
+            topic: topic,
+            last_explored_at: new Date().toISOString()
+          });
+      }
+    } catch (error) {
+      console.error('Error updating topic:', error);
+    }
+  };
 
   return (
     <>
@@ -74,7 +94,7 @@ export const CollapsiblePanel: React.FC<CollapsiblePanelProps> = ({
           >
             <div className="pt-14 space-y-6">
               <ProgressCard userProgress={userProgress} />
-              <TopicHistory />
+              <TopicHistory topics={topics} onTopicClick={handleTopicClick} />
               <TalkToWizzy />
             </div>
           </motion.div>
