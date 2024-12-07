@@ -25,6 +25,26 @@ export const MessageContent = ({
   onPanelOpen,
   imageUrl
 }: MessageContentProps) => {
+  const words = message.split(' ');
+  const [displayedWords, setDisplayedWords] = React.useState<string[]>([]);
+
+  React.useEffect(() => {
+    if (isAi) {
+      let currentIndex = 0;
+      const interval = setInterval(() => {
+        if (currentIndex < words.length) {
+          setDisplayedWords(prev => [...prev, words[currentIndex]]);
+          currentIndex++;
+        } else {
+          clearInterval(interval);
+        }
+      }, 100);
+      return () => clearInterval(interval);
+    } else {
+      setDisplayedWords(words);
+    }
+  }, [message, isAi, words]);
+
   return (
     <motion.div 
       className={cn(
@@ -34,12 +54,12 @@ export const MessageContent = ({
       layout
     >
       <div className="prose max-w-none">
-        {message}
+        {displayedWords.join(' ')}
       </div>
 
       {imageUrl && (
         <motion.div 
-          className="mt-4 w-full"
+          className="mt-4 w-full max-w-md mx-auto"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}

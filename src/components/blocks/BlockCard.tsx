@@ -21,7 +21,10 @@ export const BlockCard = ({ block, index, onClick, color }: BlockCardProps) => {
 
   return (
     <motion.div
-      className="snap-center w-full px-2 py-4 sm:w-[280px]"
+      className={cn(
+        "snap-center w-full px-2 py-4",
+        isMobile ? "w-full" : "sm:w-[280px]"
+      )}
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: index * 0.1 }}
