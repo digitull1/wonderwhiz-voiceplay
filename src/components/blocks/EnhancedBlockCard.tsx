@@ -2,7 +2,6 @@ import React from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Block } from "@/types/chat";
-import { ArrowRight } from "lucide-react";
 
 interface EnhancedBlockCardProps {
   block: Block;
@@ -44,21 +43,11 @@ export const EnhancedBlockCard = ({
       )}
     >
       <div className="flex flex-col gap-2 relative z-10">
-        <h3 className="text-[15px] md:text-[16px] font-semibold leading-snug 
-          tracking-tight line-clamp-2 text-left">
+        <h3 className="text-[14px] md:text-[16px] lg:text-[18px] font-semibold leading-snug 
+          tracking-tight break-words text-left max-w-full">
           {block.title}
         </h3>
       </div>
-
-      <motion.div 
-        className="flex items-center mt-2 text-sm font-medium opacity-80 
-          group-hover:opacity-100 transition-opacity"
-        initial={false}
-        animate={{ x: 0 }}
-        whileHover={{ x: 5 }}
-      >
-        <ArrowRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
-      </motion.div>
 
       {/* Interactive background elements */}
       <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent 

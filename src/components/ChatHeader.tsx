@@ -23,18 +23,16 @@ export const ChatHeader = () => {
         </motion.h1>
       </div>
       
-      <Sheet>
-        <SheetTrigger asChild>
-          <motion.button
-            className="bg-gradient-to-r from-primary via-secondary to-accent p-2 rounded-full shadow-lg
-              hover:shadow-xl transition-all duration-300 text-white"
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-          >
-            <Menu className="w-5 h-5" />
-          </motion.button>
-        </SheetTrigger>
-      </Sheet>
+      <SheetTrigger asChild>
+        <motion.button
+          className="bg-gradient-to-r from-primary via-secondary to-accent p-2 rounded-full shadow-lg
+            hover:shadow-xl transition-all duration-300 text-white"
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          <Menu className="w-5 h-5" />
+        </motion.button>
+      </SheetTrigger>
     </motion.div>
   );
 };

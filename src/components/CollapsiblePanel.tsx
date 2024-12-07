@@ -134,16 +134,6 @@ export const CollapsiblePanel = ({
 
   return (
     <Sheet>
-      <SheetTrigger asChild>
-        <motion.button
-          className="fixed top-4 right-4 bg-gradient-to-r from-primary via-secondary to-accent p-2 rounded-full shadow-lg
-            hover:shadow-xl transition-all duration-300 z-50 text-white"
-          whileHover={{ scale: 1.05 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          <Menu className="w-6 h-6" />
-        </motion.button>
-      </SheetTrigger>
       <SheetContent 
         className="w-[90vw] sm:w-[400px] bg-gradient-to-br from-purple-50 to-blue-50"
         role={role}
