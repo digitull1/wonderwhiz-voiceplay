@@ -47,7 +47,7 @@ export const EnhancedBlockCard = ({
           {block.title}
         </h3>
         {block.description && !block.description.includes("Click to explore") && (
-          <p className="text-block-desc opacity-90 font-medium">
+          <p className="text-block-desc opacity-90 font-medium line-clamp-2">
             {block.description}
           </p>
         )}

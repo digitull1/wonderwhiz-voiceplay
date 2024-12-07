@@ -4,7 +4,8 @@ import { cn } from "@/lib/utils";
 import { Block } from "@/types/chat";
 import { ChatAvatar } from "./chat/ChatAvatar";
 import { RelatedBlocks } from "./chat/RelatedBlocks";
-import { Volume2, VolumeX } from "lucide-react";
+import { Volume2, VolumeX, Image, BookOpen, Star, Trophy } from "lucide-react";
+import { Tooltip } from "./ui/tooltip";
 
 interface ChatMessageProps {
   isAi?: boolean;
@@ -65,6 +66,55 @@ export const ChatMessage = ({
       setIsPlaying(false);
     }
   };
+
+  const PostChatActions = () => (
+    <motion.div 
+      className="post-chat-actions"
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ delay: 0.3 }}
+    >
+      <Tooltip content="Create a picture for this!">
+        <motion.button 
+          className="action-icon"
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          <Image className="w-5 h-5 text-white" />
+        </motion.button>
+      </Tooltip>
+
+      <Tooltip content="Test your knowledge!">
+        <motion.button 
+          className="action-icon"
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          <BookOpen className="w-5 h-5 text-white" />
+        </motion.button>
+      </Tooltip>
+
+      <Tooltip content="You've earned points for learning!">
+        <motion.button 
+          className="action-icon"
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          <Star className="w-5 h-5 text-white" />
+        </motion.button>
+      </Tooltip>
+
+      <Tooltip content="Level up your adventures!">
+        <motion.button 
+          className="action-icon"
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.95 }}
+        >
+          <Trophy className="w-5 h-5 text-white" />
+        </motion.button>
+      </Tooltip>
+    </motion.div>
+  );
 
   return (
     <motion.div 
@@ -140,6 +190,8 @@ export const ChatMessage = ({
               </motion.div>
             )}
           </AnimatePresence>
+
+          {isAi && isTypingComplete && <PostChatActions />}
         </motion.div>
       </div>
     </motion.div>
