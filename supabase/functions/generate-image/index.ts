@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { HfInference } from 'https://esm.sh/@huggingface/inference@2.3.2'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -56,14 +55,14 @@ serve(async (req) => {
 
     console.log('Processing prompt:', prompt);
 
-    // Check if we have the Hugging Face token
-    const hfToken = Deno.env.get("HUGGING_FACE_ACCESS_TOKEN");
-    if (!hfToken) {
-      console.error('Hugging Face token not found');
+    // Check if we have the OpenAI API key
+    const openaiKey = Deno.env.get("OPENAI_API_KEY");
+    if (!openaiKey) {
+      console.error('OpenAI API key not found');
       return new Response(
         JSON.stringify({
           error: 'Configuration error',
-          details: 'Hugging Face token not configured',
+          details: 'OpenAI API key not configured',
           success: false
         }),
         { 
@@ -73,30 +72,41 @@ serve(async (req) => {
       );
     }
 
-    // Call Hugging Face API
-    const hf = new HfInference(hfToken);
+    // Call OpenAI API
     try {
-      console.log('Calling Hugging Face API with model: black-forest-labs/FLUX.1-schnell');
-      const image = await hf.textToImage({
-        inputs: prompt,
-        model: "black-forest-labs/FLUX.1-schnell",
-        parameters: {
-          negative_prompt: "blurry, bad quality, distorted",
-        }
+      console.log('Calling OpenAI DALL-E 3 API');
+      const response = await fetch('https://api.openai.com/v1/images/generations', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${openaiKey}`
+        },
+        body: JSON.stringify({
+          model: "dall-e-3",
+          prompt: prompt,
+          n: 1,
+          size: "1024x1024",
+          quality: "standard",
+          response_format: "b64_json"
+        })
       });
 
-      if (!image) {
-        throw new Error('No image generated from Hugging Face API');
+      if (!response.ok) {
+        const error = await response.json();
+        console.error('OpenAI API Error:', error);
+        throw new Error(error.error?.message || 'Failed to generate image');
       }
 
-      // Convert to base64
-      const arrayBuffer = await image.arrayBuffer();
-      const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+      const data = await response.json();
       console.log('Image generated successfully');
+
+      if (!data.data?.[0]?.b64_json) {
+        throw new Error('No image data in response');
+      }
 
       return new Response(
         JSON.stringify({
-          image: `data:image/png;base64,${base64}`,
+          image: `data:image/png;base64,${data.data[0].b64_json}`,
           success: true
         }),
         { 
@@ -104,10 +114,10 @@ serve(async (req) => {
         }
       );
     } catch (error) {
-      console.error('Hugging Face API error:', error);
+      console.error('OpenAI API error:', error);
       
       // Check if it's a rate limit error
-      if (error.message?.includes('Max requests') || error.message?.includes('rate limit')) {
+      if (error.message?.includes('Rate limit') || response?.status === 429) {
         return new Response(
           JSON.stringify({
             error: 'Rate limit exceeded',
