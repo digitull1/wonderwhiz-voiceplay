@@ -25,13 +25,17 @@ serve(async (req) => {
     
     The response should be in JSON format with the following structure:
     {
-      "question": {
-        "question": "string",
-        "options": ["string", "string", "string", "string"],
-        "correctAnswer": number (0-3),
-        "topic": "${topic}"
-      }
-    }`;
+      "questions": [
+        {
+          "question": "string",
+          "options": ["string", "string", "string", "string"],
+          "correctAnswer": number (0-3),
+          "topic": "${topic}"
+        }
+      ]
+    }
+    
+    IMPORTANT: Generate exactly 5 questions, each with unique content.`;
 
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
@@ -81,17 +85,63 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         error: error.message,
-        question: {
-          question: "What is your favorite thing about learning?",
-          options: [
-            "Making new discoveries",
-            "Solving puzzles",
-            "Learning with friends",
-            "All of the above"
-          ],
-          correctAnswer: 3,
-          topic: "learning"
-        }
+        questions: [
+          {
+            question: "What makes learning fun?",
+            options: [
+              "Making new discoveries",
+              "Solving puzzles",
+              "Learning with friends",
+              "All of the above"
+            ],
+            correctAnswer: 3,
+            topic: "learning"
+          },
+          {
+            question: "Why is curiosity important?",
+            options: [
+              "It helps us learn new things",
+              "It makes us ask questions",
+              "It leads to discoveries",
+              "All of these reasons"
+            ],
+            correctAnswer: 3,
+            topic: "learning"
+          },
+          {
+            question: "What's the best way to remember something new?",
+            options: [
+              "Practice it regularly",
+              "Teach it to someone else",
+              "Write it down",
+              "All of these methods"
+            ],
+            correctAnswer: 3,
+            topic: "learning"
+          },
+          {
+            question: "How can we learn from mistakes?",
+            options: [
+              "Try again with a new approach",
+              "Ask for help when needed",
+              "Think about what went wrong",
+              "All of these ways"
+            ],
+            correctAnswer: 3,
+            topic: "learning"
+          },
+          {
+            question: "What makes a good learner?",
+            options: [
+              "Being patient and persistent",
+              "Asking questions when confused",
+              "Helping others learn too",
+              "All of these qualities"
+            ],
+            correctAnswer: 3,
+            topic: "learning"
+          }
+        ]
       }),
       { 
         headers: { 

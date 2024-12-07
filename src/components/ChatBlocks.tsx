@@ -79,7 +79,7 @@ export const ChatBlocks = ({ blocks, onBlockClick }: ChatBlocksProps) => {
         if (quizError) throw quizError;
         console.log('Quiz data received:', quizData);
 
-        if (quizData?.question) {
+        if (quizData?.questions) {
           // Dispatch a custom event with the quiz data
           const event = new CustomEvent('wonderwhiz:newMessage', {
             detail: {
@@ -87,7 +87,7 @@ export const ChatBlocks = ({ blocks, onBlockClick }: ChatBlocksProps) => {
               isAi: true,
               quizState: {
                 isActive: true,
-                currentQuestion: quizData.question,
+                currentQuestion: quizData.questions,
                 blocksExplored: 0,
                 currentTopic: block.metadata.topic
               }
