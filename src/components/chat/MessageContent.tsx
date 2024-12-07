@@ -25,25 +25,35 @@ export const MessageContent = ({
   onPanelOpen,
   imageUrl
 }: MessageContentProps) => {
-  const words = message.split(' ');
-  const [displayedWords, setDisplayedWords] = React.useState<string[]>([]);
+  const [displayedText, setDisplayedText] = React.useState("");
+  const [isTyping, setIsTyping] = React.useState(false);
 
   React.useEffect(() => {
-    if (isAi) {
+    if (isAi && message) {
+      setIsTyping(true);
+      setDisplayedText("");
+      
+      let currentText = "";
+      const words = message.split(" ");
       let currentIndex = 0;
+
       const interval = setInterval(() => {
         if (currentIndex < words.length) {
-          setDisplayedWords(prev => [...prev, words[currentIndex]]);
+          currentText += (currentIndex > 0 ? " " : "") + words[currentIndex];
+          setDisplayedText(currentText);
           currentIndex++;
         } else {
+          setIsTyping(false);
           clearInterval(interval);
         }
       }, 100);
+
       return () => clearInterval(interval);
     } else {
-      setDisplayedWords(words);
+      setDisplayedText(message);
+      setIsTyping(false);
     }
-  }, [message, isAi, words]);
+  }, [message, isAi]);
 
   return (
     <motion.div 
@@ -53,8 +63,19 @@ export const MessageContent = ({
       )}
       layout
     >
+      {isAi && isTyping && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="text-sm text-white/80 mb-2 flex items-center gap-2"
+        >
+          <div className="w-2 h-2 bg-white/80 rounded-full animate-pulse" />
+          <span>Wonderwhiz is typing...</span>
+        </motion.div>
+      )}
+
       <div className="prose max-w-none">
-        {displayedWords.join(' ')}
+        {displayedText}
       </div>
 
       {imageUrl && (
