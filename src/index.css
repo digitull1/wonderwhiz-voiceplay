@@ -9,10 +9,11 @@
   html {
     font-family: 'Poppins', system-ui, sans-serif;
     -webkit-tap-highlight-color: transparent;
+    scroll-behavior: smooth;
   }
 
   body {
-    @apply text-body leading-readable text-app-text-dark;
+    @apply text-[15px] leading-[1.4] text-app-text-dark;
   }
 }
 
@@ -92,10 +93,14 @@
 /* Message bubbles */
 .message-bubble-ai {
   @apply bg-gradient-to-br from-[#E8E8FF] via-[#F4F4FF] to-[#FFFFFF] shadow-sm;
+  line-height: 1.4;
+  letter-spacing: -0.01em;
 }
 
 .message-bubble-user {
   @apply bg-white/90 shadow-sm;
+  line-height: 1.4;
+  letter-spacing: -0.01em;
 }
 
 /* Elevenlabs widget customization */
@@ -162,4 +167,22 @@
   @apply transition-all duration-1000;
   stroke-dasharray: 100;
   animation: fillRing 1s ease-out forwards;
+}
+
+/* Improved chat container scrolling */
+.chat-container {
+  scroll-behavior: smooth;
+  scroll-padding: 1rem;
+  overscroll-behavior-y: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Improved text readability */
+.chat-text {
+  @apply text-[15px] leading-[1.4] tracking-[-0.01em];
+}
+
+/* Progress display text */
+.progress-text {
+  @apply text-[14px] leading-[1.3] tracking-[-0.01em];
 }

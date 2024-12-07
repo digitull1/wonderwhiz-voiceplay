@@ -33,26 +33,24 @@ export const ChatContainer = ({
       const scrollHeight = container.scrollHeight;
       const currentScroll = container.scrollTop;
       const clientHeight = container.clientHeight;
-      const scrollThreshold = 300; // pixels from bottom
+      const scrollThreshold = 100; // Reduced threshold for smoother scrolling
       
-      // Only auto-scroll if user is already near bottom or if it's a new AI message
-      const shouldScroll = scrollHeight - currentScroll - clientHeight < scrollThreshold ||
-                          (messages.length > 0 && messages[messages.length - 1].isAi);
+      const shouldScroll = 
+        scrollHeight - currentScroll - clientHeight < scrollThreshold ||
+        (messages.length > 0 && messages[messages.length - 1].isAi);
       
       if (shouldScroll) {
-        // Add a small delay to ensure content is rendered
-        setTimeout(() => {
-          messagesEndRef.current?.scrollIntoView({ 
-            behavior: "smooth",
-            block: "end"
-          });
-        }, 100);
+        messagesEndRef.current?.scrollIntoView({ 
+          behavior: "smooth",
+          block: "end"
+        });
       }
     }
   };
 
   useEffect(() => {
-    scrollToBottom();
+    const timeoutId = setTimeout(scrollToBottom, 100);
+    return () => clearTimeout(timeoutId);
   }, [messages, quizState?.currentQuestion]);
 
   // Filter out messages that are just block titles
@@ -65,7 +63,7 @@ export const ChatContainer = ({
   return (
     <div 
       ref={containerRef}
-      className="flex-1 overflow-y-auto space-y-4 mb-4 px-2 scrollbar-thin scrollbar-thumb-primary scrollbar-track-transparent"
+      className="flex-1 overflow-y-auto space-y-3 mb-4 px-2 chat-container"
     >
       {filteredMessages.map((message, index) => (
         <ChatMessage
