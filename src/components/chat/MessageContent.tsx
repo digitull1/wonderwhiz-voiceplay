@@ -56,13 +56,14 @@ export const MessageContent = ({
           // Check if typing is complete
           if (currentLineIndex >= lines.length) {
             clearInterval(interval);
-            onTypingComplete?.();
+            // Add a small delay before calling onTypingComplete
+            setTimeout(() => onTypingComplete?.(), 500);
           }
         } else {
           clearInterval(interval);
-          onTypingComplete?.();
+          setTimeout(() => onTypingComplete?.(), 500);
         }
-      }, 20);
+      }, 30); // Slightly slower typing speed
 
       return () => clearInterval(interval);
     } else {

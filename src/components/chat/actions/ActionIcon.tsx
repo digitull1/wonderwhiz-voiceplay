@@ -24,7 +24,7 @@ export const ActionIcon = ({
       <TooltipTrigger asChild>
         <motion.button 
           className={cn(
-            "relative p-1.5 rounded-full transition-all duration-300",
+            "relative p-2 rounded-full transition-all duration-300",
             "bg-white/90 backdrop-blur-sm shadow-sm border border-white/20",
             "hover:bg-white hover:scale-110 active:scale-95",
             "focus:outline-none focus:ring-2 focus:ring-primary/20",
@@ -44,10 +44,10 @@ export const ActionIcon = ({
                 exit={{ opacity: 0, scale: 0.8 }}
                 className="absolute inset-0 flex items-center justify-center"
               >
-                <Loader2 className="w-3.5 h-3.5 animate-spin text-primary" />
+                <Loader2 className="w-4 h-4 animate-spin text-primary" />
               </motion.div>
             ) : (
-              <Icon className="w-3.5 h-3.5 text-primary" />
+              <Icon className="w-4 h-4 text-primary" />
             )}
           </AnimatePresence>
         </motion.button>

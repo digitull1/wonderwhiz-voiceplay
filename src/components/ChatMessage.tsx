@@ -50,8 +50,8 @@ export const ChatMessage = ({
   const handleTypingComplete = () => {
     console.log("Typing complete, showing blocks");
     setIsTyping(false);
-    // Add delay before showing blocks
-    setTimeout(() => setShowBlocks(true), 500);
+    // Add longer delay before showing blocks
+    setTimeout(() => setShowBlocks(true), 1000);
   };
 
   return (
@@ -74,9 +74,9 @@ export const ChatMessage = ({
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
-            className="flex items-center gap-2 text-white/80 text-sm px-2"
+            className="flex items-center gap-2 text-primary font-medium px-2"
           >
-            <LoaderCircle className="w-4 h-4 animate-spin" />
+            <LoaderCircle className="w-4 h-4 animate-spin text-primary" />
             <span>Wonderwhiz is typing...</span>
           </motion.div>
         )}
@@ -92,9 +92,9 @@ export const ChatMessage = ({
           <MessageContent 
             message={message} 
             isAi={isAi} 
-            onListen={showActions ? onListen : undefined}
-            onQuizGenerated={showActions ? onQuizGenerated : undefined}
-            onPanelOpen={showActions ? onPanelOpen : undefined}
+            onListen={onListen}
+            onQuizGenerated={onQuizGenerated}
+            onPanelOpen={onPanelOpen}
             imageUrl={imageUrl}
             showActions={showActions}
             isTyping={isTyping}
