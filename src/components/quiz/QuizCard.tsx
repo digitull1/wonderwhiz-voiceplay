@@ -8,7 +8,7 @@ import { RewardAnimation } from "../rewards/RewardAnimation";
 import { QuizQuestion } from "@/types/quiz";
 
 interface QuizCardProps {
-  questions: QuizQuestion[];
+  questions: QuizQuestion | QuizQuestion[];
   onAnswer: (isCorrect: boolean) => void;
 }
 
@@ -20,10 +20,15 @@ export const QuizCard = ({ questions, onAnswer }: QuizCardProps) => {
   const [quizComplete, setQuizComplete] = useState(false);
   const [correctAnswers, setCorrectAnswers] = useState(0);
 
+  // Convert single question to array if needed
+  const questionsArray = Array.isArray(questions) ? questions : [questions];
+  console.log("Questions array:", questionsArray);
+
   const handleAnswerClick = (index: number) => {
     setSelectedAnswer(index);
     setShowCorrect(true);
-    const isCorrect = index === questions[currentQuestionIndex].correctAnswer;
+    const currentQuestion = questionsArray[currentQuestionIndex];
+    const isCorrect = index === currentQuestion.correctAnswer;
     
     if (isCorrect) {
       setCorrectAnswers(prev => prev + 1);
@@ -32,7 +37,7 @@ export const QuizCard = ({ questions, onAnswer }: QuizCardProps) => {
     }
     
     setTimeout(() => {
-      if (currentQuestionIndex < questions.length - 1) {
+      if (currentQuestionIndex < questionsArray.length - 1) {
         setCurrentQuestionIndex(prev => prev + 1);
         setSelectedAnswer(null);
         setShowCorrect(false);
@@ -61,9 +66,9 @@ export const QuizCard = ({ questions, onAnswer }: QuizCardProps) => {
         <ScrollArea className="h-[400px] w-full p-4 sm:p-6">
           {!quizComplete ? (
             <QuestionDisplay
-              question={questions[currentQuestionIndex]}
+              question={questionsArray[currentQuestionIndex]}
               currentQuestionIndex={currentQuestionIndex}
-              totalQuestions={questions.length}
+              totalQuestions={questionsArray.length}
               correctAnswers={correctAnswers}
               selectedAnswer={selectedAnswer}
               showCorrect={showCorrect}
@@ -72,7 +77,7 @@ export const QuizCard = ({ questions, onAnswer }: QuizCardProps) => {
           ) : (
             <QuizCompletion 
               correctAnswers={correctAnswers} 
-              totalQuestions={questions.length}
+              totalQuestions={questionsArray.length}
             />
           )}
         </ScrollArea>

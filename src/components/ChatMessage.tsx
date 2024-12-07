@@ -134,7 +134,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
                 transition={{ delay: 0.2 }}
               >
                 <QuizCard
-                  question={quizState.currentQuestion}
+                  questions={quizState.currentQuestion}
                   onAnswer={onQuizAnswer}
                 />
               </motion.div>
