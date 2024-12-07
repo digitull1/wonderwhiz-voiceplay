@@ -39,7 +39,7 @@ export const ChatMessage = ({
           clearInterval(typingInterval);
           setIsTypingComplete(true);
         }
-      }, 30); // Adjust typing speed here (milliseconds per character)
+      }, 30);
 
       return () => clearInterval(typingInterval);
     } else {
@@ -47,32 +47,6 @@ export const ChatMessage = ({
       setIsTypingComplete(true);
     }
   }, [message, isAi]);
-
-  const messageVariants = {
-    hidden: { 
-      opacity: 0, 
-      y: 20,
-      scale: 0.95
-    },
-    visible: { 
-      opacity: 1, 
-      y: 0,
-      scale: 1,
-      transition: {
-        type: "spring",
-        stiffness: 500,
-        damping: 25
-      }
-    },
-    hover: {
-      scale: 1.01,
-      transition: {
-        type: "spring",
-        stiffness: 400,
-        damping: 10
-      }
-    }
-  };
 
   const handleListen = () => {
     if (onListen && !isPlaying) {
@@ -95,7 +69,27 @@ export const ChatMessage = ({
       initial="hidden"
       animate="visible"
       exit={{ opacity: 0, scale: 0.9 }}
-      variants={messageVariants}
+      variants={{
+        hidden: { opacity: 0, y: 20, scale: 0.95 },
+        visible: { 
+          opacity: 1, 
+          y: 0,
+          scale: 1,
+          transition: {
+            type: "spring",
+            stiffness: 500,
+            damping: 25
+          }
+        },
+        hover: {
+          scale: 1.01,
+          transition: {
+            type: "spring",
+            stiffness: 400,
+            damping: 10
+          }
+        }
+      }}
       whileHover="hover"
       layout
     >

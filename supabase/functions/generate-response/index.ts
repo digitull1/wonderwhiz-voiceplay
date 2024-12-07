@@ -71,7 +71,8 @@ serve(async (req) => {
               4. Limited to ONE emoji at the end of the response (not in the middle)
               5. With proper spacing (no double line breaks)
               6. Never include undefined or null in your responses
-              7. Double-check spelling and grammar`
+              7. Double-check spelling and grammar
+              8. Always capitalize the first letter of every sentence`
             },
             {
               role: "user",
@@ -92,12 +93,18 @@ serve(async (req) => {
       const data = await response.json();
       console.log("Raw response from Groq:", data);
       
-      // Clean up the response to ensure no undefined values
       const content = data.choices[0]?.message?.content || "";
       if (!content) {
         throw new Error("Empty response from Groq");
       }
 
+      // Clean up the response
+      const cleanedContent = content
+        .replace(/undefined|null/g, '')
+        .replace(/\s+/g, ' ')
+        .trim();
+
+      data.choices[0].message.content = cleanedContent;
       return data;
     };
 
@@ -106,7 +113,7 @@ serve(async (req) => {
 
     return new Response(
       JSON.stringify({ 
-        response: data.choices[0].message.content.trim() 
+        response: data.choices[0].message.content
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );

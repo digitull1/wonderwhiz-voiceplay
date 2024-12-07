@@ -4,6 +4,8 @@ import { TopicHistory } from "./panel/TopicHistory";
 import { TalkToWizzy } from "./panel/TalkToWizzy";
 import { UserProgress } from "@/types/chat";
 import { supabase } from "@/integrations/supabase/client";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Menu } from "lucide-react";
 
 interface CollapsiblePanelProps {
   userProgress: UserProgress;
@@ -29,7 +31,6 @@ export const CollapsiblePanel = ({ userProgress }: CollapsiblePanelProps) => {
         return;
       }
 
-      // Transform topic titles to be more descriptive
       const transformedData = data?.map(item => ({
         ...item,
         topic: `Explored ${item.topic.charAt(0).toLowerCase() + item.topic.slice(1)}`,
@@ -42,21 +43,40 @@ export const CollapsiblePanel = ({ userProgress }: CollapsiblePanelProps) => {
   }, []);
 
   const handleTopicClick = (topic: string) => {
-    // Remove the "Explored " prefix when handling the click
     const originalTopic = topic.replace('Explored ', '');
     console.log('Topic clicked:', originalTopic);
   };
 
   return (
-    <div className="flex flex-col gap-6 p-4">
-      <div className="space-y-6">
-        <h2 className="text-2xl font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
-          Your Learning Journey
-        </h2>
-        <ProgressCard userProgress={userProgress} />
-        <TopicHistory topics={topics} onTopicClick={handleTopicClick} />
-        <TalkToWizzy />
-      </div>
+    <div className="absolute right-4 top-4 z-50">
+      <Sheet>
+        <SheetTrigger asChild>
+          <button
+            className="bg-gradient-to-r from-primary via-secondary to-accent p-2 rounded-full 
+              shadow-lg hover:shadow-xl transition-all duration-300 text-white"
+            aria-label="Open menu"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+        </SheetTrigger>
+        <SheetContent 
+          side="right"
+          className="w-[300px] sm:w-[400px] bg-white/95 backdrop-blur-sm border-l 
+            border-gray-100 shadow-xl overflow-y-auto"
+        >
+          <div className="flex flex-col gap-6 p-4">
+            <div className="space-y-6">
+              <h2 className="text-2xl font-bold bg-gradient-to-r from-primary via-secondary 
+                to-accent bg-clip-text text-transparent">
+                Your Learning Journey
+              </h2>
+              <ProgressCard userProgress={userProgress} />
+              <TopicHistory topics={topics} onTopicClick={handleTopicClick} />
+              <TalkToWizzy />
+            </div>
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 };
