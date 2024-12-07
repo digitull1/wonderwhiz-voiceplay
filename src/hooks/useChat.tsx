@@ -21,12 +21,44 @@ export const useChat = () => {
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   
   const { toast } = useToast();
   const { userProgress, updateUserProgress } = useUserProgress();
   const { generateDynamicBlocks } = useBlockGeneration(userProfile);
   const { handleImageAnalysis, isAnalyzing } = useImageAnalysis();
   const { quizState, handleQuizAnswer, updateBlocksExplored } = useQuiz(updateUserProgress);
+
+  // Check authentication status
+  useEffect(() => {
+    const checkAuth = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      console.log('Auth check - User:', user);
+      setIsAuthenticated(!!user);
+      
+      if (!user) {
+        // Automatically sign in as anonymous user
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: 'demo@wonderwhiz.com',
+          password: 'demo123'
+        });
+        
+        if (error) {
+          console.error('Error signing in:', error);
+          toast({
+            title: "Authentication Error",
+            description: "There was an issue signing you in. Some features might be limited.",
+            variant: "destructive"
+          });
+        } else {
+          console.log('Signed in successfully:', data);
+          setIsAuthenticated(true);
+        }
+      }
+    };
+
+    checkAuth();
+  }, [toast]);
 
   // Track learning time
   useEffect(() => {
@@ -74,8 +106,10 @@ export const useChat = () => {
       }
     };
 
-    trackLearningTime();
-  }, []);
+    if (isAuthenticated) {
+      trackLearningTime();
+    }
+  }, [isAuthenticated]);
 
   const handleListen = (text: string) => {
     console.log('Speaking text:', text);
@@ -125,14 +159,16 @@ export const useChat = () => {
         blocks 
       }]);
       
-      // Award points for engaging in conversation
-      await updateUserProgress(5);
-      
-      toast({
-        title: "Points Earned! ⭐",
-        description: "You've earned 5 points for exploring and learning!",
-        className: "bg-primary text-white",
-      });
+      if (isAuthenticated) {
+        // Award points for engaging in conversation
+        await updateUserProgress(5);
+        
+        toast({
+          title: "Points Earned! ⭐",
+          description: "You've earned 5 points for exploring and learning!",
+          className: "bg-primary text-white",
+        });
+      }
       
     } catch (error: any) {
       console.error('Error in sendMessage:', error);
@@ -163,14 +199,16 @@ export const useChat = () => {
 
   const handleImageUploadSuccess = async (response: string) => {
     if (response) {
-      // Award points for sharing an image
-      await updateUserProgress(15);
-      
-      toast({
-        title: "Image analyzed! 🎨",
-        description: "You've earned 15 points for sharing an image!",
-        className: "bg-accent text-white",
-      });
+      if (isAuthenticated) {
+        // Award points for sharing an image
+        await updateUserProgress(15);
+        
+        toast({
+          title: "Image analyzed! 🎨",
+          description: "You've earned 15 points for sharing an image!",
+          className: "bg-accent text-white",
+        });
+      }
       
       setMessages(prev => [...prev, { 
         text: response, 
@@ -193,6 +231,7 @@ export const useChat = () => {
     quizState,
     sendMessage,
     handleImageAnalysis: handleImageUploadSuccess,
-    isAnalyzing
+    isAnalyzing,
+    isAuthenticated
   };
 };

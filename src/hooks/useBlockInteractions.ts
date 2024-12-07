@@ -86,6 +86,7 @@ export const useBlockInteractions = (
     
     try {
       const { data: { user } } = await supabase.auth.getUser();
+      console.log('Current user:', user);
       
       setCurrentTopic(topic);
       updateBlocksExplored(topic);
@@ -102,6 +103,8 @@ export const useBlockInteractions = (
           description: "You've earned points for your curiosity!",
           className: "bg-secondary text-white",
         });
+      } else {
+        console.log('No authenticated user for block interaction');
       }
       
       await sendMessage(`Tell me about "${block?.title || 'this topic'}"`, true);
