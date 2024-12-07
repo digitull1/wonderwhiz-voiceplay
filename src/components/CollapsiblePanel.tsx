@@ -138,7 +138,9 @@ export const CollapsiblePanel = ({ userProgress }: CollapsiblePanelProps) => {
               <h3 className="text-lg font-semibold">Talk to Wizzy</h3>
             </div>
             <div className="w-full h-[300px] rounded-lg overflow-hidden">
-              <elevenlabs-convai agent-id="zmQ4IMOTcaVnB64g8OYl"></elevenlabs-convai>
+              <div className="elevenlabs-widget">
+                <elevenlabs-convai agent-id="zmQ4IMOTcaVnB64g8OYl"></elevenlabs-convai>
+              </div>
             </div>
           </motion.div>
         </div>
