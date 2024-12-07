@@ -65,15 +65,9 @@ export const CollapsiblePanel = ({ userProgress }: CollapsiblePanelProps) => {
             border-gray-100 shadow-xl overflow-y-auto"
         >
           <div className="flex flex-col gap-6 p-4">
-            <div className="space-y-6">
-              <h2 className="text-2xl font-bold bg-gradient-to-r from-primary via-secondary 
-                to-accent bg-clip-text text-transparent">
-                Your Learning Journey
-              </h2>
-              <ProgressCard userProgress={userProgress} />
-              <TopicHistory topics={topics} onTopicClick={handleTopicClick} />
-              <TalkToWizzy />
-            </div>
+            <ProgressCard userProgress={userProgress} />
+            <TopicHistory topics={topics} onTopicClick={handleTopicClick} />
+            <TalkToWizzy />
           </div>
         </SheetContent>
       </Sheet>
