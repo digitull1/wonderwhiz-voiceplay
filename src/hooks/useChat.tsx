@@ -5,6 +5,7 @@ import { Block } from "@/types/chat";
 import { useBlockGeneration } from "./useBlockGeneration";
 import { useImageAnalysis } from "./useImageAnalysis";
 import { useAuth } from "./useAuth";
+import { getGroqResponse } from "@/utils/groq";
 
 export const useChat = () => {
   const [messages, setMessages] = useState<any[]>([{
@@ -16,10 +17,11 @@ export const useChat = () => {
   const [currentTopic, setCurrentTopic] = useState("");
   const [userName, setUserName] = useState<string | null>(null);
   const [userAge, setUserAge] = useState<number | null>(null);
+  const [blocksExplored, setBlocksExplored] = useState(0);
   
   const { isAuthenticated } = useAuth();
   const { userProgress, updateUserProgress } = useUserProgress();
-  const { quizState, handleQuizAnswer } = useQuiz({ updateProgress: updateUserProgress });
+  const { quizState, handleQuizAnswer, updateBlocksExplored } = useQuiz({ updateProgress: updateUserProgress });
   const { generateDynamicBlocks } = useBlockGeneration(null);
   const { handleImageAnalysis: analyzeImage } = useImageAnalysis();
 
@@ -37,20 +39,26 @@ export const useChat = () => {
     
     setIsLoading(true);
     try {
+      const detailedContent = await getGroqResponse(block.title, 100);
       const blocks = await generateDynamicBlocks(block.title, block.metadata.topic);
-      const aiResponse = `Let me tell you about ${block.title}! 🌟\n\n${block.description || "This is fascinating! Let's explore more about this topic."}`;
       
       setMessages(prev => [...prev, {
-        text: aiResponse,
+        text: `Let me tell you about ${block.title}! 🌟\n\n${detailedContent}`,
         isAi: true,
         blocks
       }]);
+
+      setBlocksExplored(prev => prev + 1);
+      if (blocksExplored >= 3) {
+        updateBlocksExplored(block.metadata.topic);
+        setBlocksExplored(0);
+      }
     } catch (error) {
       console.error('Error handling block click:', error);
     } finally {
       setIsLoading(false);
     }
-  }, [generateDynamicBlocks]);
+  }, [generateDynamicBlocks, blocksExplored, updateBlocksExplored]);
 
   const sendMessage = useCallback(async (message: string) => {
     if (!message.trim() || isLoading) return;
@@ -94,20 +102,26 @@ export const useChat = () => {
       }
 
       // Handle regular chat messages
+      const detailedContent = await getGroqResponse(message, 100);
       const blocks = await generateDynamicBlocks(message, currentTopic || "general");
-      const aiResponse = `That's interesting! Let me share some exciting facts about that! 🌟`;
       
       setMessages(prev => [...prev, {
-        text: aiResponse,
+        text: `${detailedContent} 🌟`,
         isAi: true,
         blocks
       }]);
+
+      setBlocksExplored(prev => prev + 1);
+      if (blocksExplored >= 3) {
+        updateBlocksExplored(currentTopic || "general");
+        setBlocksExplored(0);
+      }
     } catch (error) {
       console.error('Error sending message:', error);
     } finally {
       setIsLoading(false);
     }
-  }, [currentTopic, generateDynamicBlocks, isLoading, userName, userAge]);
+  }, [currentTopic, generateDynamicBlocks, isLoading, userName, userAge, blocksExplored, updateBlocksExplored]);
 
   const handleImageAnalysis = useCallback(async (imageData: string) => {
     setIsLoading(true);

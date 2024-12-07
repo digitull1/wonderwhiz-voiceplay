@@ -3,8 +3,11 @@ import { motion } from "framer-motion";
 import { Menu } from "lucide-react";
 import { Sheet, SheetTrigger, SheetContent } from "@/components/ui/sheet";
 import { CollapsiblePanel } from "./CollapsiblePanel";
+import { useUserProgress } from "@/hooks/useUserProgress";
 
 export const ChatHeader = () => {
+  const { userProgress } = useUserProgress();
+
   return (
     <motion.div 
       className="flex justify-between items-center mb-6 bg-gradient-to-r from-primary/10 via-secondary/10 to-accent/10 
@@ -36,8 +39,8 @@ export const ChatHeader = () => {
             <Menu className="w-5 h-5" />
           </motion.button>
         </SheetTrigger>
-        <SheetContent>
-          <CollapsiblePanel userProgress={{
+        <SheetContent side="right" className="w-[300px] sm:w-[400px]">
+          <CollapsiblePanel userProgress={userProgress || {
             points: 0,
             level: 1,
             streak_days: 0
