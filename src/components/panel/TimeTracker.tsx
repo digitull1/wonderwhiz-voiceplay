@@ -1,5 +1,7 @@
 import React from "react";
 import { Clock } from "lucide-react";
+import { TimeTrackerRing } from "./TimeTrackerRing";
+import { motion } from "framer-motion";
 
 interface TimeTrackerProps {
   timeSpent: {
@@ -9,34 +11,46 @@ interface TimeTrackerProps {
 }
 
 export const TimeTracker = ({ timeSpent }: TimeTrackerProps) => {
+  const todayPercentage = Math.min((timeSpent.today / 60) * 100, 100); // 1 hour max
+  const weekPercentage = Math.min((timeSpent.week / 300) * 100, 100); // 5 hours max
+
   return (
-    <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 shadow-sm">
+    <motion.div 
+      className="bg-white/80 backdrop-blur-sm rounded-xl p-4 shadow-sm"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+    >
       <div className="flex items-center gap-2 mb-3">
         <Clock className="w-5 h-5 text-secondary" />
-        <h3 className="text-lg font-semibold">Time Spent Learning</h3>
+        <h3 className="text-lg font-semibold">Learning Time</h3>
       </div>
-      <div className="space-y-2">
-        <div className="flex justify-between items-center">
-          <span className="text-sm text-gray-600">Today</span>
-          <span className="text-sm font-medium">{timeSpent.today} minutes</span>
-        </div>
-        <div className="w-full bg-gray-200 rounded-full h-2.5">
-          <div
-            className="bg-secondary h-2.5 rounded-full transition-all duration-300"
-            style={{ width: `${(timeSpent.today / 60) * 100}%` }}
-          />
-        </div>
-        <div className="flex justify-between items-center mt-2">
-          <span className="text-sm text-gray-600">This Week</span>
-          <span className="text-sm font-medium">{timeSpent.week} minutes</span>
-        </div>
-        <div className="w-full bg-gray-200 rounded-full h-2.5">
-          <div
-            className="bg-secondary h-2.5 rounded-full transition-all duration-300"
-            style={{ width: `${(timeSpent.week / 300) * 100}%` }}
-          />
-        </div>
+      
+      <div className="flex justify-around items-center gap-4">
+        <TimeTrackerRing
+          percentage={todayPercentage}
+          color="stroke-secondary"
+          label="Today"
+          time={`${timeSpent.today}m`}
+          size={100}
+        />
+        <TimeTrackerRing
+          percentage={weekPercentage}
+          color="stroke-primary"
+          label="This Week"
+          time={`${timeSpent.week}m`}
+          size={100}
+        />
       </div>
-    </div>
+      
+      <motion.div 
+        className="mt-2 text-center text-sm text-gray-600"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.5 }}
+      >
+        Keep learning to fill your rings! 🌟
+      </motion.div>
+    </motion.div>
   );
 };
