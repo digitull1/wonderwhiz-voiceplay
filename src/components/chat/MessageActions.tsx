@@ -25,27 +25,16 @@ export const MessageActions = ({
       initial={{ opacity: 0, y: 5 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.2 }}
-      className="absolute -right-12 top-0"
     >
-      <motion.div
+      <motion.button
         whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
+        onClick={handleClick}
+        className="action-icon"
+        title="Listen to message"
       >
-        <Button
-          onClick={handleClick}
-          size="sm"
-          variant="ghost"
-          className={cn(
-            "relative overflow-hidden group rounded-full p-2",
-            "bg-primary/10 hover:bg-primary/20",
-            "text-primary hover:text-primary-foreground",
-            "transition-all duration-300"
-          )}
-        >
-          <Volume2 className="w-4 h-4" />
-          <div className="absolute inset-0 bg-primary/0 group-hover:bg-primary/5 transition-colors duration-300 rounded-full" />
-        </Button>
-      </motion.div>
+        <Volume2 className="w-3.5 h-3.5 text-primary/70" />
+      </motion.button>
     </motion.div>
   );
 };

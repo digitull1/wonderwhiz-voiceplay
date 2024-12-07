@@ -31,18 +31,18 @@ export const MessageContent = ({
         {message}
       </div>
       
-      <div className="flex items-center justify-end gap-2 mt-2">
-        {isAi && (
-          <>
+      {isAi && (
+        <div className="flex items-center justify-end gap-2 mt-2">
+          <div className="flex items-center gap-1.5">
             <MessageActions onListen={onListen} messageText={message} />
             <PostChatActions 
               messageText={message} 
               onPanelOpen={onPanelOpen}
               onQuizGenerated={onQuizGenerated}
             />
-          </>
-        )}
-      </div>
+          </div>
+        </div>
+      )}
     </motion.div>
   );
 };
