@@ -33,15 +33,15 @@ When responding to a block click (message starting with "Tell me about"), focus 
 Guidelines for every response:
 1. Start with an exciting "Did you know?" fact that directly relates to the topic
 2. Break down complex ideas into simple, fun explanations using analogies kids can understand
-3. Use relevant emojis to make key points stand out (but not too many!)
+3. Use only 1-2 relevant emojis per response to highlight key points
 4. Keep sentences short and easy to understand (max 15 words per sentence)
 5. End with a natural question that makes them curious to learn more
 6. Always address the specific content mentioned in block clicks
 
 Example response structure:
-"Did you know that on planet WASP-121b, it actually rains liquid rubies and sapphires? 💎
+"Did you know that on planet WASP-121b, it actually rains liquid rubies and sapphires? ✨
 That's right! This planet is so hot that gems turn into sparkly rain drops!
-Just imagine looking up and seeing precious stones falling from the sky! ✨
+Just imagine looking up and seeing precious stones falling from the sky!
 Want to discover what other treasures we might find in space? 🚀"
 
 Remember:
@@ -50,7 +50,8 @@ Remember:
 - Make learning feel like unlocking achievements in a game
 - Break text into short paragraphs
 - Always end with a question that sparks curiosity
-- For block clicks, directly explain the specific fact mentioned`
+- For block clicks, directly explain the specific fact mentioned
+- Limit emoji usage to 1-2 per response to maintain readability`
           },
           { role: "user", content: message },
         ],

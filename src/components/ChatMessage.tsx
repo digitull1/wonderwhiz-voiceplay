@@ -74,7 +74,7 @@ export const ChatMessage = ({
   return (
     <motion.div 
       className={cn(
-        "flex mb-3 px-3 w-full",
+        "flex mb-2 px-2 w-full",
         isAi ? "justify-start" : "justify-end"
       )}
       initial="hidden"
@@ -86,7 +86,7 @@ export const ChatMessage = ({
     >
       <div className={cn(
         "flex items-start gap-2 max-w-[95%] group",
-        isAi ? "w-full md:max-w-[80%]" : "max-w-[85%] md:max-w-[70%]"
+        isAi ? "w-full" : "w-full"
       )}>
         {isAi && (
           <motion.div
@@ -101,7 +101,7 @@ export const ChatMessage = ({
 
         <motion.div
           className={cn(
-            "space-y-2 p-3.5 rounded-2xl shadow-sm relative overflow-hidden min-h-[48px] w-full",
+            "space-y-2 p-3 rounded-2xl shadow-sm relative overflow-hidden min-h-[48px] w-full",
             isAi ? 
               "bg-gradient-to-br from-[#E8E8FF]/95 via-[#F4F4FF]/97 to-[#FFFFFF]/95 rounded-tl-sm border border-[#E8E8FF]/50" : 
               "bg-gradient-to-br from-[#FFFFFF]/95 via-[#FAFAFA]/97 to-[#F8F8F8]/95 rounded-tr-sm border border-gray-100/50",
@@ -109,7 +109,7 @@ export const ChatMessage = ({
           )}
           layout
         >
-          <p className="text-[15px] leading-[1.6] whitespace-pre-wrap relative z-10 
+          <p className="text-[14px] leading-[1.4] whitespace-pre-wrap relative z-10 
             tracking-wide font-medium text-gray-800">
             {formattedMessage}
           </p>
@@ -117,7 +117,7 @@ export const ChatMessage = ({
           {isAi && onListen && (
             <motion.button 
               className="absolute top-2.5 right-2.5 opacity-70 hover:opacity-100 
-                cursor-pointer transition-all p-2 rounded-full hover:bg-white/50
+                cursor-pointer transition-all p-1.5 rounded-full hover:bg-white/50
                 active:scale-95"
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
