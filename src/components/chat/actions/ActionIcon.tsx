@@ -24,6 +24,8 @@ export const ActionIcon: React.FC<ActionIconProps> = ({
   isLoading,
   className 
 }) => {
+  console.log("ActionIcon rendered:", { tooltip, isLoading });
+
   return (
     <TooltipProvider>
       <Tooltip>

@@ -31,17 +31,19 @@ export const MessageActions: React.FC<MessageActionsProps> = ({
       <AnimatePresence mode="wait">
         {onListen && (
           <ActionIcon
+            key="listen"
             icon={Volume2}
             tooltip="Listen to this message!"
             onClick={() => onListen(messageText)}
-            className="bg-gradient-to-br from-blue-500/5 to-cyan-500/5"
+            className="bg-gradient-to-br from-blue-500/5 to-cyan-500/5 hover:scale-110"
           />
         )}
 
-        <ImageAction messageText={messageText} />
+        <ImageAction key="image" messageText={messageText} />
 
         {onQuizGenerated && (
           <QuizAction
+            key="quiz"
             onQuizGenerated={onQuizGenerated}
             messageText={messageText}
             icon={BookOpen}
@@ -51,10 +53,11 @@ export const MessageActions: React.FC<MessageActionsProps> = ({
 
         {onPanelOpen && (
           <ActionIcon
+            key="trophy"
             icon={Trophy}
             tooltip="Check your progress!"
             onClick={onPanelOpen}
-            className="bg-gradient-to-br from-yellow-500/5 to-orange-500/5"
+            className="bg-gradient-to-br from-yellow-500/5 to-orange-500/5 hover:scale-110"
           />
         )}
       </AnimatePresence>

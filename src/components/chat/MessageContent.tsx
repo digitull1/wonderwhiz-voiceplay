@@ -31,6 +31,7 @@ export const MessageContent: React.FC<MessageContentProps> = ({
 
   const animateText = useCallback(() => {
     if (isAi && message && !isTyping) {
+      console.log("Starting text animation");
       setDisplayedText("");
       let currentText = "";
       const lines = message.split("\n");
@@ -58,8 +59,9 @@ export const MessageContent: React.FC<MessageContentProps> = ({
           if (currentLineIndex >= lines.length) {
             isCompleting = true;
             clearInterval(interval);
+            console.log("Text animation complete");
             setTimeout(() => {
-              console.log("Typing animation complete");
+              console.log("Calling onTypingComplete");
               onTypingComplete?.();
             }, 800);
           }
@@ -76,6 +78,7 @@ export const MessageContent: React.FC<MessageContentProps> = ({
   }, [message, isAi, onTypingComplete, isTyping]);
 
   useEffect(() => {
+    console.log("Effect triggered, starting animation");
     const cleanup = animateText();
     return () => cleanup?.();
   }, [animateText]);
