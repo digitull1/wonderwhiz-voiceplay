@@ -7,9 +7,14 @@ import { motion } from "framer-motion";
 interface BlockNavigationButtonProps {
   direction: 'left' | 'right';
   onClick: () => void;
+  className?: string; // Added className to the interface
 }
 
-export const BlockNavigationButton = ({ direction, onClick }: BlockNavigationButtonProps) => {
+export const BlockNavigationButton = ({ 
+  direction, 
+  onClick,
+  className 
+}: BlockNavigationButtonProps) => {
   const Icon = direction === 'left' ? ChevronLeft : ChevronRight;
   
   return (
@@ -19,7 +24,8 @@ export const BlockNavigationButton = ({ direction, onClick }: BlockNavigationBut
       exit={{ opacity: 0, x: direction === 'left' ? -20 : 20 }}
       className={cn(
         "absolute top-1/2 -translate-y-1/2 z-10",
-        direction === 'left' ? "left-0" : "right-0"
+        direction === 'left' ? "left-0" : "right-0",
+        className
       )}
     >
       <Button

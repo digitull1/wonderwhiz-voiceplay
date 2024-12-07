@@ -5,6 +5,7 @@ import { Send, Sparkles, ImagePlus, Mic, MicOff } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ImageUpload } from "./ImageUpload";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
 interface ChatInputProps {
   input: string;
