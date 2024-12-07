@@ -61,55 +61,13 @@ export default {
         display: ['SF Pro Display', 'system-ui', 'sans-serif'],
       },
       fontSize: {
-        'title': '32px',
-        'subtitle': '28px',
-        'body': '18px',
-        'small': '16px',
-        'block-title': '20px',
-        'block-desc': '16px',
-        'cta': '18px',
-      },
-      backgroundImage: {
-        'gradient-luxury': 'linear-gradient(135deg, #F5F5F7 0%, #E5E5E7 100%)',
-        'gradient-card': 'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.85) 100%)',
-        'gradient-block': 'linear-gradient(135deg, rgba(0,122,255,0.95) 0%, rgba(88,86,214,0.95) 100%)',
-      },
-      keyframes: {
-        'float': {
-          '0%, 100%': { transform: 'translateY(0px)' },
-          '50%': { transform: 'translateY(-10px)' },
-        },
-        'pulse-soft': {
-          '0%': { opacity: '0.5', transform: 'scale(0.95)' },
-          '50%': { opacity: '1', transform: 'scale(1.05)' },
-          '100%': { opacity: '0.5', transform: 'scale(0.95)' },
-        },
-        'sparkle': {
-          '0%': { transform: 'scale(0) rotate(0deg)', opacity: '0' },
-          '50%': { transform: 'scale(1) rotate(180deg)', opacity: '0.8' },
-          '100%': { transform: 'scale(0) rotate(360deg)', opacity: '0' },
-        },
-        'typing': {
-          '0%': { width: '0%' },
-          '100%': { width: '100%' },
-        },
-        'fade-in': {
-          '0%': { opacity: '0', transform: 'translateY(5px)' },
-          '100%': { opacity: '1', transform: 'translateY(0)' },
-        },
-      },
-      animation: {
-        'float': 'float 6s ease-in-out infinite',
-        'pulse-soft': 'pulse-soft 3s ease-in-out infinite',
-        'sparkle': 'sparkle 1.5s ease-in-out infinite',
-        'typing': 'typing 3s steps(40, end)',
-        'fade-in': 'fade-in 0.2s ease-out',
-      },
-      boxShadow: {
-        'luxury': '0 8px 32px -4px rgba(0, 0, 0, 0.1)',
-        'card': '0 4px 12px rgba(0, 0, 0, 0.05)',
-        'block': '0 8px 24px rgba(0, 0, 0, 0.1)',
-        'input': '0 2px 8px rgba(0, 0, 0, 0.05)',
+        'title': '28px', // Reduced from 32px
+        'subtitle': '24px', // Reduced from 28px
+        'body': '16px', // Reduced from 18px
+        'small': '14px', // Reduced from 16px
+        'block-title': '16px', // Reduced from 20px
+        'block-desc': '14px', // Reduced from 16px
+        'cta': '16px', // Reduced from 18px
       },
     },
   },
