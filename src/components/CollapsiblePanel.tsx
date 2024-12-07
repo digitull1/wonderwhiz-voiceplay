@@ -16,6 +16,13 @@ export const CollapsiblePanel: React.FC<CollapsiblePanelProps> = ({
 }) => {
   const [isOpen, setIsOpen] = useState(false);
 
+  const getEmoji = (value: number) => {
+    if (value > 75) return "🌟";
+    if (value > 50) return "⭐";
+    if (value > 25) return "✨";
+    return "🎯";
+  };
+
   return (
     <>
       <Button
@@ -24,8 +31,9 @@ export const CollapsiblePanel: React.FC<CollapsiblePanelProps> = ({
         onClick={() => setIsOpen(!isOpen)}
         className={cn(
           "fixed top-4 right-4 z-50",
-          "bg-white/80 backdrop-blur-xl shadow-luxury border border-white/20",
-          "hover:bg-white/90 transition-all duration-300",
+          "bg-white/95 backdrop-blur-xl shadow-luxury border border-white/20",
+          "hover:bg-white hover:scale-110 active:scale-95",
+          "transition-all duration-300",
           className
         )}
         aria-label={isOpen ? "Close menu" : "Open menu"}
@@ -37,9 +45,9 @@ export const CollapsiblePanel: React.FC<CollapsiblePanelProps> = ({
               initial={{ scale: 0, rotate: -180 }}
               animate={{ scale: 1, rotate: 0 }}
               exit={{ scale: 0, rotate: 180 }}
-              transition={{ duration: 0.2 }}
+              transition={{ duration: 0.3, type: "spring" }}
             >
-              <X className="h-4 w-4 text-gray-700" />
+              <X className="h-5 w-5 text-primary" />
             </motion.div>
           ) : (
             <motion.div
@@ -47,9 +55,9 @@ export const CollapsiblePanel: React.FC<CollapsiblePanelProps> = ({
               initial={{ scale: 0 }}
               animate={{ scale: 1 }}
               exit={{ scale: 0 }}
-              transition={{ duration: 0.2 }}
+              transition={{ duration: 0.3, type: "spring" }}
             >
-              <Menu className="h-4 w-4 text-gray-700" />
+              <Menu className="h-5 w-5 text-primary" />
             </motion.div>
           )}
         </AnimatePresence>
@@ -64,18 +72,18 @@ export const CollapsiblePanel: React.FC<CollapsiblePanelProps> = ({
             transition={{ type: "spring", damping: 20, stiffness: 300 }}
             className={cn(
               "fixed top-0 right-0 z-40 h-full w-80",
-              "bg-white/90 backdrop-blur-xl shadow-luxury",
+              "bg-white/95 backdrop-blur-xl shadow-luxury",
               "border-l border-white/20 p-6"
             )}
           >
-            <div className="pt-12">
+            <div className="pt-14">
               <motion.h2
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.1 }}
-                className="text-2xl font-bold text-gray-900 mb-4"
+                className="text-2xl font-bold text-app-text-dark mb-6"
               >
-                Your Progress
+                Your Amazing Journey! 🚀
               </motion.h2>
 
               <motion.div
@@ -84,24 +92,27 @@ export const CollapsiblePanel: React.FC<CollapsiblePanelProps> = ({
                 transition={{ delay: 0.2 }}
                 className="space-y-4"
               >
-                <div className="bg-white/50 rounded-lg p-4 shadow-sm">
-                  <h3 className="text-sm font-medium text-gray-700">Topics Explored</h3>
-                  <p className="text-2xl font-bold text-primary">
+                <div className="bg-gradient-to-br from-block-purple to-block-blue rounded-xl p-4 shadow-block text-white">
+                  <h3 className="text-sm font-medium opacity-90">Topics Explored</h3>
+                  <p className="text-2xl font-bold flex items-center gap-2">
                     {userProgress?.topicsExplored || 0}
+                    {getEmoji(userProgress?.topicsExplored || 0)}
                   </p>
                 </div>
 
-                <div className="bg-white/50 rounded-lg p-4 shadow-sm">
-                  <h3 className="text-sm font-medium text-gray-700">Questions Asked</h3>
-                  <p className="text-2xl font-bold text-secondary">
+                <div className="bg-gradient-to-br from-block-orange to-block-purple rounded-xl p-4 shadow-block text-white">
+                  <h3 className="text-sm font-medium opacity-90">Questions Asked</h3>
+                  <p className="text-2xl font-bold flex items-center gap-2">
                     {userProgress?.questionsAsked || 0}
+                    {getEmoji(userProgress?.questionsAsked || 0)}
                   </p>
                 </div>
 
-                <div className="bg-white/50 rounded-lg p-4 shadow-sm">
-                  <h3 className="text-sm font-medium text-gray-700">Quiz Score</h3>
-                  <p className="text-2xl font-bold text-accent">
+                <div className="bg-gradient-to-br from-block-blue to-block-orange rounded-xl p-4 shadow-block text-white">
+                  <h3 className="text-sm font-medium opacity-90">Quiz Score</h3>
+                  <p className="text-2xl font-bold flex items-center gap-2">
                     {userProgress?.quizScore || 0}%
+                    {getEmoji(userProgress?.quizScore || 0)}
                   </p>
                 </div>
               </motion.div>
@@ -112,15 +123,22 @@ export const CollapsiblePanel: React.FC<CollapsiblePanelProps> = ({
                 transition={{ delay: 0.3 }}
                 className="mt-8"
               >
-                <h3 className="text-sm font-medium text-gray-700 mb-2">Recent Topics</h3>
+                <h3 className="text-sm font-medium text-app-text-dark mb-3">
+                  Recent Adventures ✨
+                </h3>
                 <div className="space-y-2">
                   {userProgress?.recentTopics?.map((topic, index) => (
-                    <div
+                    <motion.div
                       key={index}
-                      className="bg-white/30 rounded-md p-2 text-sm text-gray-600"
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.4 + index * 0.1 }}
+                      className="bg-gradient-to-r from-white/50 to-white/30 
+                        backdrop-blur-sm rounded-lg p-3 text-sm text-app-text-dark
+                        border border-white/20 shadow-sm"
                     >
                       {topic}
-                    </div>
+                    </motion.div>
                   ))}
                 </div>
               </motion.div>

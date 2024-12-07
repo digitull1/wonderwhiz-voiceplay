@@ -23,9 +23,12 @@ export interface UserProgress {
   level: number;
   streak_days: number;
   last_interaction_date: string;
+  topicsExplored: number;
+  questionsAsked: number;
+  quizScore: number;
+  recentTopics?: string[];
 }
 
-// Add the QuizState type export
 export interface QuizState {
   isActive: boolean;
   currentQuestion: QuizQuestion | null;
@@ -33,7 +36,6 @@ export interface QuizState {
   currentTopic: string;
 }
 
-// Also export the QuizQuestion type to ensure it's available
 export interface QuizQuestion {
   question: string;
   options: string[];
