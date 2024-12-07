@@ -2,7 +2,8 @@ import React, { useState } from "react";
 import { ImageIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { ActionIcon } from "./ActionIcon";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 interface ImageActionProps {
   messageText: string;
@@ -37,7 +38,6 @@ export const ImageAction = ({ messageText }: ImageActionProps) => {
       if (data?.image) {
         console.log('Image generated successfully:', data.image);
         
-        // Dispatch a custom event with the image URL
         const event = new CustomEvent('wonderwhiz:newMessage', {
           detail: {
             text: "Here's the image I created based on your request! What do you think? ✨",
@@ -66,12 +66,19 @@ export const ImageAction = ({ messageText }: ImageActionProps) => {
   };
 
   return (
-    <ActionIcon
-      icon={ImageIcon}
-      tooltip="Create a picture!"
+    <Button
+      size="icon"
+      variant="ghost"
       onClick={handleImageGeneration}
-      isLoading={isGenerating}
-      className="bg-gradient-to-br from-blue-500/5 to-purple-500/5"
-    />
+      disabled={isGenerating}
+      className={cn(
+        "relative p-2 rounded-full transition-all duration-300",
+        "hover:bg-white hover:scale-110 active:scale-95",
+        "focus:outline-none focus:ring-2 focus:ring-primary/20",
+        "bg-gradient-to-br from-blue-500/5 to-purple-500/5"
+      )}
+    >
+      <ImageIcon className="w-4 h-4" />
+    </Button>
   );
 };
