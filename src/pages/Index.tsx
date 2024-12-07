@@ -5,7 +5,7 @@ import { ChatContainer } from "@/components/ChatContainer";
 import { ChatInput } from "@/components/ChatInput";
 import { CollapsiblePanel } from "@/components/CollapsiblePanel";
 import { useChat } from "@/hooks/useChat";
-import { Sparkles, Stars, Shapes, Home, MessageSquare, User, Award } from "lucide-react";
+import { Sparkles, Stars, Shapes } from "lucide-react";
 
 const Index = () => {
   const {
@@ -31,7 +31,6 @@ const Index = () => {
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
       >
-        {/* Add CollapsiblePanel */}
         <CollapsiblePanel userProgress={userProgress} />
 
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -97,7 +96,6 @@ const Index = () => {
               damping: 20
             }}
           >
-            {/* Enhanced gradient overlays */}
             <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-primary/5 to-secondary/5 pointer-events-none" />
             <div className="absolute inset-0 bg-gradient-radial from-transparent via-transparent to-white/10 pointer-events-none" />
             
@@ -120,20 +118,6 @@ const Index = () => {
             />
           </motion.div>
         </div>
-
-        {/* Mobile Navigation Bar */}
-        <motion.nav 
-          className="fixed bottom-0 left-0 right-0 h-16 bg-white/90 backdrop-blur-xl border-t 
-            border-white/20 flex justify-around items-center px-6 z-50"
-          initial={{ y: 100 }}
-          animate={{ y: 0 }}
-          transition={{ delay: 0.3 }}
-        >
-          <NavButton icon={<Home className="w-6 h-6" />} label="Home" isActive={true} />
-          <NavButton icon={<MessageSquare className="w-6 h-6" />} label="Ask" />
-          <NavButton icon={<User className="w-6 h-6" />} label="Profile" />
-          <NavButton icon={<Award className="w-6 h-6" />} label="Rewards" />
-        </motion.nav>
 
         {/* Enhanced decorative gradient orbs */}
         <motion.div 
@@ -170,25 +154,5 @@ const Index = () => {
     </AnimatePresence>
   );
 };
-
-const NavButton = ({ 
-  icon, 
-  label, 
-  isActive = false 
-}: { 
-  icon: React.ReactNode; 
-  label: string; 
-  isActive?: boolean;
-}) => (
-  <motion.button
-    className={`flex flex-col items-center justify-center min-h-touch p-2 rounded-lg
-      transition-colors duration-300 ${isActive ? 'text-primary' : 'text-gray-500'}`}
-    whileHover={{ scale: 1.05 }}
-    whileTap={{ scale: 0.95 }}
-  >
-    {icon}
-    <span className="text-xs mt-1 font-medium">{label}</span>
-  </motion.button>
-);
 
 export default Index;

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
-import { Clock, History, Star, MessageSquare } from "lucide-react";
+import { motion } from "framer-motion";
+import { Star } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -9,6 +9,10 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { supabase } from "@/integrations/supabase/client";
+import { TimeTracker } from "./panel/TimeTracker";
+import { RecentTopics } from "./panel/RecentTopics";
+import { ProgressCard } from "./panel/ProgressCard";
+import { TalkToWizzy } from "./panel/TalkToWizzy";
 
 interface CollapsiblePanelProps {
   userProgress: {
@@ -22,11 +26,6 @@ interface ExploredTopic {
   topic: string;
   emoji: string;
   last_explored_at: string;
-}
-
-interface LearningTime {
-  minutes_spent: number;
-  date: string;
 }
 
 export const CollapsiblePanel = ({ userProgress }: CollapsiblePanelProps) => {
@@ -100,105 +99,35 @@ export const CollapsiblePanel = ({ userProgress }: CollapsiblePanelProps) => {
         </SheetHeader>
 
         <div className="mt-6 space-y-6">
-          {/* Points & Level Section */}
           <motion.div
-            className="bg-white/80 backdrop-blur-sm rounded-xl p-4 shadow-sm"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
           >
-            <div className="flex items-center justify-between">
-              <div className="space-y-1">
-                <h3 className="text-lg font-semibold text-primary">Level {userProgress.level}</h3>
-                <p className="text-sm text-gray-600">⭐ {userProgress.points} Points</p>
-                <p className="text-sm text-gray-600">🔥 {userProgress.streak_days} Day Streak</p>
-              </div>
-              <Star className="w-8 h-8 text-primary animate-pulse" />
-            </div>
+            <ProgressCard userProgress={userProgress} />
           </motion.div>
 
-          {/* Time Tracker */}
           <motion.div
-            className="bg-white/80 backdrop-blur-sm rounded-xl p-4 shadow-sm"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
           >
-            <div className="flex items-center gap-2 mb-3">
-              <Clock className="w-5 h-5 text-secondary" />
-              <h3 className="text-lg font-semibold">Time Spent Learning</h3>
-            </div>
-            <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">Today</span>
-                <span className="text-sm font-medium">{timeSpent.today} minutes</span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2.5">
-                <div
-                  className="bg-secondary h-2.5 rounded-full"
-                  style={{ width: `${(timeSpent.today / 60) * 100}%` }}
-                />
-              </div>
-              <div className="flex justify-between items-center mt-2">
-                <span className="text-sm text-gray-600">This Week</span>
-                <span className="text-sm font-medium">{timeSpent.week} minutes</span>
-              </div>
-              <div className="w-full bg-gray-200 rounded-full h-2.5">
-                <div
-                  className="bg-secondary h-2.5 rounded-full"
-                  style={{ width: `${(timeSpent.week / 300) * 100}%` }}
-                />
-              </div>
-            </div>
+            <TimeTracker timeSpent={timeSpent} />
           </motion.div>
 
-          {/* Recent Topics */}
           <motion.div
-            className="bg-white/80 backdrop-blur-sm rounded-xl p-4 shadow-sm"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
           >
-            <div className="flex items-center gap-2 mb-3">
-              <History className="w-5 h-5 text-accent" />
-              <h3 className="text-lg font-semibold">Recent Topics</h3>
-            </div>
-            <div className="space-y-2">
-              {recentTopics.length > 0 ? (
-                recentTopics.map((topic, index) => (
-                  <motion.button
-                    key={topic.topic}
-                    className="w-full text-left p-2 rounded-lg hover:bg-white/50 
-                      transition-colors duration-200 flex items-center gap-2"
-                    whileHover={{ x: 4 }}
-                  >
-                    <span className="text-xl">{topic.emoji}</span>
-                    <span className="text-sm font-medium">{topic.topic}</span>
-                  </motion.button>
-                ))
-              ) : (
-                <p className="text-sm text-gray-500 text-center py-2">
-                  Start exploring topics to see them here!
-                </p>
-              )}
-            </div>
+            <RecentTopics topics={recentTopics} />
           </motion.div>
 
-          {/* Talk to Wizzy Widget */}
           <motion.div
-            className="bg-white/80 backdrop-blur-sm rounded-xl p-4 shadow-sm"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3 }}
           >
-            <div className="flex items-center gap-2 mb-3">
-              <MessageSquare className="w-5 h-5 text-primary" />
-              <h3 className="text-lg font-semibold">Talk to Wizzy</h3>
-            </div>
-            <div className="w-full h-[300px] rounded-lg overflow-hidden">
-              <div className="elevenlabs-widget">
-                <elevenlabs-convai agent-id="zmQ4IMOTcaVnB64g8OYl"></elevenlabs-convai>
-              </div>
-            </div>
+            <TalkToWizzy />
           </motion.div>
         </div>
       </SheetContent>
