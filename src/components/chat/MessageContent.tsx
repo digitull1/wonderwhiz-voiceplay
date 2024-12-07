@@ -54,8 +54,8 @@ export const MessageContent = ({ message, isAi, onListen }: MessageContentProps)
 
   return (
     <div className="relative flex-1">
-      <p className="text-[15px] leading-relaxed tracking-wide font-medium
-        whitespace-pre-wrap relative z-10">
+      <p className={`text-[15px] leading-relaxed tracking-wide font-medium
+        whitespace-pre-wrap relative z-10 ${isAi ? 'text-app-text-dark' : 'text-app-text-dark'}`}>
         {words.slice(0, currentWordIndex + 1).join(' ')}
         {isAi && !isTypingComplete && (
           <motion.span
@@ -71,7 +71,7 @@ export const MessageContent = ({ message, isAi, onListen }: MessageContentProps)
           onClick={handleListen}
           className="absolute top-0 right-0 opacity-70 hover:opacity-100 
             cursor-pointer transition-all p-1.5 rounded-full hover:bg-white/20
-            active:scale-95 z-20"
+            active:scale-95 z-20 text-app-text-dark"
           whileHover={{ scale: 1.1 }}
           whileTap={{ scale: 0.95 }}
         >
