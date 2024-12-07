@@ -1,6 +1,7 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { History } from "lucide-react";
 import { motion } from "framer-motion";
+import { supabase } from "@/integrations/supabase/client";
 import {
   Tooltip,
   TooltipContent,
@@ -19,6 +20,32 @@ interface RecentTopicsProps {
 }
 
 export const RecentTopics = ({ topics }: RecentTopicsProps) => {
+  const [recentTopics, setRecentTopics] = useState<ExploredTopic[]>([]);
+
+  useEffect(() => {
+    const fetchTopics = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data, error } = await supabase
+        .from('explored_topics')
+        .select('topic, emoji, last_explored_at')
+        .eq('user_id', user.id)
+        .order('last_explored_at', { ascending: false })
+        .limit(3);
+
+      if (error) {
+        console.error('Error fetching topics:', error);
+        return;
+      }
+
+      console.log('Fetched topics:', data);
+      setRecentTopics(data || []);
+    };
+
+    fetchTopics();
+  }, [topics]); // Re-fetch when topics prop changes
+
   return (
     <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 shadow-sm border border-primary/10">
       <div className="flex items-center gap-2 mb-3">
@@ -26,8 +53,8 @@ export const RecentTopics = ({ topics }: RecentTopicsProps) => {
         <h3 className="text-lg font-semibold">Recent Topics</h3>
       </div>
       <div className="space-y-2">
-        {topics.length > 0 ? (
-          topics.map((topic, index) => (
+        {recentTopics.length > 0 ? (
+          recentTopics.map((topic, index) => (
             <TooltipProvider key={topic.topic}>
               <Tooltip>
                 <TooltipTrigger asChild>

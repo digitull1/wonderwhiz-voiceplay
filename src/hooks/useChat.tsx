@@ -76,28 +76,56 @@ export const useChat = () => {
 
       // Track learning time
       const today = new Date().toISOString().split('T')[0];
-      const { data: existingTime } = await supabase
+      
+      // First check if there's an existing entry for today
+      const { data: existingTime, error: timeError } = await supabase
         .from('learning_time')
         .select('*')
         .eq('date', today)
         .eq('user_id', user.id)
         .single();
 
+      console.log('Existing time entry:', existingTime);
+
       if (existingTime) {
-        await supabase
+        const { error: updateError } = await supabase
           .from('learning_time')
           .update({ 
             minutes_spent: (existingTime.minutes_spent || 0) + 1 
           })
           .eq('id', existingTime.id);
+
+        if (updateError) {
+          console.error('Error updating learning time:', updateError);
+        }
       } else {
-        await supabase
+        const { error: insertError } = await supabase
           .from('learning_time')
           .insert([{ 
             minutes_spent: 1,
             date: today,
             user_id: user.id
           }]);
+
+        if (insertError) {
+          console.error('Error inserting learning time:', insertError);
+        }
+      }
+
+      // Track explored topic
+      const { error: topicError } = await supabase
+        .from('explored_topics')
+        .upsert({
+          user_id: user.id,
+          topic: currentTopic,
+          emoji: '🌟', // Default emoji
+          last_explored_at: new Date().toISOString()
+        }, {
+          onConflict: 'user_id,topic'
+        });
+
+      if (topicError) {
+        console.error('Error tracking topic:', topicError);
       }
 
       const previousMessages = messages.slice(-3).map(m => m.text).join(" ");
