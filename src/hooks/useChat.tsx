@@ -67,12 +67,20 @@ export const useChat = () => {
     setIsLoading(true);
 
     try {
+      // Get current user
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        console.error('No authenticated user found');
+        return;
+      }
+
       // Track learning time
       const today = new Date().toISOString().split('T')[0];
       const { data: existingTime } = await supabase
         .from('learning_time')
         .select('*')
         .eq('date', today)
+        .eq('user_id', user.id)
         .single();
 
       if (existingTime) {
@@ -87,7 +95,8 @@ export const useChat = () => {
           .from('learning_time')
           .insert([{ 
             minutes_spent: 1,
-            date: today
+            date: today,
+            user_id: user.id
           }]);
       }
 
