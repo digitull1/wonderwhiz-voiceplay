@@ -5,6 +5,7 @@ import { ChatContainer } from "@/components/ChatContainer";
 import { ChatInput } from "@/components/ChatInput";
 import { AuthForm } from "@/components/auth/AuthForm";
 import { CollapsiblePanel } from "@/components/CollapsiblePanel";
+import { UserProgress } from "@/types/chat";
 
 interface MainContainerProps {
   messages: any[];
@@ -19,6 +20,7 @@ interface MainContainerProps {
   sendMessage: (message: string) => void;
   handleImageAnalysis: (response: string) => void;
   isAuthenticated: boolean;
+  userProgress: UserProgress;
 }
 
 export const MainContainer: React.FC<MainContainerProps> = ({
@@ -33,7 +35,8 @@ export const MainContainer: React.FC<MainContainerProps> = ({
   quizState,
   sendMessage,
   handleImageAnalysis,
-  isAuthenticated
+  isAuthenticated,
+  userProgress
 }) => {
   const [showAuthForm, setShowAuthForm] = React.useState(false);
 

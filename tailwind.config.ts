@@ -94,12 +94,17 @@ export default {
           '0%': { width: '0%' },
           '100%': { width: '100%' },
         },
+        'fade-in': {
+          '0%': { opacity: '0', transform: 'translateY(10px)' },
+          '100%': { opacity: '1', transform: 'translateY(0)' },
+        },
       },
       animation: {
         'float': 'float 6s ease-in-out infinite',
         'pulse-soft': 'pulse-soft 3s ease-in-out infinite',
         'sparkle': 'sparkle 1.5s ease-in-out infinite',
         'typing': 'typing 3s steps(40, end)',
+        'fade-in': 'fade-in 0.3s ease-out',
       },
       boxShadow: {
         'luxury': '0 8px 32px -4px rgba(0, 0, 0, 0.1)',
