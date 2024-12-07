@@ -82,13 +82,10 @@ export const useChat = () => {
     if (!text) return;
     
     const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = 0.9; // Slightly slower for better comprehension
-    utterance.pitch = 1.1; // Slightly higher pitch for a more engaging voice
+    utterance.rate = 0.9;
+    utterance.pitch = 1.1;
     
-    // Cancel any ongoing speech
     window.speechSynthesis.cancel();
-    
-    // Start new speech
     window.speechSynthesis.speak(utterance);
     
     toast({
