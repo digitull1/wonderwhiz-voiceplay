@@ -92,12 +92,32 @@ export default {
       boxShadow: {
         'block': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
         'block-hover': '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
+        'chat': '0 2px 4px rgba(0, 0, 0, 0.05)',
+        'chat-hover': '0 4px 6px rgba(0, 0, 0, 0.1)',
       },
       lineHeight: {
         'readable': '1.6',
       },
       backgroundImage: {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
+        'chat-ai': 'linear-gradient(135deg, #E8E8FF 0%, #F4F4FF 50%, #FFFFFF 100%)',
+        'chat-user': 'linear-gradient(135deg, #F5F5F5 0%, #FFFFFF 100%)',
+        'input-box': 'linear-gradient(to right, #F4F4FF, #FFFFFF)',
+      },
+      keyframes: {
+        'float': {
+          '0%, 100%': { transform: 'translateY(0px)' },
+          '50%': { transform: 'translateY(-10px)' },
+        },
+        'pulse-ring': {
+          '0%': { transform: 'scale(0.8)', opacity: '0' },
+          '50%': { transform: 'scale(1)', opacity: '0.4' },
+          '100%': { transform: 'scale(1.4)', opacity: '0' },
+        },
+      },
+      animation: {
+        'float': 'float 3s ease-in-out infinite',
+        'pulse-ring': 'pulse-ring 1.25s cubic-bezier(0.24, 0, 0.38, 1) infinite',
       },
     },
   },
