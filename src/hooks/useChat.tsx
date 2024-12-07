@@ -14,7 +14,7 @@ export const useChat = () => {
   const { isAuthenticated } = useAuth();
   const { userProgress, updateUserProgress } = useUserProgress();
   const { quizState, handleQuizAnswer } = useQuiz({ updateProgress: updateUserProgress });
-  const { generateDynamicBlocks } = useBlockGeneration();
+  const { generateDynamicBlocks } = useBlockGeneration(null);
   const { handleImageAnalysis: analyzeImage } = useImageAnalysis();
 
   const handleListen = useCallback((text: string) => {
