@@ -1,5 +1,5 @@
 import React from "react";
-import { Image, Sparkles, BookOpen } from "lucide-react";
+import { Volume2, Image, Sparkles, BookOpen } from "lucide-react";
 import { ActionIcon } from "./actions/ActionIcon";
 import { QuizAction } from "./actions/QuizAction";
 import { ImageUpload } from "../ImageUpload";
@@ -23,6 +23,15 @@ export const MessageActions = ({
 
   return (
     <div className="flex items-center gap-2 mt-2">
+      {onListen && (
+        <ActionIcon
+          icon={Volume2}
+          tooltip="🔊 Listen to this message!"
+          onClick={() => onListen()}
+          className="bg-gradient-to-br from-blue-500/5 to-cyan-500/5"
+        />
+      )}
+
       {onImageAnalyzed && (
         <>
           <ImageUpload 
