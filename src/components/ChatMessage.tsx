@@ -16,7 +16,6 @@ interface ChatMessageProps {
   onQuizGenerated?: (quiz: any) => void;
   onPanelOpen?: () => void;
   imageUrl?: string;
-  isTyping?: boolean;
   quizState?: QuizState;
   onQuizAnswer?: (isCorrect: boolean) => void;
   messageIndex?: number;
@@ -31,24 +30,29 @@ export const ChatMessage = ({
   onQuizGenerated,
   onPanelOpen,
   imageUrl,
-  isTyping,
   quizState,
   onQuizAnswer,
   messageIndex = 0
 }: ChatMessageProps) => {
-  const [showBlocks, setShowBlocks] = React.useState(false);
+  const [isTyping, setIsTyping] = useState(true);
+  const [showBlocks, setShowBlocks] = useState(false);
   const showActions = !isAi || messageIndex > 3;
 
-  React.useEffect(() => {
-    if (!isTyping && isAi) {
-      const timer = setTimeout(() => {
-        setShowBlocks(true);
-      }, 1500); // Longer delay after typing finishes
-      return () => clearTimeout(timer);
-    } else {
-      setShowBlocks(false); // Hide blocks while typing
+  // Reset typing state when message changes
+  useEffect(() => {
+    if (isAi) {
+      setIsTyping(true);
+      setShowBlocks(false);
     }
-  }, [isTyping, isAi]);
+  }, [message, isAi]);
+
+  // Handle typing completion
+  const handleTypingComplete = () => {
+    console.log("Typing complete, showing blocks");
+    setIsTyping(false);
+    // Add delay before showing blocks
+    setTimeout(() => setShowBlocks(true), 500);
+  };
 
   return (
     <motion.div 
@@ -94,6 +98,7 @@ export const ChatMessage = ({
             imageUrl={imageUrl}
             showActions={showActions}
             isTyping={isTyping}
+            onTypingComplete={handleTypingComplete}
           />
           
           {isAi && blocks && blocks.length > 0 && onBlockClick && showBlocks && !isTyping && (

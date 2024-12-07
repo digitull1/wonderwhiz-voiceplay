@@ -12,6 +12,7 @@ interface MessageContentProps {
   imageUrl?: string;
   showActions?: boolean;
   isTyping?: boolean;
+  onTypingComplete?: () => void;
 }
 
 export const MessageContent = ({ 
@@ -22,7 +23,8 @@ export const MessageContent = ({
   onPanelOpen,
   imageUrl,
   showActions = true,
-  isTyping
+  isTyping,
+  onTypingComplete
 }: MessageContentProps) => {
   const [displayedText, setDisplayedText] = useState("");
   console.log("MessageContent rendered:", { isTyping, message, showActions });
@@ -50,16 +52,24 @@ export const MessageContent = ({
           
           setDisplayedText(currentText);
           console.log("Typing animation:", { currentText, isComplete: currentLineIndex >= lines.length });
+
+          // Check if typing is complete
+          if (currentLineIndex >= lines.length) {
+            clearInterval(interval);
+            onTypingComplete?.();
+          }
         } else {
           clearInterval(interval);
+          onTypingComplete?.();
         }
-      }, 20); // Faster typing speed for better engagement
+      }, 20);
 
       return () => clearInterval(interval);
     } else {
       setDisplayedText(message);
+      onTypingComplete?.();
     }
-  }, [message, isAi]);
+  }, [message, isAi, onTypingComplete]);
 
   return (
     <div className="relative">
@@ -72,7 +82,7 @@ export const MessageContent = ({
 
       {showActions && !isTyping && (
         <MessageActions 
-          onListen={onListen ? () => onListen(message) : undefined}
+          onListen={onListen}
           onQuizGenerated={onQuizGenerated}
           messageText={message}
         />
