@@ -44,10 +44,11 @@ export const MessageContent = ({
           currentIndex++;
         } else {
           setIsTyping(false);
-          setTimeout(() => setShowBlocks(true), 500); // Show blocks after typing with a small delay
+          // Add a delay before showing blocks to prevent information overload
+          setTimeout(() => setShowBlocks(true), 800);
           clearInterval(interval);
         }
-      }, 50); // Slightly faster typing speed
+      }, 75); // Moderate typing speed for better readability
 
       return () => clearInterval(interval);
     } else {
