@@ -97,3 +97,32 @@
 .elevenlabs-widget iframe {
   @apply w-full h-full border-none;
 }
+
+/* Enhanced animations */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+.float {
+  animation: float 3s ease-in-out infinite;
+}
+
+/* Gradient backgrounds */
+.gradient-bg {
+  @apply bg-gradient-to-br from-[#E8E8FF] to-[#F4F4FF];
+}
+
+.gradient-card {
+  @apply bg-gradient-to-br from-white/90 to-white/80 backdrop-blur-xl;
+}
+
+/* Enhanced touch interactions */
+.touch-feedback {
+  @apply active:scale-95 transition-transform duration-200;
+}
+
+/* Improved accessibility */
+.focus-ring {
+  @apply focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background;
+}
