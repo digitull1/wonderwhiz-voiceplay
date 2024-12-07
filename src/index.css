@@ -89,6 +89,15 @@
   @apply bg-clip-text text-transparent bg-gradient-to-r from-primary via-secondary to-accent;
 }
 
+/* Message bubbles */
+.message-bubble-ai {
+  @apply bg-gradient-to-br from-[#E8E8FF] via-[#F4F4FF] to-[#FFFFFF] shadow-sm;
+}
+
+.message-bubble-user {
+  @apply bg-white/90 shadow-sm;
+}
+
 /* Elevenlabs widget customization */
 .elevenlabs-widget {
   @apply w-full h-full rounded-xl overflow-hidden bg-white/80 backdrop-blur-sm shadow-sm;
@@ -125,4 +134,32 @@
 /* Improved accessibility */
 .focus-ring {
   @apply focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-background;
+}
+
+/* Input field styling */
+.chat-input {
+  @apply bg-white/80 backdrop-blur-sm rounded-full px-4 py-3 
+    focus:outline-none focus:ring-2 focus:ring-primary/50
+    placeholder:text-gray-400 shadow-sm
+    transition-all duration-200;
+}
+
+/* Block card styling */
+.block-card {
+  @apply bg-gradient-to-br from-white/90 to-white/80 
+    backdrop-blur-xl rounded-2xl p-4 shadow-lg
+    hover:shadow-xl transition-all duration-300
+    border border-white/50;
+}
+
+/* Time tracker ring animation */
+@keyframes fillRing {
+  from { stroke-dashoffset: 100; }
+  to { stroke-dashoffset: 0; }
+}
+
+.ring-progress {
+  @apply transition-all duration-1000;
+  stroke-dasharray: 100;
+  animation: fillRing 1s ease-out forwards;
 }

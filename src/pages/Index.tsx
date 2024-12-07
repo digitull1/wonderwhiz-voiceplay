@@ -26,7 +26,7 @@ const Index = () => {
   return (
     <AnimatePresence>
       <motion.div 
-        className="min-h-screen bg-gradient-to-br from-[#E8E8FF] to-[#F4F4FF] flex flex-col relative overflow-hidden"
+        className="min-h-screen gradient-bg flex flex-col relative overflow-hidden"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
@@ -36,7 +36,7 @@ const Index = () => {
         {/* Decorative Background Elements */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <motion.div
-            className="absolute top-20 left-10 text-[#38C9C9]/20"
+            className="absolute top-20 left-10 text-primary/20"
             animate={{ 
               rotate: 360,
               scale: [1, 1.2, 1],
@@ -48,11 +48,11 @@ const Index = () => {
               y: { duration: 3, repeat: Infinity, ease: "easeInOut" }
             }}
           >
-            <Sparkles className="w-32 h-32 animate-pulse" />
+            <Sparkles className="w-32 h-32 float" />
           </motion.div>
           
           <motion.div
-            className="absolute bottom-40 right-20 text-[#BFAAFF]/20"
+            className="absolute bottom-40 right-20 text-secondary/20"
             animate={{ 
               rotate: -360,
               scale: [1, 1.3, 1],
@@ -64,11 +64,11 @@ const Index = () => {
               x: { duration: 4, repeat: Infinity, ease: "easeInOut" }
             }}
           >
-            <Stars className="w-40 h-40 animate-pulse" />
+            <Stars className="w-40 h-40 float" />
           </motion.div>
 
           <motion.div
-            className="absolute top-1/2 right-1/4 text-[#FF6F61]/20"
+            className="absolute top-1/2 right-1/4 text-accent/20"
             animate={{ 
               rotate: 180,
               scale: [1, 1.2, 1],
@@ -80,13 +80,13 @@ const Index = () => {
               y: { duration: 5, repeat: Infinity, ease: "easeInOut" }
             }}
           >
-            <Shapes className="w-24 h-24 animate-pulse" />
+            <Shapes className="w-24 h-24 float" />
           </motion.div>
         </div>
 
         <div className="flex-1 container max-w-4xl mx-auto py-4 px-4 relative z-10">
           <motion.div 
-            className="bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl p-4 h-[calc(100vh-2rem)] 
+            className="gradient-card rounded-3xl shadow-2xl p-4 h-[calc(100vh-2rem)] 
               flex flex-col border border-white/50 relative overflow-hidden"
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -97,9 +97,6 @@ const Index = () => {
               damping: 20
             }}
           >
-            <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-[#BFAAFF]/5 to-[#38C9C9]/5 pointer-events-none" />
-            <div className="absolute inset-0 bg-gradient-radial from-transparent via-transparent to-white/10 pointer-events-none" />
-            
             <ChatHeader />
             <ChatContainer 
               messages={messages} 
@@ -116,13 +113,14 @@ const Index = () => {
               isLoading={isLoading}
               currentTopic={currentTopic}
               onImageAnalyzed={handleImageAnalysis}
+              placeholder={`Ask me anything about ${currentTopic || 'space'}...`}
             />
           </motion.div>
         </div>
 
         {/* Enhanced decorative gradient orbs */}
         <motion.div 
-          className="fixed -top-40 -left-40 w-[500px] h-[500px] bg-[#BFAAFF]/30 rounded-full 
+          className="fixed -top-40 -left-40 w-[500px] h-[500px] bg-primary/30 rounded-full 
             filter blur-[100px] opacity-50"
           animate={{
             scale: [1, 1.2, 1],
@@ -137,7 +135,7 @@ const Index = () => {
           }}
         />
         <motion.div 
-          className="fixed -bottom-40 -right-40 w-[500px] h-[500px] bg-[#38C9C9]/30 rounded-full 
+          className="fixed -bottom-40 -right-40 w-[500px] h-[500px] bg-secondary/30 rounded-full 
             filter blur-[100px] opacity-50"
           animate={{
             scale: [1, 1.1, 1],
