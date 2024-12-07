@@ -11,7 +11,7 @@ interface MainContainerProps {
   setInput: (value: string) => void;
   isLoading: boolean;
   currentTopic: string;
-  handleListen: () => void;
+  handleListen: (text: string) => void;  // Updated type definition
   handleBlockClick: (block: any) => void;
   handleQuizAnswer: (isCorrect: boolean) => void;
   quizState: any;

@@ -11,7 +11,7 @@ interface Message {
 
 interface ChatContainerProps {
   messages: Message[];
-  handleListen: () => void;
+  handleListen: (text: string) => void;  // Updated type definition
   onBlockClick?: (block: Block) => void;
   quizState?: QuizState;
   onQuizAnswer?: (isCorrect: boolean) => void;
