@@ -20,6 +20,8 @@ export const MessageActions = ({
   showActions = true,
   messageText
 }: MessageActionsProps) => {
+  console.log("MessageActions rendered:", { showActions, hasListenHandler: !!onListen });
+
   if (!showActions) return null;
 
   return (
