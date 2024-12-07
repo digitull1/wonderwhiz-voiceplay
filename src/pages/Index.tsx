@@ -26,16 +26,17 @@ const Index = () => {
   return (
     <AnimatePresence>
       <motion.div 
-        className="min-h-screen bg-gradient-to-br from-app-background to-[#FFCDD2] flex flex-col relative overflow-hidden"
+        className="min-h-screen bg-gradient-to-br from-[#E8E8FF] to-[#F4F4FF] flex flex-col relative overflow-hidden"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
       >
         <CollapsiblePanel userProgress={userProgress} />
 
+        {/* Decorative Background Elements */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
           <motion.div
-            className="absolute top-20 left-10 text-primary/20"
+            className="absolute top-20 left-10 text-[#38C9C9]/20"
             animate={{ 
               rotate: 360,
               scale: [1, 1.2, 1],
@@ -51,7 +52,7 @@ const Index = () => {
           </motion.div>
           
           <motion.div
-            className="absolute bottom-40 right-20 text-secondary/20"
+            className="absolute bottom-40 right-20 text-[#BFAAFF]/20"
             animate={{ 
               rotate: -360,
               scale: [1, 1.3, 1],
@@ -67,7 +68,7 @@ const Index = () => {
           </motion.div>
 
           <motion.div
-            className="absolute top-1/2 right-1/4 text-accent/20"
+            className="absolute top-1/2 right-1/4 text-[#FF6F61]/20"
             animate={{ 
               rotate: 180,
               scale: [1, 1.2, 1],
@@ -96,7 +97,7 @@ const Index = () => {
               damping: 20
             }}
           >
-            <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-primary/5 to-secondary/5 pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-br from-white/5 via-[#BFAAFF]/5 to-[#38C9C9]/5 pointer-events-none" />
             <div className="absolute inset-0 bg-gradient-radial from-transparent via-transparent to-white/10 pointer-events-none" />
             
             <ChatHeader />
@@ -121,7 +122,7 @@ const Index = () => {
 
         {/* Enhanced decorative gradient orbs */}
         <motion.div 
-          className="fixed -top-40 -left-40 w-[500px] h-[500px] bg-primary/30 rounded-full 
+          className="fixed -top-40 -left-40 w-[500px] h-[500px] bg-[#BFAAFF]/30 rounded-full 
             filter blur-[100px] opacity-50"
           animate={{
             scale: [1, 1.2, 1],
@@ -136,7 +137,7 @@ const Index = () => {
           }}
         />
         <motion.div 
-          className="fixed -bottom-40 -right-40 w-[500px] h-[500px] bg-secondary/30 rounded-full 
+          className="fixed -bottom-40 -right-40 w-[500px] h-[500px] bg-[#38C9C9]/30 rounded-full 
             filter blur-[100px] opacity-50"
           animate={{
             scale: [1, 1.1, 1],

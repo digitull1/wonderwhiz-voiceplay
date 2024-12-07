@@ -25,41 +25,41 @@ export default {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: {
-          DEFAULT: "#8B5CF6",
+          DEFAULT: "#BFAAFF",
           foreground: "#ffffff",
         },
         secondary: {
-          DEFAULT: "#0EA5E9",
+          DEFAULT: "#38C9C9",
           foreground: "#ffffff",
         },
         accent: {
-          DEFAULT: "#F97316",
+          DEFAULT: "#FF6F61",
           foreground: "#ffffff",
         },
         chat: {
-          user: "#F2FCE2",
-          ai: "#E5DEFF",
+          user: "#F5F5F5",
+          ai: "#E8E8FF",
         },
         block: {
-          orange: "#F97316",
-          blue: "#0EA5E9",
-          purple: "#8B5CF6",
+          orange: "#FF6F61",
+          blue: "#38C9C9",
+          purple: "#BFAAFF",
         },
         reward: {
           bronze: "#CD7F32",
           silver: "#C0C0C0",
-          gold: "#FFD700",
+          gold: "#FFDD57",
         },
         level: {
           beginner: "#4ADE80",
           intermediate: "#2563EB",
-          advanced: "#8B5CF6",
-          expert: "#F97316",
+          advanced: "#BFAAFF",
+          expert: "#FF6F61",
         },
         app: {
-          background: "#E8EAF6",
-          accent: "#4DD0E1",
-          cta: "#FFC107",
+          background: "#E8E8FF",
+          accent: "#38C9C9",
+          cta: "#FFDD57",
           text: {
             dark: "#333333",
             light: "#FFFFFF",
@@ -70,7 +70,7 @@ export default {
         sans: ['Poppins', 'system-ui', 'sans-serif'],
       },
       fontSize: {
-        'title': '22px',
+        'title': '24px',
         'subtitle': '20px',
         'body': '16px',
         'small': '14px',
@@ -95,6 +95,9 @@ export default {
       },
       lineHeight: {
         'readable': '1.6',
+      },
+      backgroundImage: {
+        'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
       },
     },
   },
