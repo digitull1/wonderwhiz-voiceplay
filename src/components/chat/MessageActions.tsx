@@ -1,30 +1,27 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Volume2, BookOpen, ImageIcon, Trophy, Upload } from "lucide-react";
-import { ActionIcon } from "./actions/ActionIcon";
-import { QuizAction } from "./actions/QuizAction";
-import { ImageAction } from "./actions/ImageAction";
-import { ImageUpload } from "../ImageUpload";
+import { Trophy, Upload } from "lucide-react";
+import { ImageUpload } from "../../ImageUpload";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { QuizAction } from "./QuizAction";
 
 interface MessageActionsProps {
-  onListen?: (text: string) => void;
-  onQuizGenerated?: (quiz: any) => void;
   onPanelOpen?: () => void;
   messageText: string;
   onImageAnalyzed?: (response: string) => void;
+  onQuizGenerated?: (quiz: any) => void;
 }
 
 export const MessageActions: React.FC<MessageActionsProps> = ({ 
-  onListen, 
-  onQuizGenerated,
   onPanelOpen,
   messageText,
-  onImageAnalyzed
+  onImageAnalyzed,
+  onQuizGenerated
 }) => {
   console.log("MessageActions rendered with props:", { 
-    hasListenHandler: !!onListen,
-    hasQuizHandler: !!onQuizGenerated,
-    hasImageHandler: !!onImageAnalyzed
+    hasImageHandler: !!onImageAnalyzed,
+    hasQuizHandler: !!onQuizGenerated
   });
 
   return (
@@ -36,54 +33,51 @@ export const MessageActions: React.FC<MessageActionsProps> = ({
       transition={{ duration: 0.2, delay: 0.1 }}
     >
       <AnimatePresence mode="wait">
-        {/* Listen Icon */}
-        {onListen && (
-          <ActionIcon
-            key="listen"
-            icon={Volume2}
-            tooltip="Listen to this message!"
-            onClick={() => onListen(messageText)}
-            className="bg-gradient-to-br from-primary/20 to-secondary/20 hover:scale-110"
-          />
-        )}
-
-        {/* Image Generation Icon */}
-        <ImageAction key="image" messageText={messageText} />
-
-        {/* Quiz Icon */}
+        {/* Quiz Action */}
         {onQuizGenerated && (
-          <QuizAction
+          <QuizAction 
             key="quiz"
             onQuizGenerated={onQuizGenerated}
             messageText={messageText}
-            icon={BookOpen}
-            tooltip="Let's have a fun quiz to test what you've learned!"
-            className="bg-gradient-to-br from-accent/20 to-primary/20 hover:scale-110"
+            className="bg-gradient-to-br from-accent/20 to-primary/20"
           />
         )}
 
         {/* Image Upload Icon */}
         {onImageAnalyzed && (
           <ImageUpload onImageAnalyzed={onImageAnalyzed}>
-            <ActionIcon
+            <Button
               key="upload"
-              icon={Upload}
-              tooltip="Upload an image!"
-              onClick={() => {}}
-              className="bg-gradient-to-br from-primary/20 to-accent/20 hover:scale-110"
-            />
+              size="icon"
+              variant="ghost"
+              className={cn(
+                "relative p-2 rounded-full transition-all duration-300",
+                "hover:bg-white hover:scale-110 active:scale-95",
+                "focus:outline-none focus:ring-2 focus:ring-primary/20",
+                "bg-gradient-to-br from-primary/20 to-accent/20"
+              )}
+            >
+              <Upload className="w-4 h-4" />
+            </Button>
           </ImageUpload>
         )}
 
         {/* Trophy Icon */}
         {onPanelOpen && (
-          <ActionIcon
+          <Button
             key="trophy"
-            icon={Trophy}
-            tooltip="View your progress!"
+            size="icon"
+            variant="ghost"
             onClick={onPanelOpen}
-            className="bg-gradient-to-br from-accent/20 to-secondary/20 hover:scale-110"
-          />
+            className={cn(
+              "relative p-2 rounded-full transition-all duration-300",
+              "hover:bg-white hover:scale-110 active:scale-95",
+              "focus:outline-none focus:ring-2 focus:ring-primary/20",
+              "bg-gradient-to-br from-accent/20 to-secondary/20"
+            )}
+          >
+            <Trophy className="w-4 h-4" />
+          </Button>
         )}
       </AnimatePresence>
     </motion.div>
