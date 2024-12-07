@@ -38,7 +38,6 @@ export const TimeTracker = () => {
         const { data: weekData } = await supabase
           .from('learning_time')
           .select('minutes_spent')
-          .eq('user_id', user.id)
           .gte('date', weekAgo.toISOString().split('T')[0]);
 
         const todayMinutes = todayData?.minutes_spent || 0;
