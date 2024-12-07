@@ -24,7 +24,7 @@ export const QuizCard = ({ question, onAnswer }: QuizCardProps) => {
         particleCount: 150,
         spread: 80,
         origin: { y: 0.6 },
-        colors: ['#BFAAFF', '#38C9C9', '#FF6F61', '#FFDD57'],
+        colors: ['#9b87f5', '#33C3F0', '#FEC6A1', '#7E69AB'],
         ticks: 200,
         gravity: 0.8,
         scalar: 1.2,
@@ -40,11 +40,15 @@ export const QuizCard = ({ question, onAnswer }: QuizCardProps) => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      className="bg-gradient-to-br from-[#1A1F2C]/95 via-[#2A2F3C]/98 to-[#1A1F2C]/95 
-        rounded-xl p-6 shadow-lg space-y-4 border border-white/10 backdrop-blur-sm text-white"
+      className={cn(
+        "w-full max-w-2xl mx-auto",
+        "bg-gradient-to-br from-primary/95 to-secondary/95",
+        "rounded-xl p-4 sm:p-6 shadow-luxury space-y-4",
+        "border border-white/10 backdrop-blur-sm"
+      )}
     >
       <motion.h3 
-        className="text-lg font-semibold mb-4 text-white"
+        className="text-lg sm:text-xl font-semibold mb-4 text-white"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.2 }}
@@ -77,22 +81,12 @@ export const QuizCard = ({ question, onAnswer }: QuizCardProps) => {
                       "bg-gradient-to-r from-green-500/90 to-green-400/90 text-white border-white/20" :
                     showResult && isSelected ? 
                       "bg-gradient-to-r from-red-500/90 to-red-400/90 text-white border-white/20" :
-                    "bg-gradient-to-r from-[#2A2F3C]/80 to-[#1A1F2C]/90 text-white border-white/10 backdrop-blur-sm",
-                    "hover:shadow-lg focus:ring-2 focus:ring-primary/20 focus:outline-none"
+                    "bg-white/10 text-white border-white/10 backdrop-blur-sm hover:bg-white/20",
+                    "sm:text-base text-sm"
                   )}
                   onClick={() => !showCorrect && handleAnswerClick(index)}
                   disabled={showCorrect}
                 >
-                  <motion.div 
-                    className="absolute inset-0 bg-white/10"
-                    initial={false}
-                    animate={{
-                      scale: showResult && isCorrect ? [1, 1.5, 1] : 1,
-                      opacity: showResult && isCorrect ? [0, 0.2, 0] : 0
-                    }}
-                    transition={{ duration: 0.5, repeat: Infinity }}
-                  />
-                  
                   <span className="relative z-10 flex items-center gap-2">
                     <span className="text-sm font-medium">
                       {String.fromCharCode(65 + index)}.
@@ -126,10 +120,10 @@ export const QuizCard = ({ question, onAnswer }: QuizCardProps) => {
             animate={{ scale: 1 }}
             transition={{ type: "spring", stiffness: 200, damping: 15 }}
             className={cn(
-              "p-3 rounded-lg",
+              "p-3 rounded-lg text-sm sm:text-base",
               selectedAnswer === question.correctAnswer ?
-                "bg-gradient-to-r from-green-500/20 to-green-400/20 text-green-300" :
-                "bg-gradient-to-r from-primary/20 to-secondary/20 text-primary-foreground"
+                "bg-green-500/20 text-white" :
+                "bg-primary/20 text-white"
             )}
           >
             {selectedAnswer === question.correctAnswer ? (

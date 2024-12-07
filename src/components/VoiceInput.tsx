@@ -29,6 +29,7 @@ export const VoiceInput: React.FC<VoiceInputProps> = ({ onVoiceInput }) => {
             toast({
               title: "Listening...",
               description: "Speak clearly into your microphone",
+              className: "bg-primary text-white",
             });
           };
 
@@ -46,6 +47,7 @@ export const VoiceInput: React.FC<VoiceInputProps> = ({ onVoiceInput }) => {
             console.log('Transcript:', transcript);
             if (event.results[0].isFinal) {
               onVoiceInput(transcript);
+              recognition.stop();
             }
           };
 
@@ -103,9 +105,10 @@ export const VoiceInput: React.FC<VoiceInputProps> = ({ onVoiceInput }) => {
       <Button
         variant="outline"
         size="icon"
-        className={`relative ${
-          isListening ? "bg-primary text-white" : "hover:bg-primary/10"
-        }`}
+        className={cn(
+          "relative rounded-full transition-all duration-300",
+          isListening ? "bg-primary text-white" : "bg-white/80 hover:bg-primary/10"
+        )}
         onClick={toggleListening}
       >
         {isListening ? (
