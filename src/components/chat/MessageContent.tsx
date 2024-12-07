@@ -36,8 +36,11 @@ export const MessageContent = ({
       const lines = message.split("\n");
       let currentLineIndex = 0;
       let currentCharIndex = 0;
+      let isCompleting = false;
 
       const interval = setInterval(() => {
+        if (isCompleting) return;
+
         if (currentLineIndex < lines.length) {
           const currentLine = lines[currentLineIndex];
           
@@ -55,17 +58,20 @@ export const MessageContent = ({
 
           // Check if typing is complete
           if (currentLineIndex >= lines.length) {
+            isCompleting = true;
             clearInterval(interval);
-            // Add a small delay before calling onTypingComplete
-            setTimeout(() => onTypingComplete?.(), 500);
+            // Add a delay before marking as complete
+            setTimeout(() => {
+              console.log("Typing animation complete");
+              onTypingComplete?.();
+            }, 800);
           }
-        } else {
-          clearInterval(interval);
-          setTimeout(() => onTypingComplete?.(), 500);
         }
-      }, 30); // Slightly slower typing speed
+      }, 35); // Slightly slower typing speed for better readability
 
-      return () => clearInterval(interval);
+      return () => {
+        clearInterval(interval);
+      };
     } else {
       setDisplayedText(message);
       onTypingComplete?.();

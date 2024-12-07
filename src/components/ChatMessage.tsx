@@ -48,10 +48,16 @@ export const ChatMessage = ({
 
   // Handle typing completion
   const handleTypingComplete = () => {
-    console.log("Typing complete, showing blocks");
-    setIsTyping(false);
-    // Add longer delay before showing blocks
-    setTimeout(() => setShowBlocks(true), 1000);
+    console.log("Typing complete, preparing to show blocks");
+    // Use RAF to ensure smooth state transitions
+    requestAnimationFrame(() => {
+      setIsTyping(false);
+      // Add longer delay before showing blocks
+      setTimeout(() => {
+        console.log("Showing blocks now");
+        setShowBlocks(true);
+      }, 1500);
+    });
   };
 
   return (
@@ -96,7 +102,7 @@ export const ChatMessage = ({
             onQuizGenerated={onQuizGenerated}
             onPanelOpen={onPanelOpen}
             imageUrl={imageUrl}
-            showActions={showActions}
+            showActions={showActions && !isTyping}
             isTyping={isTyping}
             onTypingComplete={handleTypingComplete}
           />
