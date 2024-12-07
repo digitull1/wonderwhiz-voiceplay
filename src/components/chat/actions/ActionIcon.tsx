@@ -19,7 +19,7 @@ export const ActionIcon = ({
   isLoading,
   className 
 }: ActionIconProps) => {
-  console.log("ActionIcon rendered:", { icon: Icon.name, isLoading });
+  console.log("ActionIcon rendered:", { isLoading });
   
   return (
     <TooltipProvider>
