@@ -15,7 +15,7 @@ interface MessageContentProps {
   onTypingComplete?: () => void;
 }
 
-export const MessageContent = React.memo(({ 
+const MessageContentComponent = ({ 
   message, 
   isAi,
   onListen,
@@ -100,6 +100,7 @@ export const MessageContent = React.memo(({
       )}
     </div>
   );
-});
+};
 
+export const MessageContent = React.memo(MessageContentComponent);
 MessageContent.displayName = "MessageContent";

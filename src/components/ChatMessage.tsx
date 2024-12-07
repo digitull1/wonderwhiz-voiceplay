@@ -21,7 +21,7 @@ interface ChatMessageProps {
   messageIndex?: number;
 }
 
-export const ChatMessage = React.memo(({ 
+const ChatMessageComponent = ({ 
   isAi, 
   message, 
   onListen,
@@ -129,6 +129,7 @@ export const ChatMessage = React.memo(({
       </div>
     </motion.div>
   );
-});
+};
 
+export const ChatMessage = React.memo(ChatMessageComponent);
 ChatMessage.displayName = "ChatMessage";
