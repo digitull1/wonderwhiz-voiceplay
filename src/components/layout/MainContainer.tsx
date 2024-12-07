@@ -3,7 +3,6 @@ import { motion } from "framer-motion";
 import { ChatHeader } from "@/components/ChatHeader";
 import { ChatContainer } from "@/components/ChatContainer";
 import { ChatInput } from "@/components/ChatInput";
-import { BackgroundDecorations } from "./BackgroundDecorations";
 import { AuthForm } from "@/components/auth/AuthForm";
 
 interface MainContainerProps {
@@ -54,19 +53,17 @@ export const MainContainer: React.FC<MainContainerProps> = ({
 
   return (
     <motion.div 
-      className="min-h-screen gradient-bg flex flex-col relative overflow-hidden px-2 md:px-4"
+      className="min-h-screen w-full flex flex-col bg-white"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       role="main"
       aria-label="WonderWhiz Chat Interface"
     >
-      <div className="container max-w-5xl mx-auto py-4">
+      <div className="w-full h-full flex flex-col flex-1">
         <motion.div 
-          className="gradient-card rounded-3xl shadow-2xl p-4 h-[calc(100vh-2rem)] 
-            flex flex-col border border-white/50 relative overflow-hidden
-            focus-within:ring-2 focus-within:ring-primary/50 touch-pan-y
-            bg-gradient-to-br from-[#F4E7FE]/90 via-[#E8E8FF]/95 to-[#FFFFFF]/90"
+          className="flex-1 flex flex-col h-[calc(100vh-2rem)] relative overflow-hidden
+            focus-within:ring-2 focus-within:ring-primary/50 touch-pan-y"
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ 
