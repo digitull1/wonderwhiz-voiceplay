@@ -8,6 +8,7 @@ const corsHeaders = {
 
 const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
+// Helper function to get age-specific instructions
 function getAgeSpecificInstructions(ageGroup: string): string {
   const [minAge, maxAge] = ageGroup.split('-').map(Number);
   
@@ -103,6 +104,7 @@ serve(async (req) => {
       RULES:
       1. Each block must be EXACTLY ONE LINE and UNDER 70 CHARACTERS (including emoji)
       2. First 3 blocks MUST:
+         - Each explore a DIFFERENT aspect of the topic
          - Start with an exciting question or "Want to know..."
          - Include ONE fascinating fact with a silly comparison
          - End with ONE relevant emoji
@@ -120,9 +122,9 @@ serve(async (req) => {
          - Make it fun and exciting
          - End with 🎯 emoji
       5. MAINTAIN TOPIC RELEVANCE:
-         - Each block must naturally continue the current topic
-         - Focus on related subtopics
-         - Ensure logical connections between blocks
+         - Each block must explore a DIFFERENT aspect of the current topic
+         - Focus on related but distinct subtopics
+         - Ensure logical progression between blocks
       6. TONE & STYLE:
          - Match the age-specific tone perfectly
          - Use language appropriate for ${age_group} year olds
@@ -131,6 +133,13 @@ serve(async (req) => {
       7. NO undefined values or spelling mistakes allowed
       8. DO NOT include phrases like 'Click to explore more'
       9. ENSURE each block fits on ONE line and is UNDER 70 characters
+
+      Example for "Eiffel Tower in summer":
+      Block 1: "Ever wondered why the Eiffel Tower gets taller in summer? 🌡️"
+      Block 2: "Want to know how engineers measure the tower's height changes? 📏"
+      Block 3: "Did you know other buildings grow too? It's like a city yoga stretch! 🏙️"
+      Block 4: "Want to see a cool picture of the Eiffel Tower's summer growth? 🎨"
+      Block 5: "Ready to test your knowledge about expanding landmarks? 🎯"
 
       Format response as:
       {
