@@ -15,46 +15,59 @@ export const VoiceInput: React.FC<VoiceInputProps> = ({ onVoiceInput }) => {
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (SpeechRecognition) {
-        const recognition = new SpeechRecognition();
-        recognition.continuous = true;
-        recognition.interimResults = true;
-        recognition.lang = 'en-US';
+      try {
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (SpeechRecognition) {
+          const recognition = new SpeechRecognition();
+          recognition.continuous = true;
+          recognition.interimResults = true;
+          recognition.lang = 'en-US';
 
-        recognition.onstart = () => {
-          console.log('Speech recognition started');
-          setIsListening(true);
-        };
+          recognition.onstart = () => {
+            console.log('Speech recognition started');
+            setIsListening(true);
+            toast({
+              title: "Listening...",
+              description: "Speak clearly into your microphone",
+            });
+          };
 
-        recognition.onend = () => {
-          console.log('Speech recognition ended');
-          setIsListening(false);
-        };
+          recognition.onend = () => {
+            console.log('Speech recognition ended');
+            setIsListening(false);
+          };
 
-        recognition.onresult = (event) => {
-          const transcript = Array.from(event.results)
-            .map(result => result[0])
-            .map(result => result.transcript)
-            .join('');
+          recognition.onresult = (event) => {
+            const transcript = Array.from(event.results)
+              .map(result => result[0])
+              .map(result => result.transcript)
+              .join('');
 
-          console.log('Transcript:', transcript);
-          if (event.results[0].isFinal) {
-            onVoiceInput(transcript);
-          }
-        };
+            console.log('Transcript:', transcript);
+            if (event.results[0].isFinal) {
+              onVoiceInput(transcript);
+            }
+          };
 
-        recognition.onerror = (event) => {
-          console.error('Speech recognition error:', event.error);
-          toast({
-            title: "Oops!",
-            description: "There was an error with speech recognition. Please try again.",
-            variant: "destructive",
-          });
-          setIsListening(false);
-        };
+          recognition.onerror = (event) => {
+            console.error('Speech recognition error:', event.error);
+            toast({
+              title: "Oops!",
+              description: "There was an error with speech recognition. Please try again.",
+              variant: "destructive",
+            });
+            setIsListening(false);
+          };
 
-        setRecognition(recognition);
+          setRecognition(recognition);
+        }
+      } catch (error) {
+        console.error('Speech recognition initialization error:', error);
+        toast({
+          title: "Speech Recognition Not Available",
+          description: "Your browser doesn't support speech recognition.",
+          variant: "destructive",
+        });
       }
     }
   }, [onVoiceInput, toast]);
@@ -72,11 +85,16 @@ export const VoiceInput: React.FC<VoiceInputProps> = ({ onVoiceInput }) => {
     if (isListening) {
       recognition.stop();
     } else {
-      recognition.start();
-      toast({
-        title: "Listening...",
-        description: "Speak clearly into your microphone",
-      });
+      try {
+        recognition.start();
+      } catch (error) {
+        console.error('Error starting recognition:', error);
+        toast({
+          title: "Error",
+          description: "Failed to start speech recognition. Please try again.",
+          variant: "destructive",
+        });
+      }
     }
   };
 
