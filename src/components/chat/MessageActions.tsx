@@ -1,10 +1,10 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Trophy, Upload } from "lucide-react";
-import { ImageUpload } from "../../ImageUpload";
+import { ImageUpload } from "@/components/ImageUpload";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { QuizAction } from "./QuizAction";
+import { QuizAction } from "./actions/QuizAction";
 
 interface MessageActionsProps {
   onPanelOpen?: () => void;
