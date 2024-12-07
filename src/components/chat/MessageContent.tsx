@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Volume2 } from "lucide-react";
@@ -29,10 +29,12 @@ export const MessageContent = ({
 }: MessageContentProps) => {
   const [displayedText, setDisplayedText] = React.useState("");
   const [isTyping, setIsTyping] = React.useState(false);
+  const [showBlocks, setShowBlocks] = React.useState(false);
 
   React.useEffect(() => {
     if (isAi && message) {
       setIsTyping(true);
+      setShowBlocks(false);
       setDisplayedText("");
       
       let currentText = "";
@@ -46,6 +48,7 @@ export const MessageContent = ({
           currentIndex++;
         } else {
           setIsTyping(false);
+          setShowBlocks(true);
           clearInterval(interval);
         }
       }, 100);
@@ -54,6 +57,7 @@ export const MessageContent = ({
     } else {
       setDisplayedText(message);
       setIsTyping(false);
+      setShowBlocks(true);
     }
   }, [message, isAi]);
 
@@ -93,7 +97,7 @@ export const MessageContent = ({
         </motion.div>
       )}
       
-      {isAi && showActions && (
+      {isAi && showActions && !isTyping && showBlocks && (
         <div className="flex items-center gap-2 mt-3">
           <ActionIcon
             icon={Volume2}

@@ -4,7 +4,6 @@ import { cn } from "@/lib/utils";
 import { Block, QuizState } from "@/types/chat";
 import { RelatedBlocks } from "./chat/RelatedBlocks";
 import { MessageContent } from "./chat/MessageContent";
-import { LoaderCircle } from "lucide-react";
 import { QuizCard } from "./quiz/QuizCard";
 
 interface ChatMessageProps {
@@ -36,8 +35,17 @@ export const ChatMessage = ({
   onQuizAnswer,
   messageIndex = 0
 }: ChatMessageProps) => {
-  // Only show action buttons after the first two AI messages
+  const [showBlocks, setShowBlocks] = React.useState(false);
   const showActions = !isAi || messageIndex > 3;
+
+  React.useEffect(() => {
+    if (!isTyping && isAi) {
+      const timer = setTimeout(() => {
+        setShowBlocks(true);
+      }, 500); // Small delay after typing finishes
+      return () => clearTimeout(timer);
+    }
+  }, [isTyping, isAi]);
 
   return (
     <motion.div 
@@ -55,17 +63,6 @@ export const ChatMessage = ({
         "px-3 sm:px-4 md:px-6",
         isAi ? "py-4 sm:py-6" : "py-3 sm:py-4"
       )}>
-        {isAi && isTyping && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="flex items-center gap-2 text-white/80 text-sm px-2"
-          >
-            <LoaderCircle className="w-4 h-4 animate-spin" />
-            <span>Wonderwhiz is typing...</span>
-          </motion.div>
-        )}
-
         <motion.div
           className={cn(
             "relative flex-1 w-full",
@@ -84,14 +81,11 @@ export const ChatMessage = ({
           />
           
           {isAi && blocks && blocks.length > 0 && onBlockClick && (
-            <motion.div 
-              className="mt-4 relative z-10 w-full"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-            >
-              <RelatedBlocks blocks={blocks} onBlockClick={onBlockClick} />
-            </motion.div>
+            <RelatedBlocks 
+              blocks={blocks} 
+              onBlockClick={onBlockClick} 
+              show={showBlocks}
+            />
           )}
 
           {isAi && quizState?.isActive && quizState.currentQuestion && onQuizAnswer && (
