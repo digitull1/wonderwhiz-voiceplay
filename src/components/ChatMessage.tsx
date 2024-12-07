@@ -44,7 +44,7 @@ export const ChatMessage = ({
           }
           return prev + 1;
         });
-      }, 100); // Adjust speed here
+      }, 50); // Faster typing speed
 
       return () => clearInterval(typingInterval);
     } else {
@@ -72,15 +72,10 @@ export const ChatMessage = ({
         "flex mb-4 px-4",
         isAi ? "justify-start" : "justify-end"
       )}
-      initial={{ opacity: 0, y: 20 }}
+      initial={{ opacity: 0, y: 5 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
-      transition={{ 
-        duration: 0.3,
-        type: "spring",
-        stiffness: 500,
-        damping: 25
-      }}
+      exit={{ opacity: 0, y: -5 }}
+      transition={{ duration: 0.2 }}
     >
       <div className={cn(
         "flex items-start gap-3 max-w-[85%] group",
@@ -101,17 +96,17 @@ export const ChatMessage = ({
           className={cn(
             "relative p-4 rounded-2xl shadow-luxury backdrop-blur-xl",
             isAi ? 
-              "message-bubble-ai rounded-tl-sm bg-chat-ai" : 
+              "message-bubble-ai rounded-tl-sm text-white" : 
               "message-bubble-user rounded-tr-sm"
           )}
           layout
         >
           <p className="text-[15px] leading-relaxed tracking-wide font-medium
-            text-gray-800 whitespace-pre-wrap relative z-10">
+            whitespace-pre-wrap relative z-10">
             {words.slice(0, currentWordIndex + 1).join(' ')}
             {isAi && !isTypingComplete && (
               <motion.span
-                className="inline-block w-1.5 h-4 bg-primary ml-0.5"
+                className="inline-block w-1.5 h-4 bg-white ml-0.5"
                 animate={{ opacity: [1, 0] }}
                 transition={{ duration: 0.5, repeat: Infinity }}
               />
@@ -122,7 +117,7 @@ export const ChatMessage = ({
             <motion.button
               onClick={handleListen}
               className="absolute top-3 right-3 opacity-70 hover:opacity-100 
-                cursor-pointer transition-all p-1.5 rounded-full hover:bg-white/50
+                cursor-pointer transition-all p-1.5 rounded-full hover:bg-white/20
                 active:scale-95 z-20"
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.95 }}

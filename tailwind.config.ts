@@ -70,9 +70,9 @@ export default {
         'cta': '18px',
       },
       backgroundImage: {
-        'gradient-luxury': 'linear-gradient(135deg, #D3C8F0 0%, #A0CFEF 100%)',
+        'gradient-luxury': 'linear-gradient(135deg, #007AFF 0%, #5856D6 100%)',
         'gradient-card': 'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.85) 100%)',
-        'gradient-block': 'linear-gradient(135deg, rgba(211,200,240,0.95) 0%, rgba(160,207,239,0.95) 100%)',
+        'gradient-block': 'linear-gradient(135deg, rgba(0,122,255,0.95) 0%, rgba(88,86,214,0.95) 100%)',
         'stars': 'url("/stars-pattern.svg")',
       },
       keyframes: {
@@ -95,7 +95,7 @@ export default {
           '100%': { width: '100%' },
         },
         'fade-in': {
-          '0%': { opacity: '0', transform: 'translateY(10px)' },
+          '0%': { opacity: '0', transform: 'translateY(5px)' },
           '100%': { opacity: '1', transform: 'translateY(0)' },
         },
       },
@@ -104,7 +104,7 @@ export default {
         'pulse-soft': 'pulse-soft 3s ease-in-out infinite',
         'sparkle': 'sparkle 1.5s ease-in-out infinite',
         'typing': 'typing 3s steps(40, end)',
-        'fade-in': 'fade-in 0.3s ease-out',
+        'fade-in': 'fade-in 0.2s ease-out',
       },
       boxShadow: {
         'luxury': '0 8px 32px -4px rgba(0, 0, 0, 0.1)',
