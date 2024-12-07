@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { Loader2 } from "lucide-react";
 import { ActionIcon } from "./ActionIcon";
 import { LucideIcon } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface QuizActionProps {
   onQuizGenerated: (quiz: any) => void;
@@ -17,27 +19,34 @@ export const QuizAction = ({
   tooltip
 }: QuizActionProps) => {
   const [isGenerating, setIsGenerating] = useState(false);
+  const { toast } = useToast();
 
   const handleQuizGeneration = async () => {
     setIsGenerating(true);
     try {
       console.log('Generating quiz for:', messageText);
-      const response = await fetch('/api/generate-quiz', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ topic: messageText }),
+      const { data, error } = await supabase.functions.invoke('generate-quiz', {
+        body: { topic: messageText }
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to generate quiz');
-      }
+      if (error) throw error;
+      console.log('Quiz response:', data);
 
-      const data = await response.json();
-      onQuizGenerated(data.question);
+      if (data?.question) {
+        onQuizGenerated(data.question);
+        toast({
+          title: "Quiz time! 🎯",
+          description: "Let's test your knowledge!",
+          className: "bg-primary text-white"
+        });
+      }
     } catch (error) {
       console.error('Error generating quiz:', error);
+      toast({
+        title: "Oops!",
+        description: "Couldn't generate a quiz right now. Try again!",
+        variant: "destructive"
+      });
     } finally {
       setIsGenerating(false);
     }
