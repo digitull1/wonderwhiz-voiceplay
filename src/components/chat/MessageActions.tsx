@@ -57,7 +57,6 @@ export const MessageActions = ({
         <QuizAction
           onQuizGenerated={onQuizGenerated}
           messageText="" // Add the required messageText prop
-          className="bg-gradient-to-br from-orange-500/5 to-red-500/5"
         />
       )}
     </div>
