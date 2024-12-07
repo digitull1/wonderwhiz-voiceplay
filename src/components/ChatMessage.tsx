@@ -6,7 +6,7 @@ import { ChatAvatar } from "./chat/ChatAvatar";
 import { MessageActions } from "./chat/MessageActions";
 import { RelatedBlocks } from "./chat/RelatedBlocks";
 import { ImageGenerator } from "./ImageGenerator";
-import { Sparkles, Speaker } from "lucide-react";
+import { Speaker } from "lucide-react";
 
 interface ChatMessageProps {
   isAi?: boolean;

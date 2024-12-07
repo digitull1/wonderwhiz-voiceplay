@@ -76,34 +76,31 @@ export const useBlockInteractions = (
     
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        console.error('No authenticated user found');
-        return;
-      }
-
+      
       setCurrentTopic(topic);
       updateBlocksExplored(topic);
       
-      await Promise.all([
-        trackLearningTime(user.id),
-        trackExploredTopic(user.id, topic),
-        updateUserProgress(10)
-      ]);
+      // Track progress only if user is authenticated
+      if (user) {
+        await Promise.all([
+          trackLearningTime(user.id),
+          trackExploredTopic(user.id, topic),
+          updateUserProgress(10)
+        ]);
+        
+        toast({
+          title: "Great exploring! 🚀",
+          description: "You've earned points for your curiosity!",
+          className: "bg-secondary text-white",
+        });
+      }
       
-      toast({
-        title: "Great exploring! 🚀",
-        description: "You've earned points for your curiosity!",
-        className: "bg-secondary text-white",
-      });
-      
+      // Always send the message, even for unauthenticated users
       await sendMessage(`Tell me about "${block?.title || 'this topic'}"`, true);
     } catch (error) {
       console.error('Error in handleBlockClick:', error);
-      toast({
-        title: "Oops!",
-        description: "Something went wrong. Please try again!",
-        variant: "destructive"
-      });
+      // Still allow content generation even if tracking fails
+      await sendMessage(`Tell me about "${block?.title || 'this topic'}"`, true);
     }
   };
 

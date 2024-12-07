@@ -40,10 +40,13 @@ export const ChatContainer = ({
                           (messages.length > 0 && messages[messages.length - 1].isAi);
       
       if (shouldScroll) {
-        messagesEndRef.current.scrollIntoView({ 
-          behavior: "smooth",
-          block: "end"
-        });
+        // Add a small delay to ensure content is rendered
+        setTimeout(() => {
+          messagesEndRef.current?.scrollIntoView({ 
+            behavior: "smooth",
+            block: "end"
+          });
+        }, 100);
       }
     }
   };
