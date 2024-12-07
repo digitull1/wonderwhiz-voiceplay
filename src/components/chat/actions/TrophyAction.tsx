@@ -10,13 +10,14 @@ interface TrophyActionProps {
 export const TrophyAction = ({ onPanelOpen }: TrophyActionProps) => {
   const { toast } = useToast();
 
-  const handlePanelOpen = () => {
+  const handleClick = () => {
     if (onPanelOpen) {
+      console.log('Opening progress panel...');
       onPanelOpen();
       toast({
         title: "Progress Panel",
         description: "Check out your learning journey!",
-        className: "bg-primary text-white"
+        className: "bg-primary text-white",
       });
     } else {
       console.error('onPanelOpen callback is not defined');
@@ -27,7 +28,7 @@ export const TrophyAction = ({ onPanelOpen }: TrophyActionProps) => {
     <ActionIcon
       icon={Trophy}
       tooltip="See your progress!"
-      onClick={handlePanelOpen}
+      onClick={handleClick}
       className="bg-gradient-to-br from-purple-500/20 to-pink-500/20 text-white"
     />
   );

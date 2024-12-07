@@ -50,7 +50,6 @@
   width: 100%;
   max-width: 100%;
   margin: 0;
-  padding: 1.5rem;
   background: linear-gradient(
     135deg,
     rgba(155, 135, 245, 0.98) 0%,
@@ -66,7 +65,6 @@
   width: 100%;
   max-width: 100%;
   margin: 0;
-  padding: 1.5rem;
   background: linear-gradient(
     135deg,
     rgba(245, 245, 247, 0.98) 0%,
@@ -85,16 +83,25 @@
   
   .message-bubble-ai,
   .message-bubble-user {
-    padding: 1rem;
+    padding: 0.75rem;
   }
 
   .block-hover {
     width: 100% !important;
     max-width: 100% !important;
+    transform: none !important;
+  }
+  
+  .blocks-container {
+    padding: 0 0.5rem;
+  }
+  
+  .block-card {
+    width: 100% !important;
+    min-width: 100% !important;
   }
 }
 
-/* Enhanced Post-Chat Actions */
 .post-chat-actions {
   @apply flex items-center justify-start gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 mt-1;
   background: linear-gradient(
@@ -153,22 +160,6 @@
 .block-hover:hover {
   transform: translateY(-5px) rotateX(2deg);
   box-shadow: 0 8px 30px rgba(0,0,0,0.1);
-}
-
-/* Mobile Optimizations */
-@media (max-width: 640px) {
-  .chat-container {
-    margin-bottom: env(safe-area-inset-bottom);
-  }
-  
-  .message-bubble-ai,
-  .message-bubble-user {
-    padding: 1rem;
-  }
-
-  .post-chat-actions {
-    @apply px-2 py-1;
-  }
 }
 
 /* Hide scrollbar but keep functionality */

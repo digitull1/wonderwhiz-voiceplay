@@ -2,6 +2,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Block } from "@/types/chat";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 interface EnhancedBlockCardProps {
   block: Block;
@@ -14,6 +15,8 @@ export const EnhancedBlockCard = ({
   index, 
   onClick 
 }: EnhancedBlockCardProps) => {
+  const isMobile = useIsMobile();
+  
   const getBlockGradient = () => {
     const gradients = [
       "from-block-purple to-block-blue",
@@ -29,16 +32,18 @@ export const EnhancedBlockCard = ({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
       transition={{ delay: index * 0.1 }}
-      whileHover={{ scale: 1.02, y: -5 }}
+      whileHover={!isMobile ? { scale: 1.02, y: -5 } : {}}
       whileTap={{ scale: 0.98 }}
       onClick={onClick}
       className={cn(
-        "group flex flex-col justify-between w-full min-h-[140px] p-5",
-        "rounded-2xl transition-all duration-300",
+        "group flex flex-col justify-between w-full",
+        "min-h-[120px] p-4 sm:p-5",
+        "rounded-xl transition-all duration-300",
         "relative overflow-hidden text-white",
         "shadow-block hover:shadow-xl border border-white/20",
         "bg-gradient-to-br cursor-pointer",
-        getBlockGradient()
+        getBlockGradient(),
+        isMobile && "text-left"
       )}
     >
       <div className="flex flex-col gap-2 relative z-10">
@@ -46,14 +51,8 @@ export const EnhancedBlockCard = ({
           tracking-tight break-words text-left max-w-full">
           {block.title}
         </h3>
-        {block.description && !block.description.includes("Click to explore") && (
-          <p className="text-block-desc opacity-90 font-medium line-clamp-2">
-            {block.description}
-          </p>
-        )}
       </div>
 
-      {/* Interactive background elements */}
       <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent 
         opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
       

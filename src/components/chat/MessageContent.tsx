@@ -1,7 +1,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { Volume2, Image, BookOpen, Trophy } from "lucide-react";
+import { Volume2 } from "lucide-react";
 import { ActionIcon } from "./actions/ActionIcon";
 import { GeneratedImage } from "../image/GeneratedImage";
 import { ImageAction } from "./actions/ImageAction";
@@ -28,7 +28,7 @@ export const MessageContent = ({
   return (
     <motion.div 
       className={cn(
-        "relative p-4 rounded-lg w-full",
+        "relative p-3 sm:p-4 rounded-lg w-full",
         isAi ? "message-bubble-ai" : "message-bubble-user"
       )}
       layout
@@ -39,7 +39,7 @@ export const MessageContent = ({
 
       {imageUrl && (
         <motion.div 
-          className="mt-4"
+          className="mt-4 w-full"
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.2 }}
@@ -49,7 +49,7 @@ export const MessageContent = ({
       )}
       
       {isAi && (
-        <div className="flex items-center gap-1.5 mt-3">
+        <div className="flex items-center gap-2 mt-3">
           <ActionIcon
             icon={Volume2}
             tooltip="Listen to message"
