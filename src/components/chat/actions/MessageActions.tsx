@@ -1,6 +1,6 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ImageIcon, Trophy, Upload } from "lucide-react";
+import { Trophy, Upload } from "lucide-react";
 import { ActionIcon } from "./ActionIcon";
 import { ImageAction } from "./ImageAction";
 import { ImageUpload } from "../../ImageUpload";
@@ -9,15 +9,18 @@ interface MessageActionsProps {
   onPanelOpen?: () => void;
   messageText: string;
   onImageAnalyzed?: (response: string) => void;
+  onQuizGenerated?: (quiz: any) => void;
 }
 
 export const MessageActions: React.FC<MessageActionsProps> = ({ 
   onPanelOpen,
   messageText,
-  onImageAnalyzed
+  onImageAnalyzed,
+  onQuizGenerated
 }) => {
   console.log("MessageActions rendered with props:", { 
-    hasImageHandler: !!onImageAnalyzed
+    hasImageHandler: !!onImageAnalyzed,
+    hasQuizHandler: !!onQuizGenerated
   });
 
   return (
