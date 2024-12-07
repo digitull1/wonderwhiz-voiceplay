@@ -2,6 +2,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { Block } from "@/types/chat";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { cn } from "@/lib/utils";  // Add this import
 
 interface BlockCardProps {
   block: Block;
