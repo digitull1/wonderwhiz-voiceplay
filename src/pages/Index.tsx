@@ -54,6 +54,7 @@ const Index = () => {
             sendMessage={sendMessage}
             handleImageAnalysis={handleImageAnalysis}
             isAuthenticated={isAuthenticated}
+            userProgress={userProgress}
           />
         </TooltipProvider>
       </motion.div>
