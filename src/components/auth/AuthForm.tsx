@@ -1,11 +1,15 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-export const AuthForm = () => {
+interface AuthFormProps {
+  onComplete?: () => void;
+}
+
+export const AuthForm = ({ onComplete }: AuthFormProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const [formData, setFormData] = useState({
@@ -20,6 +24,7 @@ export const AuthForm = () => {
     setIsLoading(true);
 
     try {
+      // Try to sign up first
       const { error: signUpError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
@@ -34,17 +39,22 @@ export const AuthForm = () => {
       if (signUpError) {
         // If rate limit error, try to sign in instead
         if (signUpError.status === 429) {
+          console.log('Rate limit reached, trying sign in instead');
           const { error: signInError } = await supabase.auth.signInWithPassword({
             email: formData.email,
             password: formData.password,
           });
           
-          if (signInError) throw signInError;
+          if (signInError) {
+            console.error('Sign in error:', signInError);
+            throw signInError;
+          }
           
           toast({
             title: "Welcome back! 👋",
             description: "Successfully signed in to your account.",
           });
+          onComplete?.();
           return;
         }
         throw signUpError;
@@ -54,6 +64,7 @@ export const AuthForm = () => {
         title: "Welcome to WonderWhiz! 🌟",
         description: "Your account has been created successfully.",
       });
+      onComplete?.();
     } catch (error: any) {
       console.error("Auth error:", error);
       toast({
