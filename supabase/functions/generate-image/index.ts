@@ -57,7 +57,8 @@ serve(async (req) => {
     }
 
     // Format the prompt to be more kid-friendly and educational
-    const formattedPrompt = `Create a child-friendly, educational illustration of: ${prompt}. Make it colorful, safe, and suitable for children. Style: cute, cartoon-like, educational.`;
+    // Also limit the length to avoid OpenAI API issues
+    const formattedPrompt = `Create a child-friendly, educational illustration of: ${prompt.slice(0, 200)}. Make it colorful, safe, and suitable for children. Style: cute, cartoon-like, educational.`.slice(0, 500);
     console.log('Formatted prompt:', formattedPrompt);
 
     const openaiKey = Deno.env.get("OPENAI_API_KEY");
