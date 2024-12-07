@@ -8,6 +8,7 @@ import { useImageAnalysis } from "./useImageAnalysis";
 import { useQuiz } from "./useQuiz";
 import { useBlockInteractions } from "./useBlockInteractions";
 import { useAuth } from "./useAuth";
+import { supabase } from "@/integrations/supabase/client";
 
 export const useChat = () => {
   const [messages, setMessages] = useState<Message[]>([
@@ -19,13 +20,83 @@ export const useChat = () => {
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [tempUserId, setTempUserId] = useState<string | null>(null);
   
   const { toast } = useToast();
-  const { isAuthenticated, tempUserId } = useAuth();
+  const { isAuthenticated } = useAuth();
   const { userProgress, updateUserProgress } = useUserProgress(tempUserId);
   const { generateDynamicBlocks } = useBlockGeneration();
   const { handleImageAnalysis, isAnalyzing } = useImageAnalysis();
   const { quizState, handleQuizAnswer, updateBlocksExplored } = useQuiz(updateUserProgress);
+
+  useEffect(() => {
+    const initializeAuth = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        if (!user) {
+          // Try to sign in with stored credentials first
+          const storedEmail = localStorage.getItem('anonymousEmail');
+          const storedPassword = localStorage.getItem('anonymousPassword');
+          
+          if (storedEmail && storedPassword) {
+            const { data, error } = await supabase.auth.signInWithPassword({
+              email: storedEmail,
+              password: storedPassword
+            });
+            
+            if (!error && data.user) {
+              console.log('Signed in with stored anonymous account');
+              return;
+            }
+          }
+          
+          // If no stored credentials or sign in failed, create new account
+          try {
+            const email = `${crypto.randomUUID()}@anonymous.wonderwhiz.com`;
+            const password = crypto.randomUUID();
+            
+            const { data, error } = await supabase.auth.signUp({
+              email,
+              password,
+            });
+            
+            if (error) {
+              if (error.status === 429) {
+                console.log('Rate limit reached, using local storage temporarily');
+                const tempId = crypto.randomUUID();
+                setTempUserId(tempId);
+                localStorage.setItem('tempUserId', tempId);
+              } else {
+                throw error;
+              }
+            } else {
+              // Store credentials for future sessions
+              localStorage.setItem('anonymousEmail', email);
+              localStorage.setItem('anonymousPassword', password);
+              console.log('Anonymous signup successful');
+            }
+          } catch (signUpError: any) {
+            console.error('Error in anonymous signup:', signUpError);
+            // Fallback to temporary ID if signup fails
+            const tempId = crypto.randomUUID();
+            setTempUserId(tempId);
+            localStorage.setItem('tempUserId', tempId);
+            
+            toast({
+              title: "Notice",
+              description: "Using temporary mode. Your progress will be saved locally.",
+              variant: "default"
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Error in initializeAuth:', error);
+      }
+    };
+
+    initializeAuth();
+  }, [toast]);
 
   const sendMessage = async (messageText: string, skipUserMessage: boolean = false) => {
     if (!messageText.trim() || isLoading) return;
