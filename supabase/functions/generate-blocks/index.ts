@@ -36,8 +36,21 @@ serve(async (req) => {
     const { query, context, age_group } = await req.json();
     console.log("Generating blocks for:", { query, context, age_group });
 
+    const ageSpecificInstructions = `
+      For ${age_group} year olds:
+      - Use simple, clear language they can understand
+      - Include relatable examples from their daily life
+      - Make comparisons to things they know (toys, games, school)
+      - Keep explanations brief but engaging
+      - Use a friendly, encouraging tone
+      - Include fun facts that spark curiosity
+      - Avoid complex terminology unless explained simply
+    `;
+
     const prompt = `
       Based on "${query}" and topic "${context}", generate 5 engaging, educational blocks following these guidelines:
+      
+      ${ageSpecificInstructions}
       
       RULES:
       1. Each block must be EXACTLY ONE LINE and UNDER 70 CHARACTERS (including emoji)
