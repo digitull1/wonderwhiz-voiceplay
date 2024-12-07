@@ -27,7 +27,7 @@ export const BlocksNavigation = ({
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: -20 }}
-          className="absolute left-0 top-1/2 -translate-y-1/2 z-10"
+          className="absolute left-0 top-1/2 -translate-y-1/2 z-10 hidden md:block"
         >
           <Button
             variant="ghost"
@@ -49,7 +49,7 @@ export const BlocksNavigation = ({
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
           exit={{ opacity: 0, x: 20 }}
-          className="absolute right-0 top-1/2 -translate-y-1/2 z-10"
+          className="absolute right-0 top-1/2 -translate-y-1/2 z-10 hidden md:block"
         >
           <Button
             variant="ghost"

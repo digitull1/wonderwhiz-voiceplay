@@ -39,6 +39,7 @@ export const TopicBlocks: React.FC<TopicBlocksProps> = ({
   const fetchDynamicBlocks = async (query: string, topicContext: string) => {
     setIsLoading(true);
     try {
+      console.log('Fetching blocks for:', { query, topicContext, depth });
       const { data, error } = await supabase.functions.invoke('generate-blocks', {
         body: {
           query,
@@ -50,6 +51,7 @@ export const TopicBlocks: React.FC<TopicBlocksProps> = ({
 
       if (error) throw error;
 
+      console.log('Received blocks data:', data);
       const parsedData = typeof data.choices[0].message.content === 'string' 
         ? JSON.parse(data.choices[0].message.content) 
         : data.choices[0].message.content;
@@ -83,6 +85,7 @@ export const TopicBlocks: React.FC<TopicBlocksProps> = ({
   };
 
   const handleBlockClick = async (block: Block) => {
+    console.log('Block clicked:', block);
     onTopicSelect(block.metadata.topic);
     setDepth(prev => prev + 1);
     
@@ -97,6 +100,7 @@ export const TopicBlocks: React.FC<TopicBlocksProps> = ({
 
   useEffect(() => {
     if (lastMessage) {
+      console.log('Fetching blocks for last message:', lastMessage);
       fetchDynamicBlocks(lastMessage, currentTopic);
     }
   }, [lastMessage, currentTopic]);

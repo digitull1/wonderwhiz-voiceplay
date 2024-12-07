@@ -14,42 +14,60 @@ export const useBlockInteractions = (
   const trackLearningTime = async (userId: string) => {
     const today = new Date().toISOString().split('T')[0];
     
-    const { data: existingTime } = await supabase
+    const { data: existingTime, error: fetchError } = await supabase
       .from('learning_time')
       .select('*')
       .eq('date', today)
       .eq('user_id', userId)
       .single();
 
+    if (fetchError && fetchError.code !== 'PGRST116') {
+      console.error('Error fetching learning time:', fetchError);
+      return;
+    }
+
     if (existingTime) {
-      await supabase
+      const { error: updateError } = await supabase
         .from('learning_time')
         .update({ 
           minutes_spent: (existingTime.minutes_spent || 0) + 1 
         })
         .eq('id', existingTime.id);
+
+      if (updateError) {
+        console.error('Error updating learning time:', updateError);
+      }
     } else {
-      await supabase
+      const { error: insertError } = await supabase
         .from('learning_time')
         .insert([{ 
           minutes_spent: 1,
           date: today,
           user_id: userId
         }]);
+
+      if (insertError) {
+        console.error('Error inserting learning time:', insertError);
+      }
     }
   };
 
   const trackExploredTopic = async (userId: string, topic: string) => {
-    await supabase
+    const { error } = await supabase
       .from('explored_topics')
       .upsert({
         user_id: userId,
         topic: topic,
         emoji: '🌟',
-        last_explored_at: new Date().toISOString()
+        last_explored_at: new Date().toISOString(),
+        time_spent: 1
       }, {
         onConflict: 'user_id,topic'
       });
+
+    if (error) {
+      console.error('Error tracking explored topic:', error);
+    }
   };
 
   const handleBlockClick = async (block: Block) => {
@@ -74,7 +92,7 @@ export const useBlockInteractions = (
       
       toast({
         title: "Great exploring! 🚀",
-        description: "You've earned 10 points for your curiosity!",
+        description: "You've earned points for your curiosity!",
         className: "bg-secondary text-white",
       });
       
