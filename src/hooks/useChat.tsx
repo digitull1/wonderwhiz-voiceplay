@@ -52,7 +52,7 @@ export const useChat = () => {
     setIsLoading(true);
 
     try {
-      const blocks = await generateDynamicBlocks(message, currentTopic);
+      const blocks = await generateDynamicBlocks(message, currentTopic || "general");
       setMessages(prev => [...prev, {
         text: message,
         isAi: true,
