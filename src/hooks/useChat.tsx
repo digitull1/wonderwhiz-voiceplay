@@ -103,7 +103,13 @@ export const useChat = () => {
         setUserAge(age);
         const blocks = await generateDynamicBlocks("Welcome topics for kids", "general");
         setMessages(prev => [...prev, {
-          text: `Awesome! ${age} is a perfect age for amazing discoveries! 🌟 I've got some mind-blowing facts that will blow your socks off! Check these out and click on what interests you the most! 🚀`,
+          text: `Awesome! ${age} is a perfect age for amazing discoveries! 🌟 Let me show you what we can do together:
+
+📸 You can share pictures of your homework or anything you're curious about
+✨ I can create magical pictures to help you learn
+🧠 We'll have fun quizzes to test what you've learned
+
+I've got some mind-blowing facts that will blow your socks off! Check these out and click on what interests you the most! 🚀`,
           isAi: true,
           blocks
         }]);

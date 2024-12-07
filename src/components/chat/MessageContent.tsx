@@ -6,7 +6,7 @@ import { ActionIcon } from "./actions/ActionIcon";
 import { GeneratedImage } from "../image/GeneratedImage";
 import { ImageAction } from "./actions/ImageAction";
 import { QuizAction } from "./actions/QuizAction";
-import { TrophyAction } from "./actions/TrophyAction";
+import { MessageActions } from "./MessageActions";
 
 interface MessageContentProps {
   message: string;
@@ -27,11 +27,11 @@ export const MessageContent = ({
   imageUrl,
   showActions = true
 }: MessageContentProps) => {
-  const [displayedText, setDisplayedText] = React.useState("");
-  const [isTyping, setIsTyping] = React.useState(false);
-  const [showBlocks, setShowBlocks] = React.useState(false);
+  const [displayedText, setDisplayedText] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
+  const [showBlocks, setShowBlocks] = useState(false);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (isAi && message) {
       setIsTyping(true);
       setShowBlocks(false);
@@ -48,7 +48,8 @@ export const MessageContent = ({
           currentIndex++;
         } else {
           setIsTyping(false);
-          setShowBlocks(true);
+          // Only show blocks after typing is complete
+          setTimeout(() => setShowBlocks(true), 500);
           clearInterval(interval);
         }
       }, 100);
@@ -98,17 +99,11 @@ export const MessageContent = ({
       )}
       
       {isAi && showActions && !isTyping && showBlocks && (
-        <div className="flex items-center gap-2 mt-3">
-          <ActionIcon
-            icon={Volume2}
-            tooltip="Listen to message"
-            onClick={() => onListen?.(message)}
-            className="bg-gradient-to-br from-blue-500/20 to-purple-500/20 text-white"
-          />
-          <ImageAction messageText={message} />
-          <QuizAction messageText={message} onQuizGenerated={onQuizGenerated} />
-          <TrophyAction onPanelOpen={onPanelOpen} />
-        </div>
+        <MessageActions
+          onListen={() => onListen?.(message)}
+          onQuizGenerated={onQuizGenerated}
+          messageText={message}
+        />
       )}
     </motion.div>
   );
