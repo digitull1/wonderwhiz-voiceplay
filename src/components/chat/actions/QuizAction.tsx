@@ -1,64 +1,55 @@
 import React, { useState } from "react";
-import { Loader2 } from "lucide-react";
-import { ActionIcon } from "./ActionIcon";
 import { LucideIcon } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { ActionIcon } from "./ActionIcon";
 
 interface QuizActionProps {
   onQuizGenerated: (quiz: any) => void;
   messageText: string;
   icon: LucideIcon;
   tooltip: string;
+  className?: string;
 }
 
-export const QuizAction = ({ 
+export const QuizAction: React.FC<QuizActionProps> = ({ 
   onQuizGenerated, 
-  messageText,
+  messageText, 
   icon,
-  tooltip
-}: QuizActionProps) => {
-  const [isGenerating, setIsGenerating] = useState(false);
-  const { toast } = useToast();
+  tooltip,
+  className 
+}) => {
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleQuizGeneration = async () => {
-    setIsGenerating(true);
+    setIsLoading(true);
     try {
-      console.log('Generating quiz for:', messageText);
-      const { data, error } = await supabase.functions.invoke('generate-quiz', {
-        body: { topic: messageText }
+      const response = await fetch('/api/generate-quiz', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ message: messageText }),
       });
 
-      if (error) throw error;
-      console.log('Quiz response:', data);
-
-      if (data?.question) {
-        onQuizGenerated(data.question);
-        toast({
-          title: "Quiz time! 🎯",
-          description: "Let's test your knowledge!",
-          className: "bg-primary text-white"
-        });
+      if (!response.ok) {
+        throw new Error('Failed to generate quiz');
       }
+
+      const quiz = await response.json();
+      onQuizGenerated(quiz);
     } catch (error) {
       console.error('Error generating quiz:', error);
-      toast({
-        title: "Oops!",
-        description: "Couldn't generate a quiz right now. Try again!",
-        variant: "destructive"
-      });
     } finally {
-      setIsGenerating(false);
+      setIsLoading(false);
     }
   };
 
   return (
     <ActionIcon
-      icon={isGenerating ? Loader2 : icon}
+      icon={icon}
       tooltip={tooltip}
       onClick={handleQuizGeneration}
-      isLoading={isGenerating}
-      className="bg-gradient-to-br from-yellow-500/5 to-orange-500/5"
+      isLoading={isLoading}
+      className={className}
     />
   );
 };
