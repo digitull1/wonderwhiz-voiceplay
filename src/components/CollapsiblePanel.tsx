@@ -20,6 +20,8 @@ interface CollapsiblePanelProps {
     level: number;
     streak_days: number;
   };
+  role?: string;
+  "aria-label"?: string;
 }
 
 interface ExploredTopic {
@@ -28,7 +30,11 @@ interface ExploredTopic {
   last_explored_at: string;
 }
 
-export const CollapsiblePanel = ({ userProgress }: CollapsiblePanelProps) => {
+export const CollapsiblePanel = ({ 
+  userProgress, 
+  role,
+  "aria-label": ariaLabel 
+}: CollapsiblePanelProps) => {
   const [recentTopics, setRecentTopics] = useState<ExploredTopic[]>([]);
   const [timeSpent, setTimeSpent] = useState({
     today: 0,
@@ -91,7 +97,11 @@ export const CollapsiblePanel = ({ userProgress }: CollapsiblePanelProps) => {
           <Star className="w-6 h-6 text-primary" />
         </motion.button>
       </SheetTrigger>
-      <SheetContent className="w-[90vw] sm:w-[400px] bg-gradient-to-br from-purple-50 to-blue-50">
+      <SheetContent 
+        className="w-[90vw] sm:w-[400px] bg-gradient-to-br from-purple-50 to-blue-50"
+        role={role}
+        aria-label={ariaLabel}
+      >
         <SheetHeader>
           <SheetTitle className="text-2xl font-bold text-primary">
             Your Progress
