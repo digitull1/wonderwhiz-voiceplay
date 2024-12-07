@@ -34,26 +34,29 @@ export const useChat = () => {
     const checkAuth = async () => {
       const { data: { user } } = await supabase.auth.getUser();
       console.log('Auth check - User:', user);
-      setIsAuthenticated(!!user);
       
       if (!user) {
-        // Automatically sign in as anonymous user
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email: 'demo@wonderwhiz.com',
-          password: 'demo123'
+        console.log('No user found, signing in anonymously...');
+        // Sign in anonymously
+        const { data, error } = await supabase.auth.signUp({
+          email: `${crypto.randomUUID()}@anonymous.wonderwhiz.com`,
+          password: crypto.randomUUID(),
         });
         
         if (error) {
-          console.error('Error signing in:', error);
+          console.error('Error signing in anonymously:', error);
           toast({
             title: "Authentication Error",
             description: "There was an issue signing you in. Some features might be limited.",
             variant: "destructive"
           });
         } else {
-          console.log('Signed in successfully:', data);
+          console.log('Signed in anonymously successfully:', data);
           setIsAuthenticated(true);
         }
+      } else {
+        console.log('User already authenticated:', user);
+        setIsAuthenticated(true);
       }
     };
 
