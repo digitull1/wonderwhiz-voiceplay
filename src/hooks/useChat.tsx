@@ -1,179 +1,85 @@
-import { useState, useEffect } from "react";
-import { getGroqResponse } from "@/utils/groq";
-import { useToast } from "@/hooks/use-toast";
-import { Message } from "@/types/chat";
+import { useState, useCallback } from "react";
+import { useQuiz } from "./useQuiz";
 import { useUserProgress } from "./useUserProgress";
+import { Block } from "@/types/chat";
 import { useBlockGeneration } from "./useBlockGeneration";
 import { useImageAnalysis } from "./useImageAnalysis";
-import { useQuiz } from "./useQuiz";
-import { useBlockInteractions } from "./useBlockInteractions";
 import { useAuth } from "./useAuth";
-import { supabase } from "@/integrations/supabase/client";
 
 export const useChat = () => {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      text: "Hi there! 👋 I'm Wonder Whiz, your learning buddy! What's your name? 🌟",
-      isAi: true,
-      blocks: []
-    },
-  ]);
+  const [messages, setMessages] = useState<any[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [userAge, setUserAge] = useState<number | null>(null);
-  
-  const { toast } = useToast();
-  const { isAuthenticated, tempUserId } = useAuth();
-  const { userProgress, updateUserProgress } = useUserProgress(tempUserId || "temp");
-  const { generateDynamicBlocks } = useBlockGeneration();
-  const { handleImageAnalysis, isAnalyzing } = useImageAnalysis();
-  const { quizState, handleQuizAnswer, updateBlocksExplored } = useQuiz({
-    updateProgress: updateUserProgress
-  });
+  const [currentTopic, setCurrentTopic] = useState("");
+  const { user } = useAuth();
+  const { userProgress, updateUserProgress } = useUserProgress();
+  const { quizState, handleQuizAnswer } = useQuiz({ updateUserProgress });
+  const { generateBlocks } = useBlockGeneration();
+  const { analyzeImage } = useImageAnalysis();
 
-  const sendMessage = async (messageText: string, skipUserMessage: boolean = false) => {
-    if (!messageText.trim() || isLoading) return;
+  const handleListen = useCallback((text: string) => {
+    const utterance = new SpeechSynthesisUtterance(text);
+    window.speechSynthesis.speak(utterance);
+  }, []);
+
+  const handleBlockClick = useCallback(async (block: Block) => {
+    setCurrentTopic(block.metadata.topic);
+    setMessages(prev => [...prev, {
+      text: `Tell me about ${block.title}`,
+      isAi: false
+    }]);
     
-    if (!skipUserMessage) {
-      setMessages(prev => [...prev, { text: messageText, isAi: false }]);
-    }
-    setInput("");
     setIsLoading(true);
-
     try {
-      // Handle name input
-      if (messages.length === 1) {
-        setMessages(prev => [
-          ...prev,
-          { 
-            text: `Nice to meet you, ${messageText}! How old are you? This helps me make everything just right for you! 🎯`, 
-            isAi: true,
-            blocks: []
-          }
-        ]);
-        setIsLoading(false);
-        return;
-      }
-
-      // Handle age input
-      if (messages.length === 3) {
-        const age = parseInt(messageText);
-        if (isNaN(age) || age < 4 || age > 12) {
-          setMessages(prev => [
-            ...prev,
-            { 
-              text: "Oops! Please tell me your age as a number between 4 and 12! 🎈", 
-              isAi: true,
-              blocks: []
-            }
-          ]);
-          setIsLoading(false);
-          return;
-        }
-        setUserAge(age);
-        const previousMessages = messages.slice(-3).map(m => m.text).join(" ");
-        const response = await getGroqResponse(
-          `As a friendly AI tutor talking to a ${age} year old child, respond to: ${messageText}`,
-          100
-        );
-        
-        const blocks = await generateDynamicBlocks(response, "space", previousMessages);
-        
-        setMessages(prev => [
-          ...prev,
-          { 
-            text: `Wow! ${age} is a perfect age for amazing discoveries! 🌟 I've got some mind-blowing facts that will blow your socks off! Check these out and click on what interests you the most! 🚀`,
-            isAi: true,
-            blocks
-          }
-        ]);
-        
-        if (isAuthenticated) {
-          await updateUserProgress(10);
-        }
-        
-        setIsLoading(false);
-        return;
-      }
-
-      const previousMessages = messages.slice(-3).map(m => m.text).join(" ");
-      const ageContext = userAge ? `As a friendly AI tutor talking to a ${userAge} year old child, ` : "";
-      const response = await getGroqResponse(ageContext + messageText, 100);
-      
-      const blocks = await generateDynamicBlocks(response, "space", previousMessages);
-      
-      setMessages(prev => [...prev, { 
-        text: response, 
-        isAi: true, 
-        blocks 
+      const response = await generateBlocks(block.title, block.metadata.topic);
+      setMessages(prev => [...prev, {
+        text: response.message,
+        isAi: true,
+        blocks: response.blocks
       }]);
-      
-      if (isAuthenticated) {
-        await updateUserProgress(5);
-      }
-      
-    } catch (error: any) {
-      console.error('Error in sendMessage:', error);
-      setMessages(prev => [
-        ...prev,
-        { 
-          text: "Oops! I had a little hiccup. Let's try that again! 🎈", 
-          isAi: true, 
-          blocks: [] 
-        }
-      ]);
-      
-      toast({
-        title: "Oops!",
-        description: error.message || "Something went wrong. Let's try that again!",
-        variant: "destructive",
-      });
+    } catch (error) {
+      console.error('Error handling block click:', error);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [generateBlocks]);
 
-  const handleListen = (text: string) => {
-    if (!text) return;
-    
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.rate = 0.9;
-    utterance.pitch = 1.1;
-    
-    window.speechSynthesis.cancel();
-    window.speechSynthesis.speak(utterance);
-    
-    toast({
-      title: "🎙️ Speaking...",
-      description: "Click again to stop",
-    });
-  };
+  const sendMessage = useCallback(async (message: string) => {
+    if (!message.trim() || isLoading) return;
 
-  const handleImageUploadSuccess = async (response: string) => {
-    if (response) {
-      if (isAuthenticated) {
-        await updateUserProgress(15);
-        
-        toast({
-          title: "Image analyzed! 🎨",
-          description: "You've earned 15 points for sharing an image!",
-          className: "bg-accent text-white",
-        });
-      }
-      
-      setMessages(prev => [...prev, { 
-        text: response, 
+    setInput("");
+    setMessages(prev => [...prev, { text: message, isAi: false }]);
+    setIsLoading(true);
+
+    try {
+      const response = await generateBlocks(message, currentTopic);
+      setMessages(prev => [...prev, {
+        text: response.message,
         isAi: true,
-        blocks: [] 
+        blocks: response.blocks
       }]);
+    } catch (error) {
+      console.error('Error sending message:', error);
+    } finally {
+      setIsLoading(false);
     }
-  };
+  }, [currentTopic, generateBlocks, isLoading]);
 
-  const { currentTopic, handleBlockClick } = useBlockInteractions(
-    updateUserProgress,
-    updateBlocksExplored,
-    sendMessage
-  );
+  const handleImageAnalysis = useCallback(async (imageData: string) => {
+    setIsLoading(true);
+    try {
+      const response = await analyzeImage(imageData);
+      setMessages(prev => [...prev, {
+        text: response.message,
+        isAi: true,
+        blocks: response.blocks
+      }]);
+    } catch (error) {
+      console.error('Error analyzing image:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, [analyzeImage]);
 
   return {
     messages,
@@ -187,8 +93,7 @@ export const useChat = () => {
     handleQuizAnswer,
     quizState,
     sendMessage,
-    handleImageAnalysis: handleImageUploadSuccess,
-    isAnalyzing,
-    isAuthenticated
+    handleImageAnalysis,
+    isAuthenticated: !!user
   };
 };
