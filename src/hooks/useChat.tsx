@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { getGroqResponse } from "@/utils/groq";
 import { useToast } from "@/hooks/use-toast";
-import { Message, Block } from "@/types/chat";
+import { Message } from "@/types/chat";
 import { useUserProgress } from "./useUserProgress";
 import { useBlockGeneration } from "./useBlockGeneration";
 import { useImageAnalysis } from "./useImageAnalysis";
@@ -20,10 +20,9 @@ export const useChat = () => {
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [tempUserId, setTempUserId] = useState<string | null>(null);
   
   const { toast } = useToast();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, tempUserId } = useAuth();
   const { userProgress, updateUserProgress } = useUserProgress(tempUserId);
   const { generateDynamicBlocks } = useBlockGeneration();
   const { handleImageAnalysis, isAnalyzing } = useImageAnalysis();
@@ -82,12 +81,6 @@ export const useChat = () => {
             const tempId = crypto.randomUUID();
             setTempUserId(tempId);
             localStorage.setItem('tempUserId', tempId);
-            
-            toast({
-              title: "Notice",
-              description: "Using temporary mode. Your progress will be saved locally.",
-              variant: "default"
-            });
           }
         }
       } catch (error) {

@@ -4,6 +4,7 @@ import { useToast } from "@/components/ui/use-toast";
 
 export const useAuth = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [tempUserId, setTempUserId] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
@@ -13,9 +14,9 @@ export const useAuth = () => {
         console.log('Auth check - User:', user);
         
         if (!user) {
-          console.log('No user found, signing in anonymously...');
+          console.log('No user found, trying stored credentials...');
           try {
-            // Try to sign in with a stored anonymous account first
+            // Try to sign in with stored credentials first
             const storedEmail = localStorage.getItem('anonymousEmail');
             const storedPassword = localStorage.getItem('anonymousPassword');
             
@@ -32,7 +33,7 @@ export const useAuth = () => {
               }
             }
             
-            // If no stored account or sign in failed, create a new one
+            // If no stored credentials or sign in failed, create new account
             const email = `${crypto.randomUUID()}@anonymous.wonderwhiz.com`;
             const password = crypto.randomUUID();
             
@@ -43,9 +44,15 @@ export const useAuth = () => {
             
             if (error) {
               if (error.status === 429) {
-                console.error('Rate limit reached, using local storage only temporarily');
-                // Store temporary user ID in localStorage
-                localStorage.setItem('tempUserId', crypto.randomUUID());
+                console.log('Rate limit reached, using local storage only');
+                const tempId = localStorage.getItem('tempUserId') || crypto.randomUUID();
+                setTempUserId(tempId);
+                localStorage.setItem('tempUserId', tempId);
+                toast({
+                  title: "Notice",
+                  description: "Using temporary mode. Your progress will be saved locally.",
+                  variant: "default"
+                });
                 return;
               }
               throw error;
@@ -54,16 +61,14 @@ export const useAuth = () => {
             // Store credentials for future sessions
             localStorage.setItem('anonymousEmail', email);
             localStorage.setItem('anonymousPassword', password);
-            
-            console.log('Signed up anonymously successfully:', data);
+            console.log('Anonymous signup successful');
             setIsAuthenticated(true);
           } catch (signUpError) {
-            console.error('Error signing up anonymously:', signUpError);
-            toast({
-              title: "Authentication Notice",
-              description: "Using temporary mode. Your progress will be saved when connection is restored.",
-              variant: "default"
-            });
+            console.error('Error in anonymous auth:', signUpError);
+            // Fallback to temporary ID
+            const tempId = localStorage.getItem('tempUserId') || crypto.randomUUID();
+            setTempUserId(tempId);
+            localStorage.setItem('tempUserId', tempId);
           }
         } else {
           console.log('User already authenticated:', user);
@@ -71,6 +76,9 @@ export const useAuth = () => {
         }
       } catch (error) {
         console.error('Error in checkAuth:', error);
+        const tempId = localStorage.getItem('tempUserId') || crypto.randomUUID();
+        setTempUserId(tempId);
+        localStorage.setItem('tempUserId', tempId);
         toast({
           title: "Authentication Notice",
           description: "Some features might be limited. Don't worry, we'll keep trying to connect!",
@@ -84,6 +92,6 @@ export const useAuth = () => {
 
   return { 
     isAuthenticated,
-    tempUserId: localStorage.getItem('tempUserId') 
+    tempUserId 
   };
 };
