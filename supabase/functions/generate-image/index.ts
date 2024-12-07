@@ -6,7 +6,6 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
@@ -14,7 +13,6 @@ serve(async (req) => {
   try {
     console.log('Starting image generation request');
     
-    // Parse and validate request body
     let body;
     try {
       const text = await req.text();
@@ -53,9 +51,10 @@ serve(async (req) => {
       );
     }
 
-    console.log('Processing prompt:', prompt);
+    // Format the prompt to be more kid-friendly and educational
+    const formattedPrompt = `Create a child-friendly, educational illustration of: ${prompt}. Make it colorful, safe, and suitable for children. Style: cute, cartoon-like, educational.`;
+    console.log('Formatted prompt:', formattedPrompt);
 
-    // Check if we have the OpenAI API key
     const openaiKey = Deno.env.get("OPENAI_API_KEY");
     if (!openaiKey) {
       console.error('OpenAI API key not found');
@@ -72,7 +71,6 @@ serve(async (req) => {
       );
     }
 
-    // Call OpenAI API
     console.log('Calling OpenAI DALL-E 3 API');
     const openaiResponse = await fetch('https://api.openai.com/v1/images/generations', {
       method: 'POST',
@@ -82,17 +80,34 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         model: "dall-e-3",
-        prompt: prompt,
+        prompt: formattedPrompt,
         n: 1,
         size: "1024x1024",
         quality: "standard",
-        response_format: "b64_json"
+        response_format: "b64_json",
+        style: "natural"
       })
     });
 
     if (!openaiResponse.ok) {
       const error = await openaiResponse.json();
       console.error('OpenAI API Error:', error);
+      
+      // Handle specific OpenAI errors
+      if (error.error?.code === 'content_policy_violation') {
+        return new Response(
+          JSON.stringify({
+            error: 'Content policy violation',
+            details: 'The prompt contains inappropriate content. Please try a different prompt.',
+            success: false
+          }),
+          { 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 400
+          }
+        );
+      }
+      
       throw new Error(error.error?.message || 'Failed to generate image');
     }
 
