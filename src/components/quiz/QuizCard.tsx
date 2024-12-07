@@ -40,11 +40,11 @@ export const QuizCard = ({ question, onAnswer }: QuizCardProps) => {
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
-      className="bg-gradient-to-br from-[#F4E7FE]/90 via-[#E8E8FF]/95 to-[#FFFFFF]/90 
-        rounded-xl p-6 shadow-lg space-y-4 border border-white/20 backdrop-blur-sm"
+      className="bg-gradient-to-br from-[#1A1F2C]/95 via-[#2A2F3C]/98 to-[#1A1F2C]/95 
+        rounded-xl p-6 shadow-lg space-y-4 border border-white/10 backdrop-blur-sm text-white"
     >
       <motion.h3 
-        className="text-lg font-semibold mb-4"
+        className="text-lg font-semibold mb-4 text-white"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.2 }}
@@ -77,14 +77,14 @@ export const QuizCard = ({ question, onAnswer }: QuizCardProps) => {
                       "bg-gradient-to-r from-green-500/90 to-green-400/90 text-white border-white/20" :
                     showResult && isSelected ? 
                       "bg-gradient-to-r from-red-500/90 to-red-400/90 text-white border-white/20" :
-                    "bg-gradient-to-r from-white/80 to-white/90 border-white/20 backdrop-blur-sm",
+                    "bg-gradient-to-r from-[#2A2F3C]/80 to-[#1A1F2C]/90 text-white border-white/10 backdrop-blur-sm",
                     "hover:shadow-lg focus:ring-2 focus:ring-primary/20 focus:outline-none"
                   )}
                   onClick={() => !showCorrect && handleAnswerClick(index)}
                   disabled={showCorrect}
                 >
                   <motion.div 
-                    className="absolute inset-0 bg-white/20"
+                    className="absolute inset-0 bg-white/10"
                     initial={false}
                     animate={{
                       scale: showResult && isCorrect ? [1, 1.5, 1] : 1,
@@ -128,8 +128,8 @@ export const QuizCard = ({ question, onAnswer }: QuizCardProps) => {
             className={cn(
               "p-3 rounded-lg",
               selectedAnswer === question.correctAnswer ?
-                "bg-gradient-to-r from-green-500/20 to-green-400/20 text-green-700" :
-                "bg-gradient-to-r from-primary/20 to-secondary/20 text-primary"
+                "bg-gradient-to-r from-green-500/20 to-green-400/20 text-green-300" :
+                "bg-gradient-to-r from-primary/20 to-secondary/20 text-primary-foreground"
             )}
           >
             {selectedAnswer === question.correctAnswer ? (
