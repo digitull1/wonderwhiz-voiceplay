@@ -38,7 +38,7 @@ export const useUserProgress = () => {
           setUserProgress(initialProgress);
         }
 
-        // Subscribe to changes
+        // Subscribe to changes with a unique channel name per user
         const channel = supabase
           .channel(`user_progress_${user.id}`)
           .on(
@@ -66,11 +66,16 @@ export const useUserProgress = () => {
         };
       } catch (error) {
         console.error('Error in setupSubscription:', error);
+        toast({
+          title: "Error",
+          description: "Failed to track progress updates",
+          variant: "destructive"
+        });
       }
     };
 
     setupSubscription();
-  }, []);
+  }, [toast]);
 
   const updateUserProgress = async (pointsToAdd: number): Promise<void> => {
     try {
@@ -93,18 +98,13 @@ export const useUserProgress = () => {
         throw fetchError;
       }
 
-      if (!currentProgress) {
-        console.log('No current progress found');
-        return;
-      }
-
-      const newPoints = currentProgress.points + pointsToAdd;
-      console.log('Calculating new points:', currentProgress.points, '+', pointsToAdd, '=', newPoints);
+      const newPoints = (currentProgress?.points || 0) + pointsToAdd;
+      console.log('Calculating new points:', currentProgress?.points, '+', pointsToAdd, '=', newPoints);
       
       // Calculate points needed for next level
       const { data: pointsData } = await supabase
         .rpc('calculate_next_level_points', {
-          current_level: currentProgress.level
+          current_level: currentProgress?.level || 1
         }) as { data: number | null };
 
       const pointsNeeded = pointsData ?? 100; // Fallback to 100 if null
@@ -112,16 +112,16 @@ export const useUserProgress = () => {
 
       // Check if user should level up
       const shouldLevelUp = newPoints >= pointsNeeded;
-      const newLevel = shouldLevelUp ? currentProgress.level + 1 : currentProgress.level;
+      const newLevel = shouldLevelUp ? (currentProgress?.level || 1) + 1 : (currentProgress?.level || 1);
 
       const { data, error: updateError } = await supabase
         .from('user_progress')
-        .update({ 
+        .upsert({ 
+          user_id: user.id,
           points: newPoints,
           level: newLevel,
           last_interaction_date: new Date().toISOString()
         })
-        .eq('user_id', user.id)
         .select()
         .single();
 
@@ -145,7 +145,7 @@ export const useUserProgress = () => {
           const remainingPoints = pointsNeeded - newPoints;
           toast({
             title: "⭐ Points earned!",
-            description: `+${pointsToAdd} points! ${remainingPoints} more to level ${currentProgress.level + 1}!`,
+            description: `+${pointsToAdd} points! ${remainingPoints} more to level ${currentProgress?.level + 1}!`,
             className: "bg-gradient-to-r from-secondary to-green-500 text-white",
           });
         }

@@ -1,14 +1,13 @@
 import { useState, useEffect } from "react";
 import { getGroqResponse } from "@/utils/groq";
 import { useToast } from "@/hooks/use-toast";
-import { Message, UserProfile, Block } from "@/types/chat";
-import { handleNameInput, handleAgeInput } from "@/utils/profileUtils";
+import { Message, Block } from "@/types/chat";
 import { useUserProgress } from "./useUserProgress";
 import { useBlockGeneration } from "./useBlockGeneration";
 import { useImageAnalysis } from "./useImageAnalysis";
 import { useQuiz } from "./useQuiz";
 import { useBlockInteractions } from "./useBlockInteractions";
-import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "./useAuth";
 
 export const useChat = () => {
   const [messages, setMessages] = useState<Message[]>([
@@ -20,128 +19,17 @@ export const useChat = () => {
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
   
   const { toast } = useToast();
+  const { isAuthenticated } = useAuth();
   const { userProgress, updateUserProgress } = useUserProgress();
-  const { generateDynamicBlocks } = useBlockGeneration(userProfile);
+  const { generateDynamicBlocks } = useBlockGeneration();
   const { handleImageAnalysis, isAnalyzing } = useImageAnalysis();
   const { quizState, handleQuizAnswer, updateBlocksExplored } = useQuiz(updateUserProgress);
-
-  // Check authentication status
-  useEffect(() => {
-    const checkAuth = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      console.log('Auth check - User:', user);
-      
-      if (!user) {
-        console.log('No user found, signing in anonymously...');
-        // Sign in anonymously
-        const { data, error } = await supabase.auth.signUp({
-          email: `${crypto.randomUUID()}@anonymous.wonderwhiz.com`,
-          password: crypto.randomUUID(),
-        });
-        
-        if (error) {
-          console.error('Error signing in anonymously:', error);
-          toast({
-            title: "Authentication Error",
-            description: "There was an issue signing you in. Some features might be limited.",
-            variant: "destructive"
-          });
-        } else {
-          console.log('Signed in anonymously successfully:', data);
-          setIsAuthenticated(true);
-        }
-      } else {
-        console.log('User already authenticated:', user);
-        setIsAuthenticated(true);
-      }
-    };
-
-    checkAuth();
-  }, [toast]);
-
-  // Track learning time
-  useEffect(() => {
-    const trackLearningTime = async () => {
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
-          console.log('No user found for learning time tracking');
-          return;
-        }
-
-        const interval = setInterval(async () => {
-          const today = new Date().toISOString().split('T')[0];
-          
-          const { data: existingTime, error: fetchError } = await supabase
-            .from('learning_time')
-            .select('*')
-            .eq('date', today)
-            .eq('user_id', user.id)
-            .single();
-
-          if (fetchError && fetchError.code !== 'PGRST116') {
-            console.error('Error fetching learning time:', fetchError);
-            return;
-          }
-
-          const { error: upsertError } = await supabase
-            .from('learning_time')
-            .upsert([
-              {
-                user_id: user.id,
-                date: today,
-                minutes_spent: (existingTime?.minutes_spent || 0) + 1
-              }
-            ]);
-
-          if (upsertError) {
-            console.error('Error updating learning time:', upsertError);
-          }
-        }, 60000); // Update every minute
-
-        return () => clearInterval(interval);
-      } catch (error) {
-        console.error('Error in learning time tracking:', error);
-      }
-    };
-
-    if (isAuthenticated) {
-      trackLearningTime();
-    }
-  }, [isAuthenticated]);
-
-  const handleListen = (text: string) => {
-    console.log('Speaking text:', text);
-    const utterance = new SpeechSynthesisUtterance(text);
-    window.speechSynthesis.speak(utterance);
-  };
 
   const sendMessage = async (messageText: string, skipUserMessage: boolean = false) => {
     if (!messageText.trim() || isLoading) return;
     
-    if (!userProfile?.name) {
-      handleNameInput(messageText, setUserProfile, setMessages);
-      return;
-    }
-
-    if (!userProfile?.age) {
-      const age = parseInt(messageText);
-      if (isNaN(age) || age < 5 || age > 16) {
-        setMessages(prev => [
-          ...prev,
-          { text: messageText, isAi: false },
-          { text: "Please enter a valid age between 5 and 16! 🎈", isAi: true, blocks: [] }
-        ]);
-        return;
-      }
-      await handleAgeInput(age, setUserProfile, setMessages, updateUserProgress);
-      return;
-    }
-
     if (!skipUserMessage) {
       setMessages(prev => [...prev, { text: messageText, isAi: false }]);
     }
@@ -150,7 +38,7 @@ export const useChat = () => {
 
     try {
       const previousMessages = messages.slice(-3).map(m => m.text).join(" ");
-      const response = await getGroqResponse(messageText, 100); // Limit to 100 words
+      const response = await getGroqResponse(messageText, 100);
       console.log('Received response:', response);
       
       const blocks = await generateDynamicBlocks(response, currentTopic, previousMessages);
@@ -163,14 +51,7 @@ export const useChat = () => {
       }]);
       
       if (isAuthenticated) {
-        // Award points for engaging in conversation
         await updateUserProgress(5);
-        
-        toast({
-          title: "Points Earned! ⭐",
-          description: "You've earned 5 points for exploring and learning!",
-          className: "bg-primary text-white",
-        });
       }
       
     } catch (error: any) {
@@ -194,16 +75,15 @@ export const useChat = () => {
     }
   };
 
-  const { currentTopic, handleBlockClick } = useBlockInteractions(
-    updateUserProgress,
-    updateBlocksExplored,
-    sendMessage
-  );
+  const handleListen = (text: string) => {
+    console.log('Speaking text:', text);
+    const utterance = new SpeechSynthesisUtterance(text);
+    window.speechSynthesis.speak(utterance);
+  };
 
   const handleImageUploadSuccess = async (response: string) => {
     if (response) {
       if (isAuthenticated) {
-        // Award points for sharing an image
         await updateUserProgress(15);
         
         toast({
@@ -220,6 +100,12 @@ export const useChat = () => {
       }]);
     }
   };
+
+  const { currentTopic, handleBlockClick } = useBlockInteractions(
+    updateUserProgress,
+    updateBlocksExplored,
+    sendMessage
+  );
 
   return {
     messages,
