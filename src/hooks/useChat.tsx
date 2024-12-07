@@ -21,8 +21,8 @@ export const useChat = () => {
   const [isLoading, setIsLoading] = useState(false);
   
   const { toast } = useToast();
-  const { isAuthenticated } = useAuth();
-  const { userProgress, updateUserProgress } = useUserProgress();
+  const { isAuthenticated, tempUserId } = useAuth();
+  const { userProgress, updateUserProgress } = useUserProgress(tempUserId);
   const { generateDynamicBlocks } = useBlockGeneration();
   const { handleImageAnalysis, isAnalyzing } = useImageAnalysis();
   const { quizState, handleQuizAnswer, updateBlocksExplored } = useQuiz(updateUserProgress);
@@ -41,7 +41,7 @@ export const useChat = () => {
       const response = await getGroqResponse(messageText, 100);
       console.log('Received response:', response);
       
-      const blocks = await generateDynamicBlocks(response, currentTopic, previousMessages);
+      const blocks = await generateDynamicBlocks(response, "space", previousMessages);
       console.log('Generated blocks:', blocks);
       
       setMessages(prev => [...prev, { 
@@ -50,7 +50,7 @@ export const useChat = () => {
         blocks 
       }]);
       
-      if (isAuthenticated) {
+      if (isAuthenticated || tempUserId) {
         await updateUserProgress(5);
       }
       
@@ -83,7 +83,7 @@ export const useChat = () => {
 
   const handleImageUploadSuccess = async (response: string) => {
     if (response) {
-      if (isAuthenticated) {
+      if (isAuthenticated || tempUserId) {
         await updateUserProgress(15);
         
         toast({

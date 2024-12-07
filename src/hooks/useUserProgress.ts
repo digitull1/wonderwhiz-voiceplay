@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 import { UserProgress } from "@/types/chat";
 
-export const useUserProgress = () => {
+export const useUserProgress = (tempUserId?: string | null) => {
   const { toast } = useToast();
   const [userProgress, setUserProgress] = useState<UserProgress>({
     points: 0,
@@ -16,12 +16,21 @@ export const useUserProgress = () => {
     const setupSubscription = async () => {
       try {
         const { data: { user } } = await supabase.auth.getUser();
-        if (!user) {
+        if (!user && !tempUserId) {
           console.log('No user found for progress tracking');
           return;
         }
 
-        // Initial fetch
+        if (tempUserId) {
+          // Use local storage for temporary progress tracking
+          const storedProgress = localStorage.getItem(`progress_${tempUserId}`);
+          if (storedProgress) {
+            setUserProgress(JSON.parse(storedProgress));
+          }
+          return;
+        }
+
+        // Initial fetch from Supabase
         const { data: initialProgress, error: fetchError } = await supabase
           .from('user_progress')
           .select('*')
@@ -38,7 +47,7 @@ export const useUserProgress = () => {
           setUserProgress(initialProgress);
         }
 
-        // Subscribe to changes with a unique channel name per user
+        // Subscribe to changes
         const channel = supabase
           .channel(`user_progress_${user.id}`)
           .on(
@@ -75,18 +84,32 @@ export const useUserProgress = () => {
     };
 
     setupSubscription();
-  }, [toast]);
+  }, [toast, tempUserId]);
 
   const updateUserProgress = async (pointsToAdd: number): Promise<void> => {
     try {
       console.log('Updating user progress with points:', pointsToAdd);
+      
+      if (tempUserId) {
+        // Update progress in local storage for temporary users
+        const newPoints = userProgress.points + pointsToAdd;
+        const newProgress = {
+          ...userProgress,
+          points: newPoints,
+          last_interaction_date: new Date().toISOString()
+        };
+        localStorage.setItem(`progress_${tempUserId}`, JSON.stringify(newProgress));
+        setUserProgress(newProgress);
+        return;
+      }
+
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         console.log('No user found');
         return;
       }
 
-      // First, get current progress
+      // Update progress in Supabase for authenticated users
       const { data: currentProgress, error: fetchError } = await supabase
         .from('user_progress')
         .select('*')
@@ -101,16 +124,14 @@ export const useUserProgress = () => {
       const newPoints = (currentProgress?.points || 0) + pointsToAdd;
       console.log('Calculating new points:', currentProgress?.points, '+', pointsToAdd, '=', newPoints);
       
-      // Calculate points needed for next level
       const { data: pointsData } = await supabase
         .rpc('calculate_next_level_points', {
           current_level: currentProgress?.level || 1
         }) as { data: number | null };
 
-      const pointsNeeded = pointsData ?? 100; // Fallback to 100 if null
+      const pointsNeeded = pointsData ?? 100;
       console.log('Points needed for next level:', pointsNeeded);
 
-      // Check if user should level up
       const shouldLevelUp = newPoints >= pointsNeeded;
       const newLevel = shouldLevelUp ? (currentProgress?.level || 1) + 1 : (currentProgress?.level || 1);
 
