@@ -13,6 +13,7 @@ import { TimeTracker } from "./panel/TimeTracker";
 import { RecentTopics } from "./panel/RecentTopics";
 import { ProgressCard } from "./panel/ProgressCard";
 import { TalkToWizzy } from "./panel/TalkToWizzy";
+import { useToast } from "./ui/use-toast";
 
 interface CollapsiblePanelProps {
   userProgress: {
@@ -40,50 +41,96 @@ export const CollapsiblePanel = ({
     today: 0,
     week: 0,
   });
+  const { toast } = useToast();
 
   useEffect(() => {
-    fetchRecentTopics();
-    fetchLearningTime();
-  }, []);
+    const fetchUserData = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          console.log('No authenticated user found');
+          return;
+        }
 
-  const fetchRecentTopics = async () => {
-    const { data, error } = await supabase
-      .from('explored_topics')
-      .select('topic, emoji, last_explored_at')
-      .order('last_explored_at', { ascending: false })
-      .limit(3);
+        // Fetch recent topics
+        const { data: topicsData, error: topicsError } = await supabase
+          .from('explored_topics')
+          .select('topic, emoji, last_explored_at')
+          .eq('user_id', user.id)
+          .order('last_explored_at', { ascending: false })
+          .limit(3);
 
-    if (error) {
-      console.error('Error fetching topics:', error);
-      return;
-    }
+        if (topicsError) {
+          console.error('Error fetching topics:', topicsError);
+          toast({
+            title: "Error",
+            description: "Failed to load recent topics",
+            variant: "destructive",
+          });
+        } else {
+          setRecentTopics(topicsData || []);
+        }
 
-    setRecentTopics(data || []);
-  };
+        // Fetch learning time
+        const today = new Date().toISOString().split('T')[0];
+        const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000)
+          .toISOString()
+          .split('T')[0];
 
-  const fetchLearningTime = async () => {
-    const today = new Date().toISOString().split('T')[0];
-    const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+        const { data: timeData, error: timeError } = await supabase
+          .from('learning_time')
+          .select('minutes_spent, date')
+          .eq('user_id', user.id)
+          .gte('date', weekAgo)
+          .lte('date', today);
 
-    const { data, error } = await supabase
-      .from('learning_time')
-      .select('minutes_spent, date')
-      .gte('date', weekAgo)
-      .lte('date', today);
+        if (timeError) {
+          console.error('Error fetching learning time:', timeError);
+          toast({
+            title: "Error",
+            description: "Failed to load learning time",
+            variant: "destructive",
+          });
+        } else {
+          const todayMinutes = timeData?.find(d => d.date === today)?.minutes_spent || 0;
+          const weekMinutes = timeData?.reduce((acc, curr) => acc + (curr.minutes_spent || 0), 0) || 0;
 
-    if (error) {
-      console.error('Error fetching learning time:', error);
-      return;
-    }
+          setTimeSpent({
+            today: todayMinutes,
+            week: weekMinutes,
+          });
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load user data",
+          variant: "destructive",
+        });
+      }
+    };
 
-    const todayMinutes = data?.find(d => d.date === today)?.minutes_spent || 0;
-    const weekMinutes = data?.reduce((acc, curr) => acc + (curr.minutes_spent || 0), 0) || 0;
+    fetchUserData();
+    // Set up real-time subscription for updates
+    const subscription = supabase
+      .channel('user_data_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'explored_topics',
+        },
+        () => {
+          fetchUserData(); // Refresh data when changes occur
+        }
+      )
+      .subscribe();
 
-    setTimeSpent({
-      today: todayMinutes,
-      week: weekMinutes,
-    });
-  };
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, [toast]);
 
   return (
     <Sheet>
