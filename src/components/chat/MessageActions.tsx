@@ -6,7 +6,7 @@ import { ImageUpload } from "../ImageUpload";
 
 interface MessageActionsProps {
   onListen?: () => void;
-  onQuizGenerated?: (quiz: any) => void;  // Updated type to match usage
+  onQuizGenerated?: (quiz: any) => void;
   onImageAnalyzed?: (response: string) => void;
   showActions?: boolean;
   messageText: string;

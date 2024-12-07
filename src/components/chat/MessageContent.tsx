@@ -1,11 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { Volume2 } from "lucide-react";
-import { ActionIcon } from "./actions/ActionIcon";
 import { GeneratedImage } from "../image/GeneratedImage";
-import { ImageAction } from "./actions/ImageAction";
-import { QuizAction } from "./actions/QuizAction";
 import { MessageActions } from "./MessageActions";
 
 interface MessageContentProps {
