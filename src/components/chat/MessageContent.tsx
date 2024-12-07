@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { MessageActions } from "./MessageActions";
@@ -15,7 +15,7 @@ interface MessageContentProps {
   onTypingComplete?: () => void;
 }
 
-export const MessageContent = ({ 
+export const MessageContent = React.memo(({ 
   message, 
   isAi,
   onListen,
@@ -29,8 +29,8 @@ export const MessageContent = ({
   const [displayedText, setDisplayedText] = useState("");
   console.log("MessageContent rendered:", { isTyping, message, showActions });
 
-  useEffect(() => {
-    if (isAi && message) {
+  const animateText = useCallback(() => {
+    if (isAi && message && !isTyping) {
       setDisplayedText("");
       let currentText = "";
       const lines = message.split("\n");
@@ -54,7 +54,6 @@ export const MessageContent = ({
           }
           
           setDisplayedText(currentText);
-          console.log("Typing animation:", { currentText, isComplete: currentLineIndex >= lines.length });
 
           // Check if typing is complete
           if (currentLineIndex >= lines.length) {
@@ -67,7 +66,7 @@ export const MessageContent = ({
             }, 800);
           }
         }
-      }, 35); // Slightly slower typing speed for better readability
+      }, 35);
 
       return () => {
         clearInterval(interval);
@@ -76,7 +75,12 @@ export const MessageContent = ({
       setDisplayedText(message);
       onTypingComplete?.();
     }
-  }, [message, isAi, onTypingComplete]);
+  }, [message, isAi, onTypingComplete, isTyping]);
+
+  useEffect(() => {
+    const cleanup = animateText();
+    return () => cleanup?.();
+  }, [animateText]);
 
   return (
     <div className="relative">
@@ -96,4 +100,6 @@ export const MessageContent = ({
       )}
     </div>
   );
-};
+});
+
+MessageContent.displayName = "MessageContent";

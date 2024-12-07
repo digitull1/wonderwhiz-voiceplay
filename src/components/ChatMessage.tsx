@@ -21,7 +21,7 @@ interface ChatMessageProps {
   messageIndex?: number;
 }
 
-export const ChatMessage = ({ 
+export const ChatMessage = React.memo(({ 
   isAi, 
   message, 
   onListen,
@@ -49,15 +49,12 @@ export const ChatMessage = ({
   // Handle typing completion
   const handleTypingComplete = () => {
     console.log("Typing complete, preparing to show blocks");
-    // Use RAF to ensure smooth state transitions
-    requestAnimationFrame(() => {
-      setIsTyping(false);
-      // Add longer delay before showing blocks
-      setTimeout(() => {
-        console.log("Showing blocks now");
-        setShowBlocks(true);
-      }, 1500);
-    });
+    setIsTyping(false);
+    // Add longer delay before showing blocks
+    setTimeout(() => {
+      console.log("Showing blocks now");
+      setShowBlocks(true);
+    }, 1500);
   };
 
   return (
@@ -132,4 +129,6 @@ export const ChatMessage = ({
       </div>
     </motion.div>
   );
-};
+});
+
+ChatMessage.displayName = "ChatMessage";
