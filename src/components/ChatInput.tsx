@@ -1,6 +1,6 @@
 import React, { useState, useRef } from "react";
 import { Button } from "./ui/button";
-import { Mic, Send } from "lucide-react";
+import { Mic, Send, Upload } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ImageUpload } from "./ImageUpload";
 import { useToast } from "./ui/use-toast";
@@ -108,7 +108,21 @@ export const ChatInput = ({
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-xl border-t border-white/20 p-4 md:p-6">
       <div className="max-w-screen-lg mx-auto flex items-center gap-2">
-        <ImageUpload onImageAnalyzed={onImageAnalyzed} />
+        {onImageAnalyzed && (
+          <ImageUpload onImageAnalyzed={onImageAnalyzed}>
+            <Button
+              variant="ghost"
+              size="icon"
+              className={cn(
+                "bg-white/95 backdrop-blur-xl shadow-luxury border border-white/20",
+                "hover:bg-white hover:scale-110 active:scale-95",
+                "transition-all duration-300"
+              )}
+            >
+              <Upload className="w-4 h-4" />
+            </Button>
+          </ImageUpload>
+        )}
         
         <div className="flex-1 relative">
           <input
