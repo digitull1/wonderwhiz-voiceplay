@@ -36,6 +36,54 @@ export type Database = {
         }
         Relationships: []
       }
+      explored_topics: {
+        Row: {
+          emoji: string
+          id: string
+          last_explored_at: string | null
+          time_spent: number | null
+          topic: string
+          user_id: string
+        }
+        Insert: {
+          emoji: string
+          id?: string
+          last_explored_at?: string | null
+          time_spent?: number | null
+          topic: string
+          user_id: string
+        }
+        Update: {
+          emoji?: string
+          id?: string
+          last_explored_at?: string | null
+          time_spent?: number | null
+          topic?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      learning_time: {
+        Row: {
+          date: string
+          id: string
+          minutes_spent: number | null
+          user_id: string
+        }
+        Insert: {
+          date?: string
+          id?: string
+          minutes_spent?: number | null
+          user_id: string
+        }
+        Update: {
+          date?: string
+          id?: string
+          minutes_spent?: number | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           age: number

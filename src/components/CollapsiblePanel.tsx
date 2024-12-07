@@ -1,6 +1,6 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Clock, History, Star, X, MessageSquare } from "lucide-react";
+import { Clock, History, Star, MessageSquare } from "lucide-react";
 import {
   Sheet,
   SheetContent,
@@ -8,6 +8,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import { supabase } from "@/integrations/supabase/client";
 
 interface CollapsiblePanelProps {
   userProgress: {
@@ -17,17 +18,67 @@ interface CollapsiblePanelProps {
   };
 }
 
+interface ExploredTopic {
+  topic: string;
+  emoji: string;
+  last_explored_at: string;
+}
+
+interface LearningTime {
+  minutes_spent: number;
+  date: string;
+}
+
 export const CollapsiblePanel = ({ userProgress }: CollapsiblePanelProps) => {
-  const [timeSpent] = React.useState({
-    today: 30, // Example value in minutes
-    week: 120, // Example value in minutes
+  const [recentTopics, setRecentTopics] = useState<ExploredTopic[]>([]);
+  const [timeSpent, setTimeSpent] = useState({
+    today: 0,
+    week: 0,
   });
 
-  const recentTopics = [
-    { name: "Solar System", emoji: "🌎" },
-    { name: "Famous Inventors", emoji: "💡" },
-    { name: "Tropical Rainforests", emoji: "🌴" },
-  ];
+  useEffect(() => {
+    fetchRecentTopics();
+    fetchLearningTime();
+  }, []);
+
+  const fetchRecentTopics = async () => {
+    const { data, error } = await supabase
+      .from('explored_topics')
+      .select('topic, emoji, last_explored_at')
+      .order('last_explored_at', { ascending: false })
+      .limit(3);
+
+    if (error) {
+      console.error('Error fetching topics:', error);
+      return;
+    }
+
+    setRecentTopics(data || []);
+  };
+
+  const fetchLearningTime = async () => {
+    const today = new Date().toISOString().split('T')[0];
+    const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+
+    const { data, error } = await supabase
+      .from('learning_time')
+      .select('minutes_spent, date')
+      .gte('date', weekAgo)
+      .lte('date', today);
+
+    if (error) {
+      console.error('Error fetching learning time:', error);
+      return;
+    }
+
+    const todayMinutes = data?.find(d => d.date === today)?.minutes_spent || 0;
+    const weekMinutes = data?.reduce((acc, curr) => acc + (curr.minutes_spent || 0), 0) || 0;
+
+    setTimeSpent({
+      today: todayMinutes,
+      week: weekMinutes,
+    });
+  };
 
   return (
     <Sheet>
@@ -112,17 +163,23 @@ export const CollapsiblePanel = ({ userProgress }: CollapsiblePanelProps) => {
               <h3 className="text-lg font-semibold">Recent Topics</h3>
             </div>
             <div className="space-y-2">
-              {recentTopics.map((topic, index) => (
-                <motion.button
-                  key={topic.name}
-                  className="w-full text-left p-2 rounded-lg hover:bg-white/50 
-                    transition-colors duration-200 flex items-center gap-2"
-                  whileHover={{ x: 4 }}
-                >
-                  <span className="text-xl">{topic.emoji}</span>
-                  <span className="text-sm font-medium">{topic.name}</span>
-                </motion.button>
-              ))}
+              {recentTopics.length > 0 ? (
+                recentTopics.map((topic, index) => (
+                  <motion.button
+                    key={topic.topic}
+                    className="w-full text-left p-2 rounded-lg hover:bg-white/50 
+                      transition-colors duration-200 flex items-center gap-2"
+                    whileHover={{ x: 4 }}
+                  >
+                    <span className="text-xl">{topic.emoji}</span>
+                    <span className="text-sm font-medium">{topic.topic}</span>
+                  </motion.button>
+                ))
+              ) : (
+                <p className="text-sm text-gray-500 text-center py-2">
+                  Start exploring topics to see them here!
+                </p>
+              )}
             </div>
           </motion.div>
 
