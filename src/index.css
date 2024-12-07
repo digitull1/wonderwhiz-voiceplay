@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=SF+Pro+Display:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
@@ -6,7 +6,7 @@
 
 @layer base {
   html {
-    font-family: 'Poppins', system-ui, sans-serif;
+    font-family: 'SF Pro Display', system-ui, sans-serif;
     -webkit-tap-highlight-color: transparent;
     scroll-behavior: smooth;
     background: linear-gradient(135deg, #F5F5F7 0%, #E5E5E7 100%);

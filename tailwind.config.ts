@@ -57,8 +57,8 @@ export default {
         }
       },
       fontFamily: {
-        sans: ['Poppins', 'system-ui', 'sans-serif'],
-        display: ['GT Super Display', 'Poppins', 'system-ui', 'sans-serif'],
+        sans: ['SF Pro Display', 'system-ui', 'sans-serif'],
+        display: ['SF Pro Display', 'system-ui', 'sans-serif'],
       },
       fontSize: {
         'title': '32px',
@@ -70,10 +70,9 @@ export default {
         'cta': '18px',
       },
       backgroundImage: {
-        'gradient-luxury': 'linear-gradient(135deg, #007AFF 0%, #5856D6 100%)',
+        'gradient-luxury': 'linear-gradient(135deg, #F5F5F7 0%, #E5E5E7 100%)',
         'gradient-card': 'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.85) 100%)',
         'gradient-block': 'linear-gradient(135deg, rgba(0,122,255,0.95) 0%, rgba(88,86,214,0.95) 100%)',
-        'stars': 'url("/stars-pattern.svg")',
       },
       keyframes: {
         'float': {
