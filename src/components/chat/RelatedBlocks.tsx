@@ -15,7 +15,7 @@ export const RelatedBlocks = ({ blocks, onBlockClick }: RelatedBlocksProps) => (
     animate={{ opacity: 1, y: 0 }}
     transition={{ delay: 0.3 }}
   >
-    <p className="text-small italic mb-3 text-foreground/70">
+    <p className="text-small italic mb-3 text-black">
       Want to explore more amazing facts? Check these out! ✨
     </p>
     <ChatBlocks blocks={blocks} onBlockClick={onBlockClick} />
