@@ -22,6 +22,7 @@ export const QuizCard = ({ questions, onAnswer }: QuizCardProps) => {
   const [correctAnswers, setCorrectAnswers] = useState(0);
 
   const questionsArray = Array.isArray(questions) ? questions : [questions];
+  const currentTopic = questionsArray[0]?.topic || "this topic";
 
   const handleAnswerClick = (index: number) => {
     setSelectedAnswer(index);
@@ -89,6 +90,7 @@ export const QuizCard = ({ questions, onAnswer }: QuizCardProps) => {
             <QuizCompletion 
               correctAnswers={correctAnswers} 
               totalQuestions={questionsArray.length}
+              currentTopic={currentTopic}
             />
           )}
         </ScrollArea>

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "./ui/button";
 import { Menu, X } from "lucide-react";
@@ -8,6 +8,7 @@ import { ProgressCard } from "./panel/ProgressCard";
 import { TalkToWizzy } from "./panel/TalkToWizzy";
 import { TimeTracker } from "./panel/TimeTracker";
 import { TopicHistory } from "./panel/TopicHistory";
+import { supabase } from "@/integrations/supabase/client";
 
 interface CollapsiblePanelProps {
   userProgress?: UserProgress;
@@ -19,10 +20,38 @@ export const CollapsiblePanel: React.FC<CollapsiblePanelProps> = ({
   className
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const [topics, setTopics] = useState<{ topic: string; emoji: string }[]>([]);
+
+  useEffect(() => {
+    const fetchTopics = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        const { data } = await supabase
+          .from('explored_topics')
+          .select('topic, emoji')
+          .eq('user_id', user.id)
+          .order('last_explored_at', { ascending: false })
+          .limit(5);
+
+        setTopics(data || []);
+      } catch (error) {
+        console.error('Error fetching topics:', error);
+      }
+    };
+
+    fetchTopics();
+  }, []);
 
   const handleToggle = () => {
     console.log('Toggle panel:', !isOpen);
     setIsOpen(!isOpen);
+  };
+
+  const handleTopicClick = (topic: string) => {
+    console.log('Topic clicked:', topic);
+    // Handle topic click logic here
   };
 
   return (
@@ -90,10 +119,8 @@ export const CollapsiblePanel: React.FC<CollapsiblePanelProps> = ({
           >
             <div className="pt-14 space-y-6">
               <ProgressCard userProgress={userProgress} />
-              {userProgress && (
-                <TimeTracker timeSpent={{ today: 0, week: 0 }} />
-              )}
-              <TopicHistory topics={[]} onTopicClick={() => {}} />
+              <TimeTracker />
+              <TopicHistory onTopicClick={handleTopicClick} />
               <TalkToWizzy />
             </div>
           </motion.div>

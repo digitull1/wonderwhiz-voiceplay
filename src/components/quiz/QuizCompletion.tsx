@@ -10,14 +10,17 @@ interface QuizCompletionProps {
   currentTopic: string;
 }
 
-export const QuizCompletion = ({ correctAnswers, totalQuestions, currentTopic }: QuizCompletionProps) => {
+export const QuizCompletion = ({ correctAnswers, totalQuestions, currentTopic = "this topic" }: QuizCompletionProps) => {
   const generateRelatedBlocks = (topic: string): Block[] => {
-    const topicWords = topic.split(' ').filter(word => word.length > 3);
-    const mainTopic = topicWords[Math.floor(Math.random() * topicWords.length)] || topic;
+    // Safely handle topic splitting with fallback
+    const topicWords = topic ? topic.split(' ').filter(word => word.length > 3) : [];
+    const mainTopic = topicWords.length > 0 ? 
+      topicWords[Math.floor(Math.random() * topicWords.length)] : 
+      topic;
     
     return [
       {
-        title: `Discover more fascinating facts about ${topic}! 🎯`,
+        title: `Want to learn more about ${topic}? Let's dive deeper! 🎯`,
         description: "Explore deeper insights",
         metadata: {
           topic: topic,
@@ -25,7 +28,7 @@ export const QuizCompletion = ({ correctAnswers, totalQuestions, currentTopic }:
         }
       },
       {
-        title: `Ready for another ${topic} quiz challenge? Let's go! 🎮`,
+        title: `Ready for another ${topic} quiz challenge? Test your knowledge! 🎮`,
         description: "Test your knowledge further",
         metadata: {
           topic: topic,
@@ -33,7 +36,7 @@ export const QuizCompletion = ({ correctAnswers, totalQuestions, currentTopic }:
         }
       },
       {
-        title: `Curious about topics related to ${mainTopic}? Let's explore! 🌟`,
+        title: `Curious about topics related to ${mainTopic}? Let's explore together! 🌟`,
         description: "Discover connected subjects",
         metadata: {
           topic: mainTopic,
