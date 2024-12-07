@@ -44,7 +44,8 @@ export const ChatHeader = () => {
             userProgress={userProgress || {
               points: 0,
               level: 1,
-              streak_days: 0
+              streak_days: 0,
+              last_interaction_date: new Date().toISOString()
             }}
           />
         </SheetContent>

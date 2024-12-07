@@ -10,6 +10,11 @@ interface CollapsiblePanelProps {
 }
 
 export const CollapsiblePanel = ({ userProgress }: CollapsiblePanelProps) => {
+  const handleTopicClick = (topic: string) => {
+    console.log('Topic clicked:', topic);
+    // Add your topic click handling logic here
+  };
+
   return (
     <div className="flex flex-col gap-6 p-4">
       <Dialog>
@@ -19,7 +24,7 @@ export const CollapsiblePanel = ({ userProgress }: CollapsiblePanelProps) => {
           </DialogTitle>
           <div className="space-y-6">
             <ProgressCard userProgress={userProgress} />
-            <TopicHistory />
+            <TopicHistory topics={[]} onTopicClick={handleTopicClick} />
             <TalkToWizzy />
           </div>
         </DialogContent>
