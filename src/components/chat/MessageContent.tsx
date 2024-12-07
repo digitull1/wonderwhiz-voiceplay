@@ -12,7 +12,7 @@ interface MessageContentProps {
   message: string;
   isAi?: boolean;
   onListen?: (text: string) => void;
-  onQuizGenerated?: (quiz: any) => void;
+  onQuizGenerated?: (quiz: any) => void;  // Updated type to accept quiz parameter
   onPanelOpen?: () => void;
   imageUrl?: string;
   showActions?: boolean;
