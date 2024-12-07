@@ -1,11 +1,11 @@
 import React from "react";
-import { Volume2, Image, Sparkles, BookOpen } from "lucide-react";
+import { Volume2, Image, Sparkles } from "lucide-react";
 import { ActionIcon } from "./actions/ActionIcon";
 import { QuizAction } from "./actions/QuizAction";
 import { ImageUpload } from "../ImageUpload";
 
 interface MessageActionsProps {
-  onListen?: () => void;
+  onListen?: (text: string) => void;  // Updated to match the parent component's type
   onQuizGenerated?: (quiz: any) => void;
   onImageAnalyzed?: (response: string) => void;
   showActions?: boolean;
@@ -27,7 +27,7 @@ export const MessageActions = ({
         <ActionIcon
           icon={Volume2}
           tooltip="🔊 Listen to this message!"
-          onClick={() => onListen()}
+          onClick={() => onListen(messageText)}
           className="bg-gradient-to-br from-blue-500/5 to-cyan-500/5"
         />
       )}
