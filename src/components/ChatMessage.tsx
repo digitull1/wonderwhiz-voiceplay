@@ -5,7 +5,7 @@ import { Block } from "@/types/chat";
 import { ChatAvatar } from "./chat/ChatAvatar";
 import { RelatedBlocks } from "./chat/RelatedBlocks";
 import { Volume2, VolumeX, Image, BookOpen, Star, Trophy } from "lucide-react";
-import { Tooltip } from "./ui/tooltip";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "./ui/tooltip";
 
 interface ChatMessageProps {
   isAi?: boolean;
@@ -74,45 +74,73 @@ export const ChatMessage = ({
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: 0.3 }}
     >
-      <Tooltip content="Create a picture for this!">
-        <motion.button 
-          className="action-icon"
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          <Image className="w-5 h-5 text-white" />
-        </motion.button>
-      </Tooltip>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <motion.button 
+              className="action-icon"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <Image className="w-5 h-5 text-white" />
+            </motion.button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Create a picture for this!</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
 
-      <Tooltip content="Test your knowledge!">
-        <motion.button 
-          className="action-icon"
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          <BookOpen className="w-5 h-5 text-white" />
-        </motion.button>
-      </Tooltip>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <motion.button 
+              className="action-icon"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <BookOpen className="w-5 h-5 text-white" />
+            </motion.button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Test your knowledge!</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
 
-      <Tooltip content="You've earned points for learning!">
-        <motion.button 
-          className="action-icon"
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          <Star className="w-5 h-5 text-white" />
-        </motion.button>
-      </Tooltip>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <motion.button 
+              className="action-icon"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <Star className="w-5 h-5 text-white" />
+            </motion.button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>You've earned points for learning!</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
 
-      <Tooltip content="Level up your adventures!">
-        <motion.button 
-          className="action-icon"
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.95 }}
-        >
-          <Trophy className="w-5 h-5 text-white" />
-        </motion.button>
-      </Tooltip>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <motion.button 
+              className="action-icon"
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <Trophy className="w-5 h-5 text-white" />
+            </motion.button>
+          </TooltipTrigger>
+          <TooltipContent>
+            <p>Level up your adventures!</p>
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
     </motion.div>
   );
 
