@@ -20,8 +20,10 @@ async function retryWithBackoff<T>(
       return await operation();
     } catch (error) {
       lastError = error;
+      console.error(`Attempt ${i + 1} failed:`, error);
       
       if (error.message?.includes('Rate limit reached')) {
+        // Extract wait time from error message
         const waitTime = parseFloat(error.message.match(/try again in (\d+\.?\d*)s/)?.[1] || '1') * 1000;
         console.log(`Rate limit hit, waiting for ${waitTime}ms before retry ${i + 1}`);
         await wait(waitTime);
