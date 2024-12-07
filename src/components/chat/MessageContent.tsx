@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { GeneratedImage } from "../image/GeneratedImage";
 import { MessageActions } from "./MessageActions";
 
 interface MessageContentProps {
@@ -12,6 +11,7 @@ interface MessageContentProps {
   onPanelOpen?: () => void;
   imageUrl?: string;
   showActions?: boolean;
+  isTyping?: boolean;
 }
 
 export const MessageContent = ({ 
@@ -21,86 +21,60 @@ export const MessageContent = ({
   onQuizGenerated,
   onPanelOpen,
   imageUrl,
-  showActions = true
+  showActions = true,
+  isTyping
 }: MessageContentProps) => {
   const [displayedText, setDisplayedText] = useState("");
-  const [isTyping, setIsTyping] = useState(false);
-  const [showBlocks, setShowBlocks] = useState(false);
 
   useEffect(() => {
     if (isAi && message) {
-      setIsTyping(true);
-      setShowBlocks(false);
       setDisplayedText("");
-      
       let currentText = "";
-      const words = message.split(" ");
-      let currentIndex = 0;
+      const lines = message.split("\n");
+      let currentLineIndex = 0;
+      let currentCharIndex = 0;
 
       const interval = setInterval(() => {
-        if (currentIndex < words.length) {
-          currentText += (currentIndex > 0 ? " " : "") + words[currentIndex];
+        if (currentLineIndex < lines.length) {
+          const currentLine = lines[currentLineIndex];
+          
+          if (currentCharIndex < currentLine.length) {
+            currentText += currentLine[currentCharIndex];
+            currentCharIndex++;
+          } else {
+            currentText += "\n";
+            currentLineIndex++;
+            currentCharIndex = 0;
+          }
+          
           setDisplayedText(currentText);
-          currentIndex++;
         } else {
-          setIsTyping(false);
-          // Only show blocks after typing is completely finished with a longer delay
-          setTimeout(() => setShowBlocks(true), 1000);
           clearInterval(interval);
         }
-      }, 100); // Slightly slower typing speed for better readability
+      }, 50); // Faster typing speed for better engagement
 
       return () => clearInterval(interval);
     } else {
       setDisplayedText(message);
-      setIsTyping(false);
-      setShowBlocks(true);
     }
   }, [message, isAi]);
 
   return (
-    <motion.div 
-      className={cn(
-        "relative p-3 sm:p-4 rounded-lg w-full",
-        isAi ? 
-          "message-bubble-ai" : 
-          "bg-gradient-to-br from-primary/10 to-secondary/10 backdrop-blur-sm border border-white/10 shadow-lg"
-      )}
-      layout
-    >
-      {isAi && isTyping && (
-        <motion.div
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="text-sm text-white/80 mb-2 flex items-center gap-2"
-        >
-          <div className="w-2 h-2 bg-white/80 rounded-full animate-pulse" />
-          <span>Wonderwhiz is typing...</span>
-        </motion.div>
-      )}
-
-      <div className="prose max-w-none">
+    <div className="relative">
+      <div className={cn(
+        "prose max-w-none whitespace-pre-line",
+        isAi ? "text-white" : "text-app-text-dark"
+      )}>
         {displayedText}
       </div>
 
-      {imageUrl && (
-        <motion.div 
-          className="mt-4 w-full max-w-md mx-auto"
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-        >
-          <GeneratedImage imageUrl={imageUrl} />
-        </motion.div>
-      )}
-      
-      {isAi && showActions && !isTyping && showBlocks && (
-        <MessageActions
-          onListen={() => onListen?.(message)}
+      {showActions && !isTyping && (
+        <MessageActions 
+          onListen={onListen}
           onQuizGenerated={onQuizGenerated}
           messageText={message}
         />
       )}
-    </motion.div>
+    </div>
   );
 };

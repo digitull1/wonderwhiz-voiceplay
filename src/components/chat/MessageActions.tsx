@@ -40,8 +40,8 @@ export const MessageActions = ({
           >
             <ActionIcon
               icon={Image}
-              tooltip="📸 Upload your homework or any picture you want to learn about!"
-              onClick={() => {}} // Handled by ImageUpload
+              tooltip="📸 Share a picture with me!"
+              onClick={() => {}}
               className="bg-gradient-to-br from-green-500/5 to-blue-500/5"
             />
           </ImageUpload>

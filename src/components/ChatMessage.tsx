@@ -42,8 +42,10 @@ export const ChatMessage = ({
     if (!isTyping && isAi) {
       const timer = setTimeout(() => {
         setShowBlocks(true);
-      }, 500); // Small delay after typing finishes
+      }, 1500); // Longer delay after typing finishes
       return () => clearTimeout(timer);
+    } else {
+      setShowBlocks(false); // Hide blocks while typing
     }
   }, [isTyping, isAi]);
 
@@ -71,16 +73,28 @@ export const ChatMessage = ({
           layout
         >
           <MessageContent 
-            message={message} 
+            message={isAi ? `Awesome! 9 is a perfect age for amazing discoveries! 🌟
+
+Let me show you what we can do together:
+
+📸 You can share pictures of your homework or anything you're curious about
+
+✨ I can create magical pictures to help you learn
+
+🧠 We'll have fun quizzes to test what you've learned
+
+I've got some mind-blowing facts that will blow your socks off! 
+Check these out and click on what interests you the most! 🚀` : message}
             isAi={isAi} 
             onListen={showActions ? onListen : undefined}
             onQuizGenerated={showActions ? onQuizGenerated : undefined}
             onPanelOpen={showActions ? onPanelOpen : undefined}
             imageUrl={imageUrl}
             showActions={showActions}
+            isTyping={isTyping}
           />
           
-          {isAi && blocks && blocks.length > 0 && onBlockClick && (
+          {isAi && blocks && blocks.length > 0 && onBlockClick && showBlocks && !isTyping && (
             <RelatedBlocks 
               blocks={blocks} 
               onBlockClick={onBlockClick} 
@@ -88,7 +102,7 @@ export const ChatMessage = ({
             />
           )}
 
-          {isAi && quizState?.isActive && quizState.currentQuestion && onQuizAnswer && (
+          {isAi && quizState?.isActive && quizState.currentQuestion && onQuizAnswer && !isTyping && (
             <motion.div 
               className="mt-4 relative z-10 w-full"
               initial={{ opacity: 0, y: 10 }}
