@@ -32,7 +32,6 @@ export const MessageContent: React.FC<MessageContentProps> = ({
 
   useEffect(() => {
     setDisplayedText(message);
-    // Still call onTypingComplete to maintain component lifecycle
     if (!isTyping) {
       onTypingComplete?.();
     }
@@ -65,14 +64,16 @@ export const MessageContent: React.FC<MessageContentProps> = ({
         </motion.div>
       </AnimatePresence>
 
-      {showActions && !isTyping && (
-        <MessageActions 
-          onListen={onListen}
-          onQuizGenerated={onQuizGenerated}
-          messageText={message}
-          onPanelOpen={onPanelOpen}
-          onImageAnalyzed={onImageAnalyzed}
-        />
+      {isAi && showActions && !isTyping && (
+        <div className="mt-4 flex items-center justify-start gap-2">
+          <MessageActions 
+            onListen={onListen}
+            onQuizGenerated={onQuizGenerated}
+            messageText={message}
+            onPanelOpen={onPanelOpen}
+            onImageAnalyzed={onImageAnalyzed}
+          />
+        </div>
       )}
     </div>
   );

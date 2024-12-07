@@ -114,25 +114,25 @@
 }
 
 .action-icon {
-  @apply p-1.5 rounded-full transition-all duration-300 cursor-pointer;
+  @apply p-2 rounded-full transition-all duration-300 cursor-pointer;
   background: linear-gradient(135deg, 
-    rgba(155,135,245,0.25) 0%, 
-    rgba(51,195,240,0.2) 100%
+    rgba(255, 255, 255, 0.25) 0%, 
+    rgba(255, 255, 255, 0.15) 100%
   );
   box-shadow: 
-    0 4px 8px rgba(0,0,0,0.1),
-    inset 0 0 0 1px rgba(255,255,255,0.2);
+    0 4px 12px rgba(0,0,0,0.1),
+    inset 0 0 0 1px rgba(255,255,255,0.3);
 }
 
 .action-icon:hover {
-  @apply transform;
+  @apply transform scale-110;
   background: linear-gradient(135deg, 
-    rgba(155,135,245,0.35) 0%, 
-    rgba(51,195,240,0.3) 100%
+    rgba(255, 255, 255, 0.35) 0%, 
+    rgba(255, 255, 255, 0.25) 100%
   );
   box-shadow: 
-    0 6px 12px rgba(0,0,0,0.15),
-    inset 0 0 0 1px rgba(255,255,255,0.3);
+    0 6px 16px rgba(0,0,0,0.15),
+    inset 0 0 0 1px rgba(255,255,255,0.4);
 }
 
 .action-icon:disabled {
