@@ -42,18 +42,16 @@ export const MainContainer: React.FC<MainContainerProps> = ({
 
   return (
     <motion.div 
-      className="min-h-screen w-full flex flex-col relative overflow-hidden"
+      className="h-[100dvh] w-full flex flex-col relative overflow-hidden"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
       <div className="absolute inset-0 bg-gradient-luxury opacity-50" />
-      <div className="absolute inset-0 bg-stars opacity-10 animate-float" />
       
-      <div className="relative z-10 w-full h-full flex flex-col flex-1 px-4 md:px-6 py-4">
+      <div className="relative z-10 w-full h-full flex flex-col">
         <motion.div 
-          className="flex-1 flex flex-col h-[calc(100vh-2rem)] relative overflow-hidden
-            rounded-2xl backdrop-blur-xl bg-white/10 border border-white/20 shadow-luxury"
+          className="flex-1 flex flex-col h-full relative overflow-hidden"
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ 

@@ -26,7 +26,7 @@ const Index = () => {
   return (
     <AnimatePresence>
       <motion.div 
-        className="min-h-screen flex flex-col relative overflow-hidden px-2 sm:px-4"
+        className="min-h-[100dvh] flex flex-col relative overflow-hidden"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
@@ -41,7 +41,7 @@ const Index = () => {
         <div className="fixed inset-0 backdrop-blur-[100px]" />
         
         {/* Content */}
-        <div className="relative z-10">
+        <div className="relative z-10 flex flex-col h-[100dvh] w-full">
           <TooltipProvider>
             <CollapsiblePanel 
               userProgress={userProgress}
@@ -54,7 +54,7 @@ const Index = () => {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
-              className="max-w-[1200px] mx-auto w-full"
+              className="flex-1 w-full h-full"
             >
               <MainContainer 
                 messages={messages}
