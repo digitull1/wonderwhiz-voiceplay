@@ -4,6 +4,7 @@ import { ChatHeader } from "@/components/ChatHeader";
 import { ChatContainer } from "@/components/ChatContainer";
 import { ChatInput } from "@/components/ChatInput";
 import { BackgroundDecorations } from "./BackgroundDecorations";
+import { AuthForm } from "@/components/auth/AuthForm";
 
 interface MainContainerProps {
   messages: any[];
@@ -11,12 +12,13 @@ interface MainContainerProps {
   setInput: (value: string) => void;
   isLoading: boolean;
   currentTopic: string;
-  handleListen: (text: string) => void;  // Updated type definition
+  handleListen: (text: string) => void;
   handleBlockClick: (block: any) => void;
   handleQuizAnswer: (isCorrect: boolean) => void;
   quizState: any;
   sendMessage: (message: string) => void;
   handleImageAnalysis: (response: string) => void;
+  isAuthenticated: boolean;
 }
 
 export const MainContainer: React.FC<MainContainerProps> = ({
@@ -30,8 +32,27 @@ export const MainContainer: React.FC<MainContainerProps> = ({
   handleQuizAnswer,
   quizState,
   sendMessage,
-  handleImageAnalysis
+  handleImageAnalysis,
+  isAuthenticated
 }) => {
+  const [showAuthForm, setShowAuthForm] = React.useState(false);
+
+  // Add auth-related message if user is not authenticated
+  const enhancedMessages = React.useMemo(() => {
+    if (!isAuthenticated && messages.length > 2) {
+      return [
+        ...messages,
+        {
+          text: "Want to save your progress and earn points? Sign up or log in!",
+          isAi: true,
+          blocks: [],
+          showAuthPrompt: true
+        }
+      ];
+    }
+    return messages;
+  }, [messages, isAuthenticated]);
+
   return (
     <motion.div 
       className="flex-1 container max-w-4xl mx-auto py-4 px-4 relative z-10"
@@ -59,12 +80,32 @@ export const MainContainer: React.FC<MainContainerProps> = ({
         <ChatHeader />
         
         <ChatContainer 
-          messages={messages} 
+          messages={enhancedMessages}
           handleListen={handleListen}
           onBlockClick={handleBlockClick}
           quizState={quizState}
           onQuizAnswer={handleQuizAnswer}
+          onAuthPromptClick={() => setShowAuthForm(true)}
         />
+
+        {showAuthForm && (
+          <motion.div 
+            className="absolute inset-0 bg-white/95 backdrop-blur-sm p-4 flex items-center justify-center"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <div className="w-full max-w-md">
+              <button 
+                onClick={() => setShowAuthForm(false)}
+                className="absolute top-4 right-4 text-gray-500 hover:text-gray-700"
+              >
+                ✕
+              </button>
+              <AuthForm onComplete={() => setShowAuthForm(false)} />
+            </div>
+          </motion.div>
+        )}
 
         <ChatInput 
           input={input}

@@ -2,19 +2,22 @@ import React, { useEffect, useRef } from "react";
 import { ChatMessage } from "./ChatMessage";
 import { QuizCard } from "./quiz/QuizCard";
 import { Block, QuizState } from "@/types/chat";
+import { Button } from "./ui/button";
 
 interface Message {
   text: string;
   isAi: boolean;
   blocks?: Block[];
+  showAuthPrompt?: boolean;
 }
 
 interface ChatContainerProps {
   messages: Message[];
-  handleListen: (text: string) => void;  // Updated type definition
+  handleListen: (text: string) => void;
   onBlockClick?: (block: Block) => void;
   quizState?: QuizState;
   onQuizAnswer?: (isCorrect: boolean) => void;
+  onAuthPromptClick?: () => void;
 }
 
 export const ChatContainer = ({ 
@@ -22,7 +25,8 @@ export const ChatContainer = ({
   handleListen, 
   onBlockClick,
   quizState,
-  onQuizAnswer 
+  onQuizAnswer,
+  onAuthPromptClick
 }: ChatContainerProps) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -65,14 +69,25 @@ export const ChatContainer = ({
       className="flex-1 overflow-y-auto space-y-3 mb-4 px-2 chat-container"
     >
       {filteredMessages.map((message, index) => (
-        <ChatMessage
-          key={index}
-          message={message.text}
-          isAi={message.isAi}
-          onListen={() => handleListen(message.text)}
-          blocks={message.blocks}
-          onBlockClick={onBlockClick}
-        />
+        <React.Fragment key={index}>
+          <ChatMessage
+            message={message.text}
+            isAi={message.isAi}
+            onListen={() => handleListen(message.text)}
+            blocks={message.blocks}
+            onBlockClick={onBlockClick}
+          />
+          {message.showAuthPrompt && (
+            <div className="flex justify-center gap-2 my-2">
+              <Button 
+                onClick={onAuthPromptClick}
+                className="bg-primary hover:bg-primary/90 text-white"
+              >
+                Sign Up / Log In
+              </Button>
+            </div>
+          )}
+        </React.Fragment>
       ))}
       
       {quizState?.isActive && quizState.currentQuestion && (

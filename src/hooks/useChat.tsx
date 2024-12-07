@@ -22,8 +22,8 @@ export const useChat = () => {
   const [isLoading, setIsLoading] = useState(false);
   
   const { toast } = useToast();
-  const { isAuthenticated } = useAuth();
-  const { userProgress, updateUserProgress } = useUserProgress(null);
+  const { isAuthenticated, tempUserId } = useAuth();
+  const { userProgress, updateUserProgress } = useUserProgress(tempUserId);
   const { generateDynamicBlocks } = useBlockGeneration();
   const { handleImageAnalysis, isAnalyzing } = useImageAnalysis();
   const { quizState, handleQuizAnswer, updateBlocksExplored } = useQuiz(updateUserProgress);
