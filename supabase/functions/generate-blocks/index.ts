@@ -40,7 +40,7 @@ serve(async (req) => {
       Based on "${query}" and topic "${context}", generate 5 engaging, educational blocks following these guidelines:
       
       RULES:
-      1. Each block must be EXACTLY ONE LINE and UNDER 72 CHARACTERS (including emoji)
+      1. Each block must be EXACTLY ONE LINE and UNDER 70 CHARACTERS (including emoji)
       2. First 3 blocks MUST:
          - Start with an exciting question or "Want to know..."
          - Include ONE fascinating fact with a silly comparison
@@ -70,13 +70,13 @@ serve(async (req) => {
          - Celebrate curiosity
       7. NO undefined values or spelling mistakes allowed
       8. DO NOT include phrases like 'Click to explore more'
-      9. ENSURE each block fits on ONE line and is UNDER 72 characters
+      9. ENSURE each block fits on ONE line and is UNDER 70 characters
 
       Format response as:
       {
         "blocks": [
           {
-            "title": "Single line of exactly 72 chars or less with emoji",
+            "title": "Single line of exactly 70 chars or less with emoji",
             "metadata": {
               "topic": "specific_subtopic_related_to_context",
               "type": "fact|image|quiz"
