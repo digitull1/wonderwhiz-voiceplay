@@ -1,4 +1,42 @@
 project_id = "tyyucvvapqwzjkqcgjwb"
 
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "storage", "graphql_public"]
+
+[db]
+port = 54322
+
+[studio]
+enabled = true
+port = 54323
+
+[inbucket]
+enabled = true
+port = 54324
+
+[storage]
+enabled = true
+
+[auth]
+enabled = true
+port = 54325
+
+[realtime]
+enabled = true
+
+[functions.analyze-image]
+verify_jwt = false
+
 [functions.generate-blocks]
+verify_jwt = false
+
+[functions.generate-image]
+verify_jwt = false
+
+[functions.generate-quiz]
+verify_jwt = false
+
+[functions.transcribe-audio]
 verify_jwt = false
