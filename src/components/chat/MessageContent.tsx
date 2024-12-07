@@ -26,62 +26,15 @@ export const MessageContent: React.FC<MessageContentProps> = ({
   isTyping,
   onTypingComplete
 }) => {
-  const [displayedText, setDisplayedText] = useState("");
-  console.log("MessageContent rendered:", { isTyping, message, showActions });
-
-  const animateText = useCallback(() => {
-    if (isAi && message && !isTyping) {
-      console.log("Starting text animation");
-      setDisplayedText("");
-      let currentText = "";
-      const lines = message.split("\n");
-      let currentLineIndex = 0;
-      let currentCharIndex = 0;
-      let isCompleting = false;
-
-      const interval = setInterval(() => {
-        if (isCompleting) return;
-
-        if (currentLineIndex < lines.length) {
-          const currentLine = lines[currentLineIndex];
-          
-          if (currentCharIndex < currentLine.length) {
-            currentText += currentLine[currentCharIndex];
-            currentCharIndex++;
-          } else {
-            currentText += "\n";
-            currentLineIndex++;
-            currentCharIndex = 0;
-          }
-          
-          setDisplayedText(currentText);
-
-          if (currentLineIndex >= lines.length) {
-            isCompleting = true;
-            clearInterval(interval);
-            console.log("Text animation complete");
-            setTimeout(() => {
-              console.log("Calling onTypingComplete");
-              onTypingComplete?.();
-            }, 800);
-          }
-        }
-      }, 35);
-
-      return () => {
-        clearInterval(interval);
-      };
-    } else {
-      setDisplayedText(message);
-      onTypingComplete?.();
-    }
-  }, [message, isAi, onTypingComplete, isTyping]);
+  const [displayedText, setDisplayedText] = useState(message);
 
   useEffect(() => {
-    console.log("Effect triggered, starting animation");
-    const cleanup = animateText();
-    return () => cleanup?.();
-  }, [animateText]);
+    setDisplayedText(message);
+    // Still call onTypingComplete to maintain component lifecycle
+    if (!isTyping) {
+      onTypingComplete?.();
+    }
+  }, [message, isTyping, onTypingComplete]);
 
   return (
     <div className="relative">
