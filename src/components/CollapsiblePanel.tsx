@@ -1,10 +1,8 @@
 import React from "react";
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { ProgressCard } from "./panel/ProgressCard";
 import { TopicHistory } from "./panel/TopicHistory";
 import { TalkToWizzy } from "./panel/TalkToWizzy";
 import { UserProgress } from "@/types/chat";
-import { useUserProgress } from "@/hooks/useUserProgress";
 import { supabase } from "@/integrations/supabase/client";
 
 interface CollapsiblePanelProps {
@@ -31,15 +29,22 @@ export const CollapsiblePanel = ({ userProgress }: CollapsiblePanelProps) => {
         return;
       }
 
-      setTopics(data || []);
+      // Transform topic titles to be more descriptive
+      const transformedData = data?.map(item => ({
+        ...item,
+        topic: `Explored ${item.topic.charAt(0).toLowerCase() + item.topic.slice(1)}`,
+      })) || [];
+
+      setTopics(transformedData);
     };
 
     fetchTopics();
   }, []);
 
   const handleTopicClick = (topic: string) => {
-    console.log('Topic clicked:', topic);
-    // Add your topic click handling logic here
+    // Remove the "Explored " prefix when handling the click
+    const originalTopic = topic.replace('Explored ', '');
+    console.log('Topic clicked:', originalTopic);
   };
 
   return (

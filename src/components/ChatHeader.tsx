@@ -39,7 +39,7 @@ export const ChatHeader = () => {
             <Menu className="w-5 h-5" />
           </motion.button>
         </SheetTrigger>
-        <SheetContent side="right" className="w-[300px] sm:w-[400px] bg-gradient-to-br from-purple-50 to-blue-50">
+        <SheetContent side="right" className="w-[300px] sm:w-[400px] bg-white border-l border-gray-100 shadow-xl">
           <CollapsiblePanel 
             userProgress={userProgress || {
               points: 0,
