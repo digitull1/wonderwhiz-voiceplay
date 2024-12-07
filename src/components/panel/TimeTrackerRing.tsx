@@ -9,6 +9,7 @@ interface TimeTrackerRingProps {
   color?: string;
   label: string;
   time: string;
+  goal: number;
 }
 
 export const TimeTrackerRing = ({
@@ -17,14 +18,15 @@ export const TimeTrackerRing = ({
   strokeWidth = 8,
   color = "stroke-secondary",
   label,
-  time
+  time,
+  goal
 }: TimeTrackerRingProps) => {
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
   const dash = (percentage * circumference) / 100;
 
   return (
-    <div className="flex flex-col items-center justify-center p-2">
+    <div className="flex flex-col items-center justify-center">
       <div className="relative" style={{ width: size, height: size }}>
         {/* Background ring */}
         <svg
@@ -39,7 +41,7 @@ export const TimeTrackerRing = ({
             fill="none"
             stroke="currentColor"
             strokeWidth={strokeWidth}
-            className="text-gray-200"
+            className="text-gray-100"
           />
           
           {/* Animated progress ring */}
@@ -50,6 +52,7 @@ export const TimeTrackerRing = ({
             fill="none"
             strokeWidth={strokeWidth}
             className={cn("ring-progress", color)}
+            strokeLinecap="round"
             strokeDasharray={circumference}
             initial={{ strokeDashoffset: circumference }}
             animate={{ strokeDashoffset: circumference - dash }}
@@ -60,7 +63,7 @@ export const TimeTrackerRing = ({
         {/* Center text */}
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <motion.span 
-            className="text-2xl font-bold"
+            className="text-xl font-bold bg-gradient-to-br from-primary to-secondary bg-clip-text text-transparent"
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
             transition={{ delay: 0.5, type: "spring" }}
@@ -68,7 +71,7 @@ export const TimeTrackerRing = ({
             {time}
           </motion.span>
           <motion.span 
-            className="text-sm text-gray-600"
+            className="text-sm text-gray-600 mt-0.5"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ delay: 0.7 }}
@@ -77,6 +80,14 @@ export const TimeTrackerRing = ({
           </motion.span>
         </div>
       </div>
+      <motion.div 
+        className="mt-2 text-xs text-gray-500"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.9 }}
+      >
+        Goal: {goal}m
+      </motion.div>
     </div>
   );
 };

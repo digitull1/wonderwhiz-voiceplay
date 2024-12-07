@@ -11,8 +11,19 @@ interface TimeTrackerProps {
 }
 
 export const TimeTracker = ({ timeSpent }: TimeTrackerProps) => {
-  const todayPercentage = Math.min((timeSpent.today / 60) * 100, 100);
-  const weekPercentage = Math.min((timeSpent.week / 300) * 100, 100);
+  // Calculate percentages based on daily and weekly goals
+  const dailyGoal = 60; // 60 minutes per day goal
+  const weeklyGoal = 300; // 300 minutes per week goal (5 hours)
+  
+  const todayPercentage = Math.min((timeSpent.today / dailyGoal) * 100, 100);
+  const weekPercentage = Math.min((timeSpent.week / weeklyGoal) * 100, 100);
+
+  const formatTime = (minutes: number) => {
+    if (minutes < 60) return `${minutes}m`;
+    const hours = Math.floor(minutes / 60);
+    const remainingMinutes = minutes % 60;
+    return remainingMinutes > 0 ? `${hours}h ${remainingMinutes}m` : `${hours}h`;
+  };
 
   return (
     <motion.div 
@@ -21,7 +32,7 @@ export const TimeTracker = ({ timeSpent }: TimeTrackerProps) => {
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
     >
-      <div className="flex items-center gap-2 mb-3">
+      <div className="flex items-center gap-2 mb-4">
         <Clock className="w-5 h-5 text-secondary" />
         <h3 className="text-lg font-semibold">Learning Time</h3>
       </div>
@@ -31,25 +42,31 @@ export const TimeTracker = ({ timeSpent }: TimeTrackerProps) => {
           percentage={todayPercentage}
           color="stroke-secondary"
           label="Today"
-          time={`${timeSpent.today}m`}
+          time={formatTime(timeSpent.today)}
           size={100}
+          goal={dailyGoal}
         />
         <TimeTrackerRing
           percentage={weekPercentage}
           color="stroke-primary"
           label="This Week"
-          time={`${timeSpent.week}m`}
+          time={formatTime(timeSpent.week)}
           size={100}
+          goal={weeklyGoal}
         />
       </div>
       
       <motion.div 
-        className="mt-2 text-center text-sm text-gray-600"
+        className="mt-3 text-center text-sm text-gray-600"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 0.5 }}
       >
-        Keep learning to fill your rings! 🌟
+        {timeSpent.today === 0 && timeSpent.week === 0 ? (
+          "Start your learning journey today! 🌟"
+        ) : (
+          `${formatTime(timeSpent.today)} today - Keep going! ✨`
+        )}
       </motion.div>
     </motion.div>
   );

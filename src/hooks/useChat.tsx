@@ -7,6 +7,7 @@ import { useUserProgress } from "./useUserProgress";
 import { useBlockGeneration } from "./useBlockGeneration";
 import { useImageAnalysis } from "./useImageAnalysis";
 import { useQuiz } from "./useQuiz";
+import { supabase } from "@/integrations/supabase/client";
 
 export const useChat = () => {
   const [messages, setMessages] = useState<Message[]>([
@@ -66,6 +67,30 @@ export const useChat = () => {
     setIsLoading(true);
 
     try {
+      // Track learning time
+      const today = new Date().toISOString().split('T')[0];
+      const { data: existingTime } = await supabase
+        .from('learning_time')
+        .select('*')
+        .eq('date', today)
+        .single();
+
+      if (existingTime) {
+        await supabase
+          .from('learning_time')
+          .update({ 
+            minutes_spent: (existingTime.minutes_spent || 0) + 1 
+          })
+          .eq('id', existingTime.id);
+      } else {
+        await supabase
+          .from('learning_time')
+          .insert([{ 
+            minutes_spent: 1,
+            date: today
+          }]);
+      }
+
       const previousMessages = messages.slice(-3).map(m => m.text).join(" ");
       const response = await getGroqResponse(messageText);
       const blocks = await generateDynamicBlocks(response, currentTopic, previousMessages);
