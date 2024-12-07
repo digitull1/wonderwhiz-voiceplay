@@ -1,10 +1,10 @@
 import React from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Trophy, Upload } from "lucide-react";
-import { ImageAction } from "./ImageAction";
 import { ImageUpload } from "../../ImageUpload";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { QuizAction } from "./QuizAction";
 
 interface MessageActionsProps {
   onPanelOpen?: () => void;
@@ -33,8 +33,15 @@ export const MessageActions: React.FC<MessageActionsProps> = ({
       transition={{ duration: 0.2, delay: 0.1 }}
     >
       <AnimatePresence mode="wait">
-        {/* Image Generation Icon */}
-        <ImageAction key="image" messageText={messageText} />
+        {/* Quiz Action */}
+        {onQuizGenerated && (
+          <QuizAction 
+            key="quiz"
+            onQuizGenerated={onQuizGenerated}
+            messageText={messageText}
+            className="bg-gradient-to-br from-accent/20 to-primary/20"
+          />
+        )}
 
         {/* Image Upload Icon */}
         {onImageAnalyzed && (

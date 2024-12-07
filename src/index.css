@@ -46,7 +46,7 @@
 
 /* Luxury Message Bubbles */
 .message-bubble-ai {
-  @apply backdrop-blur-xl shadow-luxury border border-white/20 animate-fade-in text-white w-full;
+  @apply backdrop-blur-xl shadow-luxury border border-white/20 animate-fade-in text-white;
   background: linear-gradient(
     135deg,
     rgba(155, 135, 245, 0.98) 0%,
@@ -55,10 +55,15 @@
   box-shadow: 
     0 8px 32px rgba(0,0,0,0.1),
     inset 0 0 32px rgba(255,255,255,0.1);
+  margin: 1rem 0;
+  padding: 1.5rem;
+  border-radius: 1rem;
+  line-height: 1.6;
+  letter-spacing: 0.01em;
 }
 
 .message-bubble-user {
-  @apply backdrop-blur-lg shadow-card border border-white/10 text-app-text-dark w-full;
+  @apply backdrop-blur-lg shadow-card border border-white/10 text-app-text-dark;
   background: linear-gradient(
     135deg,
     rgba(245, 245, 247, 0.98) 0%,
@@ -67,6 +72,10 @@
   box-shadow: 
     0 4px 12px rgba(0,0,0,0.05),
     inset 0 0 24px rgba(255,255,255,0.5);
+  margin: 1rem 0;
+  padding: 1.25rem;
+  border-radius: 1rem;
+  line-height: 1.5;
 }
 
 /* Mobile Optimizations */
@@ -77,7 +86,8 @@
   
   .message-bubble-ai,
   .message-bubble-user {
-    @apply px-3 py-4 mx-0 w-full;
+    margin: 0.75rem 0;
+    padding: 1rem;
   }
 
   .block-hover {
@@ -97,46 +107,20 @@
 }
 
 .post-chat-actions {
-  @apply flex items-center justify-start gap-1.5 px-2 sm:px-3 py-1 sm:py-1.5 mt-1;
+  @apply flex items-center justify-start gap-2 px-3 py-2 mt-2;
   background: linear-gradient(
     to right,
     rgba(155, 135, 245, 0.02),
     rgba(51, 195, 240, 0.01)
   );
   backdrop-filter: blur(8px);
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 0.75rem;
   opacity: 0;
   transition: opacity 0.3s ease-in-out;
 }
 
 .group:hover .post-chat-actions {
   opacity: 1;
-}
-
-.action-icon {
-  @apply p-2 rounded-full transition-all duration-300 cursor-pointer;
-  background: linear-gradient(135deg, 
-    rgba(255, 255, 255, 0.25) 0%, 
-    rgba(255, 255, 255, 0.15) 100%
-  );
-  box-shadow: 
-    0 4px 12px rgba(0,0,0,0.1),
-    inset 0 0 0 1px rgba(255,255,255,0.3);
-}
-
-.action-icon:hover {
-  @apply transform scale-110;
-  background: linear-gradient(135deg, 
-    rgba(255, 255, 255, 0.35) 0%, 
-    rgba(255, 255, 255, 0.25) 100%
-  );
-  box-shadow: 
-    0 6px 16px rgba(0,0,0,0.15),
-    inset 0 0 0 1px rgba(255,255,255,0.4);
-}
-
-.action-icon:disabled {
-  @apply cursor-not-allowed opacity-50;
 }
 
 /* Points Animation */
@@ -148,18 +132,6 @@
 
 .points-animation {
   animation: points-pop 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Enhanced Block Animations */
-.block-hover {
-  @apply transition-all duration-300 ease-out;
-  transform-style: preserve-3d;
-  perspective: 1000px;
-}
-
-.block-hover:hover {
-  transform: translateY(-5px) rotateX(2deg);
-  box-shadow: 0 8px 30px rgba(0,0,0,0.1);
 }
 
 /* Hide scrollbar but keep functionality */
