@@ -52,8 +52,9 @@ export const CollapsiblePanel = ({ userProgress }: CollapsiblePanelProps) => {
       <Sheet>
         <SheetTrigger asChild>
           <button
-            className="bg-gradient-to-r from-primary via-secondary to-accent p-2 rounded-full 
-              shadow-lg hover:shadow-xl transition-all duration-300 text-white"
+            className="bg-gradient-luxury p-3 rounded-full shadow-luxury
+              hover:shadow-xl transition-all duration-300 text-white
+              hover:scale-105 active:scale-95"
             aria-label="Open menu"
           >
             <Menu className="w-5 h-5" />
@@ -61,8 +62,7 @@ export const CollapsiblePanel = ({ userProgress }: CollapsiblePanelProps) => {
         </SheetTrigger>
         <SheetContent 
           side="right"
-          className="w-[300px] sm:w-[400px] bg-white/95 backdrop-blur-sm border-l 
-            border-gray-100 shadow-xl overflow-y-auto"
+          className="w-[300px] sm:w-[400px] luxury-panel overflow-y-auto"
         >
           <div className="flex flex-col gap-6 p-4">
             <ProgressCard userProgress={userProgress} />

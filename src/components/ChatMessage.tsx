@@ -31,7 +31,6 @@ export const ChatMessage = ({
       setIsTypingComplete(false);
       let index = 0;
       
-      // Clean the message by removing undefined and ensuring proper spacing
       const cleanedMessage = message?.replace(/undefined|null/g, '').trim() || "Hi! I'm WonderWhiz! What's your name? 😊";
       
       const typingInterval = setInterval(() => {
@@ -66,38 +65,21 @@ export const ChatMessage = ({
   return (
     <motion.div 
       className={cn(
-        "flex mb-2 px-2 w-full",
+        "flex mb-4 px-4",
         isAi ? "justify-start" : "justify-end"
       )}
-      initial="hidden"
-      animate="visible"
-      exit={{ opacity: 0, scale: 0.9 }}
-      variants={{
-        hidden: { opacity: 0, y: 20, scale: 0.95 },
-        visible: { 
-          opacity: 1, 
-          y: 0,
-          scale: 1,
-          transition: {
-            type: "spring",
-            stiffness: 500,
-            damping: 25
-          }
-        },
-        hover: {
-          scale: 1.01,
-          transition: {
-            type: "spring",
-            stiffness: 400,
-            damping: 10
-          }
-        }
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ 
+        duration: 0.3,
+        type: "spring",
+        stiffness: 500,
+        damping: 25
       }}
-      whileHover="hover"
-      layout
     >
       <div className={cn(
-        "flex items-start gap-2 max-w-[95%] group",
+        "flex items-start gap-3 max-w-[85%] group",
         isAi ? "w-full" : "w-full"
       )}>
         {isAi && (
@@ -113,15 +95,15 @@ export const ChatMessage = ({
 
         <motion.div
           className={cn(
-            "space-y-2 p-3 rounded-2xl shadow-sm relative overflow-hidden min-h-[48px] w-full",
+            "relative p-4 rounded-2xl shadow-luxury",
             isAi ? 
-              "bg-gradient-to-br from-[#E8E8FF]/95 via-[#F4F4FF]/97 to-[#FFFFFF]/95 rounded-tl-sm border border-[#E8E8FF]/50" : 
-              "bg-gradient-to-br from-[#FFFFFF]/95 via-[#FAFAFA]/97 to-[#F8F8F8]/95 rounded-tr-sm border border-gray-100/50"
+              "message-bubble-ai rounded-tl-sm" : 
+              "message-bubble-user rounded-tr-sm"
           )}
           layout
         >
-          <p className="text-[14px] leading-[1.3] whitespace-pre-wrap relative z-10 
-            tracking-wide font-medium text-gray-800">
+          <p className="text-[15px] leading-relaxed tracking-wide font-medium
+            text-gray-800 whitespace-pre-wrap relative z-10">
             {displayedText}
             {isAi && !isTypingComplete && (
               <motion.span
@@ -135,10 +117,9 @@ export const ChatMessage = ({
           {isAi && (
             <motion.button
               onClick={handleListen}
-              className="absolute top-2.5 right-2.5 opacity-70 hover:opacity-100 
+              className="absolute top-3 right-3 opacity-70 hover:opacity-100 
                 cursor-pointer transition-all p-1.5 rounded-full hover:bg-white/50
                 active:scale-95 z-20"
-              aria-label={isPlaying ? "Stop speaking" : "Listen to message"}
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.95 }}
             >
@@ -153,7 +134,7 @@ export const ChatMessage = ({
           <AnimatePresence>
             {isAi && blocks && blocks.length > 0 && onBlockClick && isTypingComplete && (
               <motion.div 
-                className="flex flex-col gap-3 mt-3 relative z-10"
+                className="mt-4 relative z-10"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
@@ -162,8 +143,6 @@ export const ChatMessage = ({
               </motion.div>
             )}
           </AnimatePresence>
-
-          <div className="absolute inset-0 bg-gradient-to-br from-transparent to-white/5 pointer-events-none" />
         </motion.div>
       </div>
     </motion.div>

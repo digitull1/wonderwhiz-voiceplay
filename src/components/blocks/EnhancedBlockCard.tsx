@@ -16,9 +16,9 @@ export const EnhancedBlockCard = ({
 }: EnhancedBlockCardProps) => {
   const getBlockGradient = () => {
     const gradients = [
-      "from-[#FF6B6B] to-[#FF8E8E]", // Warm Red
-      "from-[#4CABFF] to-[#6DBDFF]", // Ocean Blue
-      "from-[#BFAAFF] to-[#E5D0FF]"  // Soft Purple
+      "from-block-purple to-block-blue",
+      "from-block-blue to-block-orange",
+      "from-block-orange to-block-purple"
     ];
     return gradients[index % gradients.length];
   };
@@ -33,20 +33,22 @@ export const EnhancedBlockCard = ({
       whileTap={{ scale: 0.98 }}
       onClick={onClick}
       className={cn(
-        "group flex flex-col justify-between w-full min-h-[120px] p-4",
+        "group flex flex-col justify-between w-full min-h-[140px] p-5",
         "rounded-2xl transition-all duration-300",
         "relative overflow-hidden text-white",
-        "shadow-lg hover:shadow-xl border border-white/20",
+        "shadow-block hover:shadow-xl border border-white/20",
         "bg-gradient-to-br cursor-pointer",
-        "active:scale-95",
         getBlockGradient()
       )}
     >
       <div className="flex flex-col gap-2 relative z-10">
-        <h3 className="text-[14px] md:text-[16px] lg:text-[18px] font-semibold leading-snug 
+        <h3 className="text-block-title font-semibold leading-snug 
           tracking-tight break-words text-left max-w-full">
           {block.title}
         </h3>
+        <p className="text-block-desc opacity-90 font-medium">
+          {block.description || "Click to explore more!"}
+        </p>
       </div>
 
       {/* Interactive background elements */}
