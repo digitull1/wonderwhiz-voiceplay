@@ -11,12 +11,12 @@ interface TimeTrackerProps {
 }
 
 export const TimeTracker = ({ timeSpent }: TimeTrackerProps) => {
-  const todayPercentage = Math.min((timeSpent.today / 60) * 100, 100); // 1 hour max
-  const weekPercentage = Math.min((timeSpent.week / 300) * 100, 100); // 5 hours max
+  const todayPercentage = Math.min((timeSpent.today / 60) * 100, 100);
+  const weekPercentage = Math.min((timeSpent.week / 300) * 100, 100);
 
   return (
     <motion.div 
-      className="bg-white/80 backdrop-blur-sm rounded-xl p-4 shadow-sm"
+      className="bg-white/80 backdrop-blur-sm rounded-xl p-4 shadow-sm border border-primary/10"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5 }}
