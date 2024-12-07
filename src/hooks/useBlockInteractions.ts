@@ -20,7 +20,7 @@ export const useBlockInteractions = (
         .select('*')
         .eq('date', today)
         .eq('user_id', userId)
-        .single();
+        .maybeSingle(); // Use maybeSingle instead of single to handle no rows case
 
       if (fetchError && fetchError.code !== 'PGRST116') {
         console.error('Error fetching learning time:', fetchError);
@@ -53,7 +53,7 @@ export const useBlockInteractions = (
       }
     } catch (error) {
       console.error('Error tracking learning time:', error);
-      throw error;
+      // Don't throw the error, just log it to prevent breaking the UI
     }
   };
 
@@ -76,7 +76,7 @@ export const useBlockInteractions = (
       }
     } catch (error) {
       console.error('Error tracking explored topic:', error);
-      throw error;
+      // Don't throw the error, just log it
     }
   };
 

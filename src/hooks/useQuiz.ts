@@ -4,7 +4,11 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "./use-toast";
 import confetti from "canvas-confetti";
 
-export const useQuiz = (updateUserProgress: (points: number) => Promise<void>) => {
+interface UseQuizProps {
+  updateProgress: (points: number) => Promise<void>;
+}
+
+export const useQuiz = ({ updateProgress }: UseQuizProps) => {
   const [quizState, setQuizState] = useState<QuizState>({
     isActive: false,
     currentQuestion: null,
@@ -59,7 +63,7 @@ export const useQuiz = (updateUserProgress: (points: number) => Promise<void>) =
         origin: { y: 0.6 }
       });
       
-      await updateUserProgress(10);
+      await updateProgress(10);
       
       toast({
         title: "🎉 Awesome!",
