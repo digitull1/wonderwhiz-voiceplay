@@ -1,7 +1,8 @@
 import React from "react";
-import { Volume2, Camera, Sparkles, Brain } from "lucide-react";
+import { Volume2, Camera, BookOpen, ImageIcon } from "lucide-react";
 import { ActionIcon } from "./actions/ActionIcon";
 import { QuizAction } from "./actions/QuizAction";
+import { ImageAction } from "./actions/ImageAction";
 import { ImageUpload } from "../ImageUpload";
 
 interface MessageActionsProps {
@@ -46,12 +47,7 @@ export const MessageActions = ({
             />
           </ImageUpload>
 
-          <ActionIcon
-            icon={Sparkles}
-            tooltip="Let me create magical pictures to help you learn!"
-            onClick={() => {}} 
-            className="bg-gradient-to-br from-purple-500/5 to-pink-500/5"
-          />
+          <ImageAction messageText={messageText} />
         </>
       )}
 
@@ -59,7 +55,7 @@ export const MessageActions = ({
         <QuizAction
           onQuizGenerated={onQuizGenerated}
           messageText={messageText}
-          icon={Brain}
+          icon={BookOpen}
           tooltip="Let's have a fun quiz to test what you've learned!"
         />
       )}

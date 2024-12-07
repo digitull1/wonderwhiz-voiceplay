@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Image } from "lucide-react";
+import { ImageIcon } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { ActionIcon } from "./ActionIcon";
@@ -67,7 +67,7 @@ export const ImageAction = ({ messageText }: ImageActionProps) => {
 
   return (
     <ActionIcon
-      icon={Image}
+      icon={ImageIcon}
       tooltip="Create a picture!"
       onClick={handleImageGeneration}
       isLoading={isGenerating}
