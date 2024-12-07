@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { motion } from "framer-motion";
+import React, { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Block } from "@/types/chat";
 import { ChatAvatar } from "./chat/ChatAvatar";
@@ -22,6 +22,32 @@ export const ChatMessage = ({
   onBlockClick 
 }: ChatMessageProps) => {
   const [isPlaying, setIsPlaying] = useState(false);
+  const [displayedText, setDisplayedText] = useState("");
+  const [isTypingComplete, setIsTypingComplete] = useState(!isAi);
+  
+  useEffect(() => {
+    if (isAi) {
+      setDisplayedText("");
+      setIsTypingComplete(false);
+      let index = 0;
+      
+      const typingInterval = setInterval(() => {
+        if (index < message.length) {
+          setDisplayedText(prev => prev + message[index]);
+          index++;
+        } else {
+          clearInterval(typingInterval);
+          setIsTypingComplete(true);
+        }
+      }, 30); // Adjust typing speed here (milliseconds per character)
+
+      return () => clearInterval(typingInterval);
+    } else {
+      setDisplayedText(message);
+      setIsTypingComplete(true);
+    }
+  }, [message, isAi]);
+
   const messageVariants = {
     hidden: { 
       opacity: 0, 
@@ -99,7 +125,14 @@ export const ChatMessage = ({
         >
           <p className="text-[14px] leading-[1.3] whitespace-pre-wrap relative z-10 
             tracking-wide font-medium text-gray-800">
-            {message}
+            {displayedText}
+            {isAi && !isTypingComplete && (
+              <motion.span
+                className="inline-block w-1.5 h-4 bg-primary/50 ml-0.5"
+                animate={{ opacity: [1, 0] }}
+                transition={{ duration: 0.5, repeat: Infinity }}
+              />
+            )}
           </p>
           
           {isAi && (
@@ -120,16 +153,18 @@ export const ChatMessage = ({
             </motion.button>
           )}
           
-          {isAi && blocks && blocks.length > 0 && onBlockClick && (
-            <motion.div 
-              className="flex flex-col gap-3 mt-3 relative z-10"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2 }}
-            >
-              <RelatedBlocks blocks={blocks} onBlockClick={onBlockClick} />
-            </motion.div>
-          )}
+          <AnimatePresence>
+            {isAi && blocks && blocks.length > 0 && onBlockClick && isTypingComplete && (
+              <motion.div 
+                className="flex flex-col gap-3 mt-3 relative z-10"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+              >
+                <RelatedBlocks blocks={blocks} onBlockClick={onBlockClick} />
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           <div className="absolute inset-0 bg-gradient-to-br from-transparent to-white/5 pointer-events-none" />
         </motion.div>
