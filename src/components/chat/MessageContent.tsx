@@ -44,10 +44,10 @@ export const MessageContent = ({
           currentIndex++;
         } else {
           setIsTyping(false);
-          setTimeout(() => setShowBlocks(true), 500);
+          setTimeout(() => setShowBlocks(true), 500); // Show blocks after typing with a small delay
           clearInterval(interval);
         }
-      }, 100);
+      }, 50); // Slightly faster typing speed
 
       return () => clearInterval(interval);
     } else {
@@ -96,7 +96,7 @@ export const MessageContent = ({
       {isAi && showActions && !isTyping && showBlocks && (
         <MessageActions
           onListen={() => onListen?.(message)}
-          onQuizGenerated={quiz => onQuizGenerated?.(quiz)}
+          onQuizGenerated={onQuizGenerated}
           messageText={message}
         />
       )}
