@@ -68,23 +68,13 @@ export const ChatMessage = ({
         <motion.div
           className={cn(
             "relative flex-1 w-full",
-            isAi ? "text-white" : "text-app-text-dark"
+            isAi ? "message-bubble-ai" : "message-bubble-user",
+            "rounded-xl p-4 sm:p-6"
           )}
           layout
         >
           <MessageContent 
-            message={isAi ? `Awesome! 9 is a perfect age for amazing discoveries! 🌟
-
-Let me show you what we can do together:
-
-📸 You can share pictures of your homework or anything you're curious about
-
-✨ I can create magical pictures to help you learn
-
-🧠 We'll have fun quizzes to test what you've learned
-
-I've got some mind-blowing facts that will blow your socks off! 
-Check these out and click on what interests you the most! 🚀` : message}
+            message={message} 
             isAi={isAi} 
             onListen={showActions ? onListen : undefined}
             onQuizGenerated={showActions ? onQuizGenerated : undefined}
