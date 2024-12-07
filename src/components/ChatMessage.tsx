@@ -34,24 +34,31 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
   onQuizAnswer,
   messageIndex = 0
 }) => {
-  const [isTyping, setIsTyping] = useState(true);
+  const [isTyping, setIsTyping] = useState(false);
   const [showBlocks, setShowBlocks] = useState(false);
   const showActions = !isAi || messageIndex > 3;
 
   useEffect(() => {
-    if (isAi) {
+    if (isAi && message) {
+      console.log("New message received, setting typing state");
       setIsTyping(true);
       setShowBlocks(false);
+      
+      // Immediately set typing to false since we disabled animations
+      setIsTyping(false);
+      setTimeout(() => {
+        console.log("Setting showBlocks to true");
+        setShowBlocks(true);
+      }, 500);
     }
   }, [message, isAi]);
 
   const handleTypingComplete = () => {
-    console.log("Typing complete, preparing to show blocks");
+    console.log("Typing complete");
     setIsTyping(false);
     setTimeout(() => {
-      console.log("Showing blocks now");
       setShowBlocks(true);
-    }, 1500);
+    }, 500);
   };
 
   return (
