@@ -41,12 +41,24 @@ serve(async (req) => {
     try {
       // Try HuggingFace first
       console.log('Attempting HuggingFace generation...');
-      const hf = new HfInference(Deno.env.get('HUGGING_FACE_ACCESS_TOKEN'));
+      const hfToken = Deno.env.get('HUGGING_FACE_ACCESS_TOKEN');
+      if (!hfToken) {
+        throw new Error('HuggingFace access token not configured');
+      }
+      console.log('HuggingFace token found, initializing client...');
+      
+      const hf = new HfInference(hfToken);
+      console.log('Sending request to FLUX model...');
+      
       const image = await hf.textToImage({
         inputs: formattedPrompt,
         model: 'black-forest-labs/FLUX.1-schnell',
+        parameters: {
+          negative_prompt: "unsafe, inappropriate, scary, violent",
+        }
       });
 
+      console.log('Image received from HuggingFace, converting to base64...');
       // Convert blob to base64
       const arrayBuffer = await image.arrayBuffer();
       const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
@@ -57,7 +69,8 @@ serve(async (req) => {
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     } catch (hfError) {
-      console.error('HuggingFace generation failed, falling back to OpenAI:', hfError);
+      console.error('HuggingFace generation failed with error:', hfError);
+      console.log('Falling back to OpenAI...');
       
       // Fallback to OpenAI
       const openaiKey = Deno.env.get("OPENAI_API_KEY");
