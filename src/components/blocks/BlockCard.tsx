@@ -19,7 +19,7 @@ export const BlockCard = ({ block, index, onClick, color }: BlockCardProps) => {
 
   return (
     <motion.div
-      className="snap-center px-2 py-4 w-[80vw] md:w-[280px]"
+      className="snap-center px-2 py-4 w-full sm:w-[280px]"
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: index * 0.1 }}
@@ -34,11 +34,13 @@ export const BlockCard = ({ block, index, onClick, color }: BlockCardProps) => {
           before:bg-gradient-to-br before:from-white/20 before:to-transparent`}
       >
         <div className="relative z-10 h-full flex flex-col items-center justify-center text-center">
-          <h3 className="text-block-title font-bold mb-4 line-clamp-2">
+          <h3 className="text-block-title font-bold mb-4 line-clamp-2 text-app-text-light">
             {truncateContent(block.title)}
           </h3>
-          <p className="text-block-desc opacity-90 line-clamp-2">
-            {block.description || "Click to explore more!"}
+          <p className="text-block-desc opacity-90 line-clamp-2 text-app-text-light">
+            {block.description && !block.description.includes("Click to explore more") 
+              ? block.description 
+              : "Discover something amazing!"}
           </p>
         </div>
         
