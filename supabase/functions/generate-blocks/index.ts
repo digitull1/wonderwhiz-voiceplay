@@ -15,43 +15,52 @@ function getAgeSpecificInstructions(ageGroup: string): string {
     return `
       For young explorers (${ageGroup} years):
       - Use very simple, playful language with basic words
-      - Start with fun questions or "Want to know..."
-      - Include magical and wonder-filled words
-      - Make comparisons to familiar things like toys or treats
-      - Keep sentences short and exciting
+      - Start blocks with fun questions like "Do stars have bedtime stories?" or "Want to know a magical secret?"
+      - Include magical and wonder-filled words (magical, amazing, sparkly, fantastic)
+      - Make comparisons to familiar things like toys, treats, or pets
+      - Keep sentences short and exciting with lots of "!"
       - Add fun, friendly emojis that match the content
       - Focus on basic, fascinating facts that spark joy
       - Make everything sound like a magical adventure
-      - Block 4 must start with "Want to see a cute picture of..."
-      - Block 5 must start with "Ready for a fun quiz about..."
+      - Block 4 MUST start with "Want to see a cute picture of..." and end with 🎨
+      - Block 5 MUST start with "Ready for a fun quiz about..." and end with 🎯
+      - Use words like "magical", "amazing", "super fun", "incredible"
+      - Keep vocabulary simple and familiar
+      - Add playful elements like "Wow!" or "Guess what?"
     `;
   } else if (minAge >= 8 && maxAge <= 11) {
     return `
       For curious minds (${ageGroup} years):
       - Use clear language with some interesting vocabulary
-      - Start with intriguing questions or "Did you know..."
-      - Include relatable examples from daily life
+      - Start blocks with intriguing questions like "Did you know..." or "Ever wondered..."
+      - Include relatable examples from school, games, or daily life
       - Add silly comparisons that make learning fun
       - Mix in some playful jokes and puns
       - Use emojis that add meaning to the content
       - Focus on the 'how' and 'why' of things
       - Make everything sound like an exciting discovery
-      - Block 4 must start with "Want to see a cool picture of..."
-      - Block 5 must start with "Think you know about..."
+      - Block 4 MUST start with "Want to see a cool picture of..." and end with 🎨
+      - Block 5 MUST start with "Think you know about..." and end with 🎯
+      - Use words like "awesome", "fascinating", "incredible", "mind-blowing"
+      - Include some scientific terms with simple explanations
+      - Add interactive elements like "Let's explore!" or "Ready to discover?"
     `;
   } else {
     return `
       For young scientists (${ageGroup} years):
       - Use more sophisticated language while keeping it engaging
-      - Start with thought-provoking questions
-      - Include real-world applications and examples
-      - Add interesting scientific facts and connections
+      - Start blocks with thought-provoking questions or "Ever considered..."
+      - Include real-world applications and scientific concepts
+      - Add interesting facts and connections to other topics
       - Use cool analogies that respect their intelligence
-      - Choose emojis that complement the content
+      - Choose emojis that complement the scientific content
       - Focus on deeper understanding and connections
       - Make everything sound like scientific exploration
-      - Block 4 must start with "Let's visualize..."
-      - Block 5 must start with "Ready to test your knowledge..."
+      - Block 4 MUST start with "Let's visualize..." and end with 🎨
+      - Block 5 MUST start with "Ready to test your knowledge about..." and end with 🎯
+      - Use proper scientific terms with clear explanations
+      - Include references to current scientific discoveries
+      - Add challenges like "Can you explain why..." or "What would happen if..."
     `;
   }
 }
