@@ -22,6 +22,7 @@ async function retryWithBackoff<T>(
       return await operation();
     } catch (error) {
       lastError = error;
+      console.error(`Attempt ${i + 1} failed:`, error);
       
       // If it's a rate limit error, wait for the specified time
       if (error.message?.includes('Rate limit reached')) {
@@ -41,18 +42,22 @@ async function retryWithBackoff<T>(
 }
 
 serve(async (req) => {
+  // Always return CORS headers for OPTIONS requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders })
+    return new Response(null, { 
+      headers: corsHeaders,
+      status: 204
+    });
   }
 
   try {
-    const { query, context, age_group, name, previous_response } = await req.json()
-    console.log("Generating blocks for:", { query, context, age_group, name, previous_response });
+    const { query, context, age_group, name, previous_response } = await req.json();
+    console.log("Generating blocks for:", { query, context, age_group, name });
 
-    const apiKey = Deno.env.get('GROQ_API_KEY') || Deno.env.get('Groq');
+    const apiKey = Deno.env.get('GROQ_API_KEY');
     if (!apiKey) {
-      console.error('Neither GROQ_API_KEY nor Groq secret is set');
-      throw new Error('Groq API key not configured');
+      console.error('GROQ_API_KEY is not set');
+      throw new Error('API key not configured');
     }
 
     const prompt = `
@@ -96,9 +101,10 @@ serve(async (req) => {
       - Ensure each block is directly related to the current topic!
       - Build upon the previous response to maintain conversation flow!
       - Adapt language complexity for age ${age_group}!
-    `
+      - NO undefined values or spelling mistakes allowed!
+    `;
 
-    console.log("Sending request to Groq API with prompt:", prompt);
+    console.log("Sending request to Groq API");
 
     const makeRequest = async () => {
       const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -120,7 +126,8 @@ serve(async (req) => {
               4. Make kids curious to learn more
               5. Follow the clickbait-style format perfectly
               6. MUST be directly related to the current topic
-              7. Build upon previous responses to maintain context`
+              7. Build upon previous responses to maintain context
+              8. NEVER include undefined values or spelling mistakes`
             },
             {
               role: "user",
@@ -135,44 +142,67 @@ serve(async (req) => {
       if (!response.ok) {
         const error = await response.json();
         console.error("Groq API Error:", error);
-        
-        // Enhanced error handling for rate limits
-        if (error.error?.message?.includes('Rate limit reached')) {
-          throw new Error(error.error.message);
-        }
-        
         throw new Error(error.error?.message || "Failed to get response from Groq");
       }
 
-      return await response.json();
+      const data = await response.json();
+      console.log("Groq API Response:", data);
+
+      // Validate response format and content
+      if (!data.choices?.[0]?.message?.content) {
+        throw new Error("Invalid response format from Groq API");
+      }
+
+      const parsedContent = typeof data.choices[0].message.content === 'string' 
+        ? JSON.parse(data.choices[0].message.content)
+        : data.choices[0].message.content;
+
+      // Validate blocks structure
+      if (!Array.isArray(parsedContent?.blocks)) {
+        throw new Error("Invalid blocks format in response");
+      }
+
+      // Clean and validate each block
+      parsedContent.blocks = parsedContent.blocks.map(block => ({
+        ...block,
+        title: block.title?.trim() || "Did you know? Let's explore something amazing! ✨",
+        metadata: {
+          ...block.metadata,
+          topic: block.metadata?.topic || context
+        }
+      }));
+
+      return data;
     };
 
-    // Use the retry function for the API call
     const data = await retryWithBackoff(makeRequest);
-    console.log("Generated blocks:", data);
 
     return new Response(
       JSON.stringify(data),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      { 
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json' 
+        } 
+      }
     );
+
   } catch (error) {
-    console.error('Error:', error);
-    
-    // Provide more informative error messages
-    const errorMessage = error.message?.includes('Rate limit reached')
-      ? 'Service is temporarily busy. Please try again in a few seconds.'
-      : error.message;
+    console.error('Error in generate-blocks:', error);
     
     return new Response(
       JSON.stringify({ 
-        error: errorMessage,
+        error: 'Failed to generate blocks',
         details: error.message,
         success: false 
       }),
       { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }, 
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json' 
+        }, 
         status: 500 
       }
     );
   }
-})
+});
