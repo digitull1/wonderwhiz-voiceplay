@@ -31,19 +31,25 @@ export const QuestionDisplay = ({
       transition={{ delay: 0.2 }}
     >
       <div className="flex justify-between items-center mb-4">
-        <span className="text-white/90 text-sm font-medium">
+        <motion.span 
+          className="text-white/90 text-sm font-medium bg-white/10 px-4 py-2 rounded-full"
+          whileHover={{ scale: 1.05 }}
+        >
           Question {currentQuestionIndex + 1} of {totalQuestions}
-        </span>
-        <span className="text-white/90 text-sm font-medium">
+        </motion.span>
+        <motion.span 
+          className="text-white/90 text-sm font-medium bg-white/10 px-4 py-2 rounded-full"
+          whileHover={{ scale: 1.05 }}
+        >
           Score: {correctAnswers}/{totalQuestions}
-        </span>
+        </motion.span>
       </div>
 
       <motion.h3 
         className="text-xl sm:text-2xl font-semibold mb-6 text-white leading-relaxed"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.2 }}
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
       >
         {question.question}
       </motion.h3>
@@ -72,13 +78,17 @@ export const QuestionDisplay = ({
                     "bg-white/10 text-white border-white/20 backdrop-blur-xl hover:bg-white/20",
                     showResult && isCorrect && "bg-green-500/90 text-white border-white/20",
                     showResult && isSelected && !isCorrect && "bg-red-500/90 text-white border-white/20",
-                    "sm:text-lg text-base group font-medium"
+                    "sm:text-lg text-base group font-medium",
+                    "hover:shadow-xl hover:border-white/30"
                   )}
                   onClick={() => !showCorrect && onAnswerClick(index)}
                   disabled={showCorrect}
                 >
                   <span className="relative z-10 flex items-center gap-3">
-                    <span className="text-sm font-bold px-2 py-1 bg-white/20 rounded">
+                    <span className={cn(
+                      "text-sm font-bold px-3 py-1.5 rounded-full transition-colors",
+                      "bg-white/20 group-hover:bg-white/30"
+                    )}>
                       {String.fromCharCode(65 + index)}
                     </span>
                     <span className="flex-1">{option}</span>
@@ -92,6 +102,18 @@ export const QuestionDisplay = ({
                       </motion.span>
                     )}
                   </span>
+                  {!showCorrect && (
+                    <motion.div
+                      className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/5 to-white/0"
+                      initial={{ x: "-100%" }}
+                      animate={{ x: "100%" }}
+                      transition={{
+                        repeat: Infinity,
+                        duration: 2,
+                        ease: "linear"
+                      }}
+                    />
+                  )}
                 </Button>
               </motion.div>
             );

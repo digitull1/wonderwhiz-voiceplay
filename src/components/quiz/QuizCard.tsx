@@ -22,7 +22,6 @@ export const QuizCard = ({ questions, onAnswer }: QuizCardProps) => {
   const [correctAnswers, setCorrectAnswers] = useState(0);
 
   const questionsArray = Array.isArray(questions) ? questions : [questions];
-  console.log("Questions array:", questionsArray);
 
   const handleAnswerClick = (index: number) => {
     setSelectedAnswer(index);
@@ -34,9 +33,10 @@ export const QuizCard = ({ questions, onAnswer }: QuizCardProps) => {
       setCorrectAnswers(prev => prev + 1);
       setShowReward(true);
       confetti({
-        particleCount: 100,
-        spread: 70,
-        origin: { y: 0.6 }
+        particleCount: 150,
+        spread: 80,
+        origin: { y: 0.6 },
+        colors: ['#FEC6A1', '#9b87f5', '#33C3F0']
       });
       setTimeout(() => setShowReward(false), 2000);
     }
@@ -48,6 +48,12 @@ export const QuizCard = ({ questions, onAnswer }: QuizCardProps) => {
         setShowCorrect(false);
       } else {
         setQuizComplete(true);
+        confetti({
+          particleCount: 200,
+          spread: 100,
+          origin: { y: 0.6 },
+          colors: ['#FEC6A1', '#9b87f5', '#33C3F0']
+        });
       }
       onAnswer(isCorrect);
     }, 2000);
@@ -63,7 +69,7 @@ export const QuizCard = ({ questions, onAnswer }: QuizCardProps) => {
         exit={{ opacity: 0, y: -20 }}
         className={cn(
           "w-full max-w-2xl mx-auto",
-          "bg-gradient-to-br from-primary to-secondary",
+          "bg-gradient-to-br from-primary/95 via-secondary/95 to-accent/95",
           "rounded-xl shadow-luxury border border-white/20",
           "backdrop-blur-xl overflow-hidden"
         )}
