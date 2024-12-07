@@ -25,12 +25,13 @@ export const CollapsiblePanel: React.FC<CollapsiblePanelProps> = ({
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
-        // Update last explored topic
+        // Update last explored topic with a default emoji
         await supabase
           .from('explored_topics')
           .upsert({
             user_id: user.id,
             topic: topic,
+            emoji: '🌟', // Adding a default emoji
             last_explored_at: new Date().toISOString()
           });
       }
