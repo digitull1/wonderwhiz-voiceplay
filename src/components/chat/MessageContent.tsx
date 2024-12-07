@@ -51,7 +51,7 @@ export const MessageContent = ({
         } else {
           clearInterval(interval);
         }
-      }, 50); // Faster typing speed for better engagement
+      }, 20); // Faster typing speed for better engagement
 
       return () => clearInterval(interval);
     } else {
