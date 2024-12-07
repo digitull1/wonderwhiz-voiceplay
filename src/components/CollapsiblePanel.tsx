@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import { UserProgress } from "@/types/chat";
 import { ProgressCard } from "./panel/ProgressCard";
 import { TalkToWizzy } from "./panel/TalkToWizzy";
+import { TimeTracker } from "./panel/TimeTracker";
 import { TopicHistory } from "./panel/TopicHistory";
 
 interface CollapsiblePanelProps {
@@ -89,6 +90,9 @@ export const CollapsiblePanel: React.FC<CollapsiblePanelProps> = ({
           >
             <div className="pt-14 space-y-6">
               <ProgressCard userProgress={userProgress} />
+              {userProgress && (
+                <TimeTracker timeSpent={{ today: 0, week: 0 }} />
+              )}
               <TopicHistory topics={[]} onTopicClick={() => {}} />
               <TalkToWizzy />
             </div>
