@@ -14,41 +14,59 @@ export const useUserProgress = () => {
 
   useEffect(() => {
     const setupSubscription = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          console.log('No user found for progress tracking');
+          return;
+        }
 
-      // Initial fetch
-      const { data: initialProgress } = await supabase
-        .from('user_progress')
-        .select('*')
-        .eq('user_id', user.id)
-        .single();
+        // Initial fetch
+        const { data: initialProgress, error: fetchError } = await supabase
+          .from('user_progress')
+          .select('*')
+          .eq('user_id', user.id)
+          .single();
 
-      if (initialProgress) {
-        setUserProgress(initialProgress);
+        if (fetchError) {
+          console.error('Error fetching initial progress:', fetchError);
+          return;
+        }
+
+        if (initialProgress) {
+          console.log('Initial progress loaded:', initialProgress);
+          setUserProgress(initialProgress);
+        }
+
+        // Subscribe to changes
+        const channel = supabase
+          .channel(`user_progress_${user.id}`)
+          .on(
+            'postgres_changes',
+            {
+              event: '*',
+              schema: 'public',
+              table: 'user_progress',
+              filter: `user_id=eq.${user.id}`
+            },
+            (payload) => {
+              console.log('Progress update received:', payload);
+              if (payload.new) {
+                setUserProgress(payload.new as UserProgress);
+              }
+            }
+          )
+          .subscribe((status) => {
+            console.log('Subscription status:', status);
+          });
+
+        return () => {
+          console.log('Cleaning up subscription');
+          channel.unsubscribe();
+        };
+      } catch (error) {
+        console.error('Error in setupSubscription:', error);
       }
-
-      // Subscribe to changes
-      const subscription = supabase
-        .channel('user_progress_changes')
-        .on(
-          'postgres_changes',
-          {
-            event: 'UPDATE',
-            schema: 'public',
-            table: 'user_progress',
-            filter: `user_id=eq.${user.id}`
-          },
-          (payload) => {
-            console.log('Progress updated:', payload.new);
-            setUserProgress(payload.new as UserProgress);
-          }
-        )
-        .subscribe();
-
-      return () => {
-        subscription.unsubscribe();
-      };
     };
 
     setupSubscription();
@@ -64,11 +82,16 @@ export const useUserProgress = () => {
       }
 
       // First, get current progress
-      const { data: currentProgress } = await supabase
+      const { data: currentProgress, error: fetchError } = await supabase
         .from('user_progress')
         .select('*')
         .eq('user_id', user.id)
         .single();
+
+      if (fetchError) {
+        console.error('Error fetching current progress:', fetchError);
+        throw fetchError;
+      }
 
       if (!currentProgress) {
         console.log('No current progress found');
@@ -76,6 +99,7 @@ export const useUserProgress = () => {
       }
 
       const newPoints = currentProgress.points + pointsToAdd;
+      console.log('Calculating new points:', currentProgress.points, '+', pointsToAdd, '=', newPoints);
       
       // Calculate points needed for next level
       const { data: pointsData } = await supabase
@@ -90,7 +114,7 @@ export const useUserProgress = () => {
       const shouldLevelUp = newPoints >= pointsNeeded;
       const newLevel = shouldLevelUp ? currentProgress.level + 1 : currentProgress.level;
 
-      const { data, error } = await supabase
+      const { data, error: updateError } = await supabase
         .from('user_progress')
         .update({ 
           points: newPoints,
@@ -101,10 +125,12 @@ export const useUserProgress = () => {
         .select()
         .single();
 
-      if (error) {
-        console.error('Error updating progress:', error);
-        throw error;
+      if (updateError) {
+        console.error('Error updating progress:', updateError);
+        throw updateError;
       }
+
+      console.log('Progress updated successfully:', data);
 
       if (data) {
         setUserProgress(data);
@@ -121,15 +147,6 @@ export const useUserProgress = () => {
             title: "⭐ Points earned!",
             description: `+${pointsToAdd} points! ${remainingPoints} more to level ${currentProgress.level + 1}!`,
             className: "bg-gradient-to-r from-secondary to-green-500 text-white",
-          });
-        }
-
-        // Check and celebrate streak milestones
-        if (data.streak_days > currentProgress.streak_days) {
-          toast({
-            title: "🔥 Streak Extended!",
-            description: `${data.streak_days} days learning streak! Keep it up!`,
-            className: "bg-gradient-to-r from-orange-400 to-red-500 text-white",
           });
         }
       }
