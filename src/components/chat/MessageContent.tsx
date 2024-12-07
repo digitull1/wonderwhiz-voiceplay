@@ -98,10 +98,7 @@ export const MessageContent = ({
             className="bg-gradient-to-br from-blue-500/20 to-purple-500/20 text-white"
           />
           <ImageAction messageText={message} />
-          <QuizAction 
-            messageText={message}
-            onQuizGenerated={onQuizGenerated}
-          />
+          <QuizAction messageText={message} />
           <TrophyAction onPanelOpen={onPanelOpen} />
         </div>
       )}
