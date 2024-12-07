@@ -38,7 +38,7 @@ export const MessageActions: React.FC<MessageActionsProps> = ({
             icon={Volume2}
             tooltip="Listen to this message!"
             onClick={() => onListen(messageText)}
-            className="bg-gradient-to-br from-blue-500/5 to-cyan-500/5 hover:scale-110"
+            className="bg-gradient-to-br from-primary/20 to-secondary/20 hover:scale-110"
           />
         )}
 
@@ -51,6 +51,7 @@ export const MessageActions: React.FC<MessageActionsProps> = ({
             messageText={messageText}
             icon={BookOpen}
             tooltip="Let's have a fun quiz to test what you've learned!"
+            className="bg-gradient-to-br from-accent/20 to-primary/20 hover:scale-110"
           />
         )}
 
@@ -61,7 +62,7 @@ export const MessageActions: React.FC<MessageActionsProps> = ({
               icon={Upload}
               tooltip="Upload an image!"
               onClick={() => {}}
-              className="bg-gradient-to-br from-purple-500/5 to-pink-500/5 hover:scale-110"
+              className="bg-gradient-to-br from-primary/20 to-accent/20 hover:scale-110"
             />
           </ImageUpload>
         )}
@@ -70,9 +71,9 @@ export const MessageActions: React.FC<MessageActionsProps> = ({
           <ActionIcon
             key="trophy"
             icon={Trophy}
-            tooltip="Check your progress!"
+            tooltip="View your progress!"
             onClick={onPanelOpen}
-            className="bg-gradient-to-br from-yellow-500/5 to-orange-500/5 hover:scale-110"
+            className="bg-gradient-to-br from-accent/20 to-secondary/20 hover:scale-110"
           />
         )}
       </AnimatePresence>
