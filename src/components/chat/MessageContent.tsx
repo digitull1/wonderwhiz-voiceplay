@@ -15,7 +15,7 @@ interface MessageContentProps {
   onTypingComplete?: () => void;
 }
 
-const MessageContentComponent = ({ 
+const MessageContent = ({ 
   message, 
   isAi,
   onListen,
@@ -55,11 +55,9 @@ const MessageContentComponent = ({
           
           setDisplayedText(currentText);
 
-          // Check if typing is complete
           if (currentLineIndex >= lines.length) {
             isCompleting = true;
             clearInterval(interval);
-            // Add a delay before marking as complete
             setTimeout(() => {
               console.log("Typing animation complete");
               onTypingComplete?.();
@@ -102,5 +100,4 @@ const MessageContentComponent = ({
   );
 };
 
-export const MessageContent = React.memo(MessageContentComponent);
-MessageContent.displayName = "MessageContent";
+export default React.memo(MessageContent);

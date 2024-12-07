@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import { ChatMessage } from "./ChatMessage";
+import ChatMessage from "./ChatMessage";
 import { Block, QuizState } from "@/types/chat";
 import { Button } from "./ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";

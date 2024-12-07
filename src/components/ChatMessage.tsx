@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Block, QuizState } from "@/types/chat";
 import { RelatedBlocks } from "./chat/RelatedBlocks";
-import { MessageContent } from "./chat/MessageContent";
+import MessageContent from "./chat/MessageContent";
 import { QuizCard } from "./quiz/QuizCard";
 import { LoaderCircle } from "lucide-react";
 
@@ -21,7 +21,7 @@ interface ChatMessageProps {
   messageIndex?: number;
 }
 
-const ChatMessageComponent = ({ 
+const ChatMessage = ({ 
   isAi, 
   message, 
   onListen,
@@ -38,7 +38,6 @@ const ChatMessageComponent = ({
   const [showBlocks, setShowBlocks] = useState(false);
   const showActions = !isAi || messageIndex > 3;
 
-  // Reset typing state when message changes
   useEffect(() => {
     if (isAi) {
       setIsTyping(true);
@@ -46,11 +45,9 @@ const ChatMessageComponent = ({
     }
   }, [message, isAi]);
 
-  // Handle typing completion
   const handleTypingComplete = () => {
     console.log("Typing complete, preparing to show blocks");
     setIsTyping(false);
-    // Add longer delay before showing blocks
     setTimeout(() => {
       console.log("Showing blocks now");
       setShowBlocks(true);
@@ -131,5 +128,4 @@ const ChatMessageComponent = ({
   );
 };
 
-export const ChatMessage = React.memo(ChatMessageComponent);
-ChatMessage.displayName = "ChatMessage";
+export default React.memo(ChatMessage);
