@@ -96,90 +96,69 @@ export const ChatInput = ({
 
   return (
     <motion.div 
-      className="flex flex-col gap-3 relative px-3 pb-safe-bottom w-full max-w-3xl mx-auto"
+      className="flex flex-col gap-2 relative px-2 pb-2 w-full max-w-3xl mx-auto"
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3, delay: 0.2 }}
     >
       <div className="flex flex-col gap-2">
-        <div className="flex gap-2 justify-center">
+        <div className="flex items-center gap-2 w-full bg-white/80 backdrop-blur-sm rounded-2xl p-1.5 shadow-lg border border-white/50">
           <ImageUpload 
             onImageAnalyzed={onImageAnalyzed}
             className={cn(
-              "bg-gradient-to-r from-[#4CABFF]/90 to-[#6DBDFF]/90",
-              "hover:from-[#4CABFF] hover:to-[#6DBDFF] text-white p-3 rounded-xl", 
-              "shadow-lg transition-all duration-300 hover:scale-[1.02] active:scale-95", 
-              "disabled:opacity-50 disabled:hover:scale-100 min-h-[48px] min-w-[48px]",
-              "flex items-center justify-center border border-white/20 backdrop-blur-sm"
+              "bg-gradient-to-r from-primary/80 to-primary/90 hover:from-primary hover:to-primary",
+              "text-white p-2.5 rounded-xl transition-all duration-200",
+              "shadow-sm hover:shadow-md active:scale-95",
+              "flex items-center justify-center min-h-[40px] min-w-[40px]"
             )}
           >
             <ImagePlus className="w-5 h-5" />
           </ImageUpload>
 
-          <Button
-            onClick={isListening ? stopListening : startListening}
-            className={cn(
-              "bg-gradient-to-r min-h-[48px] min-w-[48px]",
-              isListening 
-                ? "from-red-500/90 to-red-600/90 hover:from-red-500 hover:to-red-600" 
-                : "from-[#6DBDFF]/90 to-[#4CABFF]/90 hover:from-[#6DBDFF] hover:to-[#4CABFF]",
-              "text-white p-3 rounded-xl shadow-lg transition-all duration-300",
-              "hover:scale-[1.02] active:scale-95 relative border border-white/20 backdrop-blur-sm"
-            )}
-          >
-            {isListening ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
-          </Button>
-        </div>
-
-        <div className="relative w-full">
           <Input
             placeholder={placeholder || (isLoading ? "Thinking..." : `Ask me anything about ${currentTopic}...`)}
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyPress={(e) => e.key === "Enter" && handleSubmit()}
             className={cn(
-              "w-full bg-gradient-to-r from-white/90 to-white/95 backdrop-blur-sm", 
-              "border-2 border-primary/30 focus:border-primary/60 rounded-2xl pl-12 pr-4 py-3", 
-              "text-[15px] shadow-lg transition-all duration-300", 
-              "placeholder:text-primary/40 min-h-[48px]",
-              "hover:shadow-xl hover:scale-[1.01] focus:scale-[1.01] focus:shadow-xl",
-              "focus:ring-2 focus:ring-primary/20 focus:outline-none",
-              "active:scale-[0.995]"
+              "flex-1 bg-transparent border-0 shadow-none text-[15px]",
+              "placeholder:text-primary/40 min-h-[40px] focus-visible:ring-0",
+              "hover:bg-transparent focus:bg-transparent"
             )}
             disabled={isLoading}
           />
-          <motion.div 
-            className="absolute left-4 top-1/2 -translate-y-1/2"
-            animate={{ 
-              rotate: isLoading ? 360 : 0,
-              scale: [1, 1.1, 1]
-            }}
-            transition={{ 
-              rotate: { duration: 2, repeat: isLoading ? Infinity : 0, ease: "linear" },
-              scale: { duration: 1, repeat: Infinity, ease: "easeInOut" }
-            }}
+
+          <Button
+            onClick={isListening ? stopListening : startListening}
+            className={cn(
+              "bg-gradient-to-r min-h-[40px] min-w-[40px] p-2.5",
+              isListening 
+                ? "from-red-500/90 to-red-600/90 hover:from-red-500 hover:to-red-600" 
+                : "from-secondary/90 to-secondary hover:from-secondary hover:to-secondary",
+              "text-white rounded-xl shadow-sm hover:shadow-md",
+              "transition-all duration-200 active:scale-95",
+              "border border-white/20 backdrop-blur-sm"
+            )}
           >
-            <Sparkles className="w-5 h-5 text-primary" />
-          </motion.div>
+            {isListening ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
+          </Button>
+
+          <Button 
+            onClick={handleSubmit}
+            disabled={isLoading || !input.trim()} 
+            className={cn(
+              "bg-gradient-to-r from-primary/90 to-primary",
+              "hover:from-primary hover:to-primary text-white",
+              "min-h-[40px] min-w-[40px] p-2.5 rounded-xl",
+              "shadow-sm hover:shadow-md transition-all duration-200",
+              "active:scale-95 disabled:opacity-50 disabled:hover:scale-100",
+              "border border-white/20 backdrop-blur-sm"
+            )}
+          >
+            <Send className="w-5 h-5" />
+          </Button>
         </div>
-
-        <Button 
-          onClick={handleSubmit}
-          disabled={isLoading || !input.trim()} 
-          className={cn(
-            "bg-gradient-to-r from-primary/90 to-secondary/90", 
-            "hover:from-primary hover:to-secondary text-white px-6 py-3 rounded-xl", 
-            "shadow-lg transition-all duration-300 hover:scale-[1.02] active:scale-95", 
-            "disabled:opacity-50 disabled:hover:scale-100 min-h-[48px]",
-            "border border-white/20 backdrop-blur-sm self-end"
-          )}
-        >
-          <Send className={cn("w-5 h-5", isLoading && "animate-pulse")} />
-        </Button>
       </div>
-
-      <div className="absolute -bottom-6 left-0 right-0 h-6 
-        bg-gradient-to-t from-white/50 to-transparent" />
     </motion.div>
   );
 };

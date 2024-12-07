@@ -38,24 +38,22 @@ export const EnhancedBlockCard = ({
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -20 }}
       transition={{ delay: index * 0.1 }}
-      whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
       onClick={onClick}
       className={cn(
-        "flex flex-col justify-between p-4 rounded-2xl",
-        "w-[90vw] min-h-[120px]",
-        "transition-all duration-300 relative overflow-hidden",
-        "text-white snap-center group",
+        "flex flex-col justify-between p-4 rounded-2xl w-full",
+        "min-h-[110px] transition-all duration-300",
+        "relative overflow-hidden text-white snap-center group",
         "shadow-lg hover:shadow-xl border border-white/20",
         "bg-gradient-to-br",
         getBlockGradient()
       )}
     >
-      <div className="flex flex-col gap-2">
-        <h3 className="text-[16px] font-bold leading-tight line-clamp-2 text-left">
+      <div className="flex flex-col gap-1.5">
+        <h3 className="text-[15px] font-semibold leading-snug line-clamp-2 text-left">
           {truncateContent(block.title)}
         </h3>
-        <p className="text-[14px] opacity-90 line-clamp-2 text-left">
+        <p className="text-[13px] opacity-90 line-clamp-2 text-left">
           {block.description || "Click to explore more!"}
         </p>
       </div>
