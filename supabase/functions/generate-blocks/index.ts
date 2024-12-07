@@ -40,7 +40,7 @@ serve(async (req) => {
       Based on "${query}" and topic "${context}", generate 5 engaging, educational blocks following these guidelines:
       
       RULES:
-      1. Each block must be EXACTLY ONE LINE and UNDER 75 CHARACTERS (including emoji)
+      1. Each block must be EXACTLY ONE LINE and UNDER 80 CHARACTERS (including emoji)
       2. First 3 blocks MUST:
          - Start with an exciting question or "Want to know..."
          - Include ONE fascinating fact with a silly comparison
@@ -49,7 +49,10 @@ serve(async (req) => {
          - Use warm, playful language
       3. 4th block MUST:
          - Start with "Want to see..."
-         - Make it super detailed and creative for AI image generation
+         - Choose ONE of these styles randomly:
+           * Realistic: "a detailed photograph of..."
+           * Cartoon: "a cute cartoon illustration of..."
+           * Printable: "a simple black and white outline of..."
          - Include whimsical elements (e.g., "a penguin wearing a top hat")
          - End with 🎨 emoji
       4. 5th block MUST:
@@ -67,13 +70,13 @@ serve(async (req) => {
          - Celebrate curiosity
       7. NO undefined values or spelling mistakes allowed
       8. DO NOT include phrases like 'Click to explore more'
-      9. ENSURE each block fits on ONE line and is UNDER 75 characters
+      9. ENSURE each block fits on ONE line and is UNDER 80 characters
 
       Format response as:
       {
         "blocks": [
           {
-            "title": "Single line of exactly 75 chars or less with emoji",
+            "title": "Single line of exactly 80 chars or less with emoji",
             "metadata": {
               "topic": "specific_subtopic_related_to_context",
               "type": "fact|image|quiz"
