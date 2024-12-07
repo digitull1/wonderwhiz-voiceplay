@@ -1,20 +1,7 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { MessageSquare } from "lucide-react";
 
 export const TalkToWizzy = () => {
-  useEffect(() => {
-    // Add the script dynamically
-    const script = document.createElement('script');
-    script.src = "https://elevenlabs.io/convai-widget/index.js";
-    script.async = true;
-    document.body.appendChild(script);
-
-    return () => {
-      // Cleanup
-      document.body.removeChild(script);
-    };
-  }, []);
-
   return (
     <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 shadow-sm">
       <div className="flex items-center gap-2 mb-3">
