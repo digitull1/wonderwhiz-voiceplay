@@ -63,7 +63,16 @@ export const useUserProgress = () => {
     }
 
     if (data) {
-      setUserProgress(data);
+      // Map snake_case database fields to camelCase TypeScript fields
+      setUserProgress({
+        points: data.points,
+        level: data.level,
+        streak_days: data.streak_days,
+        last_interaction_date: data.last_interaction_date,
+        topicsExplored: data.topics_explored,
+        questionsAsked: data.questions_asked,
+        quizScore: data.quiz_score
+      });
     }
   };
 
@@ -100,7 +109,8 @@ export const useUserProgress = () => {
           ...prev,
           points: newPoints,
           level: newLevel,
-          last_interaction_date: data.last_interaction_date
+          last_interaction_date: data.last_interaction_date,
+          streak_days: data.streak_days
         }));
 
         showPointsToast(points);
