@@ -22,19 +22,25 @@ export const ImageGenerator = ({ prompt, onResponse }: ImageGeneratorProps) => {
     setIsLoading(true);
     try {
       console.log('Generating image for prompt:', prompt);
+      
+      // Make the function call to generate image
       const { data: imageData, error: imageError } = await supabase.functions.invoke('generate-image', {
-        body: { prompt }
+        body: { 
+          prompt,
+          age_group: "8-12" // Default age group if not specified
+        }
       });
 
       if (imageError) {
-        console.error('Error generating image:', imageError);
+        console.error('Error details:', imageError);
         throw imageError;
       }
 
       if (imageData?.image) {
-        console.log('Image generated successfully');
+        console.log('Image generated successfully:', imageData.image);
         setImageUrl(imageData.image);
 
+        // Analyze the generated image
         const { data: analysisData, error: analysisError } = await supabase.functions.invoke('analyze-image', {
           body: { 
             image: imageData.image,
@@ -42,7 +48,10 @@ export const ImageGenerator = ({ prompt, onResponse }: ImageGeneratorProps) => {
           }
         });
 
-        if (analysisError) throw analysisError;
+        if (analysisError) {
+          console.error('Analysis error:', analysisError);
+          throw analysisError;
+        }
 
         const response = analysisData.choices[0].message.content;
         console.log('Image analysis response:', response);
