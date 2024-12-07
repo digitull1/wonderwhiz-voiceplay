@@ -104,6 +104,9 @@ serve(async (req) => {
         throw new Error('OpenAI API key not configured');
       }
 
+      // Extract minAge for style selection
+      const [minAge] = age_group.split('-').map(Number);
+
       const response = await fetch('https://api.openai.com/v1/images/generations', {
         method: 'POST',
         headers: {
