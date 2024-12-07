@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { BookOpen, Loader2 } from "lucide-react";
-import { motion, AnimatePresence } from "framer-motion";
 import { ActionIcon } from "./ActionIcon";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
@@ -15,6 +14,8 @@ export const QuizAction = ({ messageText, onQuizGenerated }: QuizActionProps) =>
   const { toast } = useToast();
 
   const handleQuizGeneration = async () => {
+    if (isGeneratingQuiz) return;
+    
     setIsGeneratingQuiz(true);
     try {
       console.log('Generating quiz for:', messageText);
@@ -46,27 +47,12 @@ export const QuizAction = ({ messageText, onQuizGenerated }: QuizActionProps) =>
   };
 
   return (
-    <motion.button
-      className="action-icon"
+    <ActionIcon
+      icon={isGeneratingQuiz ? Loader2 : BookOpen}
+      tooltip="Take a quiz!"
       onClick={handleQuizGeneration}
-      disabled={isGeneratingQuiz}
-      whileHover={{ scale: 1.05 }}
-      whileTap={{ scale: 0.95 }}
-      title="Take a quiz"
-    >
-      <AnimatePresence mode="wait">
-        {isGeneratingQuiz ? (
-          <motion.div
-            initial={{ opacity: 0, rotate: 180 }}
-            animate={{ opacity: 1, rotate: 0 }}
-            exit={{ opacity: 0, rotate: -180 }}
-          >
-            <Loader2 className="w-3.5 h-3.5 text-primary/70 animate-spin" />
-          </motion.div>
-        ) : (
-          <BookOpen className="w-3.5 h-3.5 text-primary/70" />
-        )}
-      </AnimatePresence>
-    </motion.button>
+      isLoading={isGeneratingQuiz}
+      className="bg-gradient-to-br from-orange-500/20 to-yellow-500/20 text-white hover:from-orange-500/30 hover:to-yellow-500/30"
+    />
   );
 };

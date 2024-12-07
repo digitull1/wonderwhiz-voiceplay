@@ -1,6 +1,5 @@
 import React, { useEffect, useRef } from "react";
 import { ChatMessage } from "./ChatMessage";
-import { QuizCard } from "./quiz/QuizCard";
 import { Block, QuizState } from "@/types/chat";
 import { Button } from "./ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -22,6 +21,7 @@ interface ChatContainerProps {
   quizState?: QuizState;
   onQuizAnswer?: (isCorrect: boolean) => void;
   onAuthPromptClick?: () => void;
+  onPanelOpen?: () => void;
 }
 
 export const ChatContainer = ({ 
@@ -30,7 +30,8 @@ export const ChatContainer = ({
   onBlockClick,
   quizState,
   onQuizAnswer,
-  onAuthPromptClick
+  onAuthPromptClick,
+  onPanelOpen
 }: ChatContainerProps) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -83,6 +84,7 @@ export const ChatContainer = ({
             quizState={message.quizState}
             onQuizAnswer={onQuizAnswer}
             messageIndex={index}
+            onPanelOpen={onPanelOpen}
           />
           {message.showAuthPrompt && (
             <div className="flex justify-center gap-2 my-2">
