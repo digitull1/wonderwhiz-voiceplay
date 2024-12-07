@@ -20,7 +20,7 @@ export const useBlockInteractions = (
         .select('*')
         .eq('date', today)
         .eq('user_id', userId)
-        .maybeSingle(); // Use maybeSingle instead of single to handle no rows case
+        .maybeSingle();
 
       if (fetchError && fetchError.code !== 'PGRST116') {
         console.error('Error fetching learning time:', fetchError);
@@ -28,6 +28,7 @@ export const useBlockInteractions = (
       }
 
       if (existingTime) {
+        console.log('Updating existing learning time:', existingTime);
         const { error: updateError } = await supabase
           .from('learning_time')
           .update({ 
@@ -36,9 +37,10 @@ export const useBlockInteractions = (
           .eq('id', existingTime.id);
 
         if (updateError) {
-          throw updateError;
+          console.error('Error updating learning time:', updateError);
         }
       } else {
+        console.log('Creating new learning time entry');
         const { error: insertError } = await supabase
           .from('learning_time')
           .insert([{ 
@@ -48,35 +50,38 @@ export const useBlockInteractions = (
           }]);
 
         if (insertError) {
-          throw insertError;
+          console.error('Error inserting learning time:', insertError);
         }
       }
     } catch (error) {
       console.error('Error tracking learning time:', error);
-      // Don't throw the error, just log it to prevent breaking the UI
     }
   };
 
   const trackExploredTopic = async (userId: string, topic: string) => {
     try {
+      console.log('Tracking explored topic:', { userId, topic });
       const { error } = await supabase
         .from('explored_topics')
-        .upsert({
-          user_id: userId,
-          topic: topic,
-          emoji: '🌟',
-          last_explored_at: new Date().toISOString(),
-          time_spent: 1
-        }, {
-          onConflict: 'user_id,topic'
-        });
+        .upsert(
+          {
+            user_id: userId,
+            topic: topic,
+            emoji: '🌟',
+            last_explored_at: new Date().toISOString(),
+            time_spent: 1
+          },
+          { 
+            onConflict: 'user_id,topic',
+            ignoreDuplicates: false 
+          }
+        );
 
       if (error) {
-        throw error;
+        console.error('Error tracking explored topic:', error);
       }
     } catch (error) {
       console.error('Error tracking explored topic:', error);
-      // Don't throw the error, just log it
     }
   };
 
