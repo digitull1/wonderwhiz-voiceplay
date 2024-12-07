@@ -1,5 +1,5 @@
 import React from "react";
-import { Volume2, Image, Sparkles } from "lucide-react";
+import { Volume2, Image, Sparkles, BookOpen } from "lucide-react";
 import { ActionIcon } from "./actions/ActionIcon";
 import { QuizAction } from "./actions/QuizAction";
 import { ImageUpload } from "../ImageUpload";
