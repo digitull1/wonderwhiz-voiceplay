@@ -15,7 +15,7 @@ export const useChat = () => {
   const { userProgress, updateUserProgress } = useUserProgress();
   const { quizState, handleQuizAnswer } = useQuiz({ updateProgress: updateUserProgress });
   const { generateDynamicBlocks } = useBlockGeneration();
-  const { handleImageAnalysis } = useImageAnalysis();
+  const { handleImageAnalysis: analyzeImage } = useImageAnalysis();
 
   const handleListen = useCallback((text: string) => {
     const utterance = new SpeechSynthesisUtterance(text);
@@ -31,11 +31,11 @@ export const useChat = () => {
     
     setIsLoading(true);
     try {
-      const response = await generateDynamicBlocks(block.title, block.metadata.topic);
+      const blocks = await generateDynamicBlocks(block.title, block.metadata.topic);
       setMessages(prev => [...prev, {
-        text: response.message,
+        text: block.title,
         isAi: true,
-        blocks: response.blocks
+        blocks
       }]);
     } catch (error) {
       console.error('Error handling block click:', error);
@@ -52,11 +52,11 @@ export const useChat = () => {
     setIsLoading(true);
 
     try {
-      const response = await generateDynamicBlocks(message, currentTopic);
+      const blocks = await generateDynamicBlocks(message, currentTopic);
       setMessages(prev => [...prev, {
-        text: response.message,
+        text: message,
         isAi: true,
-        blocks: response.blocks
+        blocks
       }]);
     } catch (error) {
       console.error('Error sending message:', error);
@@ -68,7 +68,7 @@ export const useChat = () => {
   const handleImageAnalysis = useCallback(async (imageData: string) => {
     setIsLoading(true);
     try {
-      const response = await handleImageAnalysis(imageData);
+      const response = await analyzeImage(imageData);
       setMessages(prev => [...prev, {
         text: response,
         isAi: true,
@@ -79,7 +79,7 @@ export const useChat = () => {
     } finally {
       setIsLoading(false);
     }
-  }, [handleImageAnalysis]);
+  }, [analyzeImage]);
 
   return {
     messages,
