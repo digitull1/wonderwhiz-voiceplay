@@ -49,7 +49,7 @@ export const MessageActions = ({
           <ActionIcon
             icon={Sparkles}
             tooltip="Let me create magical pictures to help you learn!"
-            onClick={() => {}} // TODO: Implement image generation
+            onClick={() => {}} 
             className="bg-gradient-to-br from-purple-500/5 to-pink-500/5"
           />
         </>

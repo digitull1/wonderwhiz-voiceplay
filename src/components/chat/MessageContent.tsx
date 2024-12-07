@@ -25,6 +25,7 @@ export const MessageContent = ({
   isTyping
 }: MessageContentProps) => {
   const [displayedText, setDisplayedText] = useState("");
+  console.log("MessageContent rendered:", { isTyping, message, showActions });
 
   useEffect(() => {
     if (isAi && message) {
@@ -48,6 +49,7 @@ export const MessageContent = ({
           }
           
           setDisplayedText(currentText);
+          console.log("Typing animation:", { currentText, isComplete: currentLineIndex >= lines.length });
         } else {
           clearInterval(interval);
         }
