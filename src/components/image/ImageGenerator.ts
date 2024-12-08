@@ -1,9 +1,10 @@
 import { supabase } from "@/integrations/supabase/client";
-import { Toast } from "@/components/ui/use-toast";
+import { ToastAction } from "@/components/ui/toast";
+import { toast } from "@/components/ui/use-toast";
 
-export const handleImageGeneration = async (prompt: string, toast: Toast) => {
+export const handleImageGeneration = async (prompt: string, toastFn: typeof toast) => {
   const { data: imageData, error: imageError } = await supabase.functions.invoke('generate-image', {
-    body: JSON.stringify({ prompt })
+    body: { prompt }
   });
 
   if (imageError) throw imageError;
@@ -18,7 +19,7 @@ export const handleImageGeneration = async (prompt: string, toast: Toast) => {
     });
     window.dispatchEvent(event);
 
-    toast({
+    toastFn({
       title: "Image created! ✨",
       description: "Here's what I imagined!",
       className: "bg-primary text-white"

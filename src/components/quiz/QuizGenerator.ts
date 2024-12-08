@@ -1,7 +1,8 @@
 import { supabase } from "@/integrations/supabase/client";
-import { Toast } from "@/components/ui/use-toast";
+import { ToastAction } from "@/components/ui/toast";
+import { toast } from "@/components/ui/use-toast";
 
-export const handleQuizGeneration = async (topic: string, age: number, toast: Toast) => {
+export const handleQuizGeneration = async (topic: string, age: number, toastFn: typeof toast) => {
   console.log('Generating quiz with params:', { topic, age });
   
   const { data: quizData, error: quizError } = await supabase.functions.invoke('generate-quiz', {
@@ -36,7 +37,7 @@ export const handleQuizGeneration = async (topic: string, age: number, toast: To
     });
     window.dispatchEvent(event);
 
-    toast({
+    toastFn({
       title: "Quiz time! 🎯",
       description: "Let's test what you've learned!",
       className: "bg-primary text-white"
