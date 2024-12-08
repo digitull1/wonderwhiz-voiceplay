@@ -67,6 +67,7 @@ export const AuthForm = ({ onComplete }: AuthFormProps) => {
             name: formData.name,
             age: parseInt(formData.age),
           },
+          emailRedirectTo: window.location.origin // Ensure proper URL construction
         },
       });
 
