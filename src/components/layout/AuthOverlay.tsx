@@ -52,15 +52,15 @@ export const AuthOverlay: React.FC<AuthOverlayProps> = ({ showLogin, onClose }) 
     }
   };
 
-  const handleAuthEvent = async ({ event, session }: { 
-    event: 'SIGNED_IN' | 'SIGNED_UP' | 'SIGNED_OUT',
-    session: any 
+  const handleAuthEvent = async (event: {
+    event: 'SIGNED_IN' | 'SIGNED_UP' | 'SIGNED_OUT';
+    session: any;
   }) => {
-    console.log('Auth state changed:', { event, session });
+    console.log('Auth state changed:', event);
     
-    if ((event === 'SIGNED_IN' || event === 'SIGNED_UP') && session?.user) {
+    if ((event.event === 'SIGNED_IN' || event.event === 'SIGNED_UP') && event.session?.user) {
       try {
-        await ensureUserProgress(session.user.id);
+        await ensureUserProgress(event.session.user.id);
         
         toast({
           title: "Welcome to WonderWhiz!",
@@ -116,7 +116,7 @@ export const AuthOverlay: React.FC<AuthOverlayProps> = ({ showLogin, onClose }) 
             providers={[]}
             view={showLogin ? "sign_in" : "sign_up"}
             redirectTo={window.location.origin}
-            onChange={handleAuthEvent}
+            onAuthStateChange={handleAuthEvent}
           />
         </div>
       </div>
