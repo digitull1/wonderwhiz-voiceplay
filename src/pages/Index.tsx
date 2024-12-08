@@ -10,7 +10,6 @@ import { RegistrationForm } from "@/components/auth/RegistrationForm";
 import { Auth } from "@supabase/auth-ui-react";
 import { supabase } from "@/integrations/supabase/client";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
-import { PointsDisplay } from "@/components/PointsDisplay";
 import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
@@ -132,14 +131,7 @@ const Index = () => {
         
         <div className="relative z-10 flex flex-col h-[100dvh] w-full">
           <TooltipProvider>
-            <div className="flex items-center justify-between p-4 bg-white/80 backdrop-blur-sm">
-              {userProgress && (
-                <PointsDisplay 
-                  points={userProgress.points} 
-                  level={userProgress.level}
-                  streakDays={userProgress.streak_days}
-                />
-              )}
+            <div className="flex items-center justify-end p-4 bg-white/80 backdrop-blur-sm">
               <Button 
                 variant="ghost" 
                 size="icon"

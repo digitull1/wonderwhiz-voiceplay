@@ -9,7 +9,7 @@ import { getGroqResponse } from "@/utils/groq";
 
 export const useChat = () => {
   const [messages, setMessages] = useState<any[]>([{
-    text: "Hi! I'm WonderWhiz! What's your name? 😊",
+    text: "Hi! I'm WonderWhiz! Your friendly AI Assistant! Please login or register to continue 😊",
     isAi: true
   }]);
   const [input, setInput] = useState("");
