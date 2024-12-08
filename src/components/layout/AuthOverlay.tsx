@@ -118,21 +118,10 @@ export const AuthOverlay: React.FC<AuthOverlayProps> = ({ showLogin, onClose }) 
             providers={[]}
             view={showLogin ? "sign_in" : "sign_up"}
             redirectTo={window.location.origin}
-            onSignIn={({ data, error }) => {
+            onSubmit={async (event) => {
+              const { data, error } = event;
               if (error) {
-                console.error('Sign in error:', error);
-                toast({
-                  title: "Error",
-                  description: error.message,
-                  variant: "destructive"
-                });
-                return;
-              }
-              handleAuthSuccess(data?.session);
-            }}
-            onSignUp={({ data, error }) => {
-              if (error) {
-                console.error('Sign up error:', error);
+                console.error('Auth error:', error);
                 toast({
                   title: "Error",
                   description: error.message,
