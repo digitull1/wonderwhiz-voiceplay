@@ -1,12 +1,20 @@
-import React from "react";
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { CollapsiblePanel } from "@/components/CollapsiblePanel";
 import { MainContainer } from "@/components/layout/MainContainer";
 import { BackgroundDecorations } from "@/components/layout/BackgroundDecorations";
 import { useChat } from "@/hooks/useChat";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { WelcomeMessage } from "@/components/auth/WelcomeMessage";
+import { RegistrationForm } from "@/components/auth/RegistrationForm";
+import { Auth } from "@supabase/auth-ui-react";
+import { supabase } from "@/integrations/supabase/client";
+import { ThemeSupa } from "@supabase/auth-ui-shared";
 
 const Index = () => {
+  const [showRegistration, setShowRegistration] = useState(false);
+  const [showLogin, setShowLogin] = useState(false);
+  
   const {
     messages,
     input,
@@ -22,6 +30,70 @@ const Index = () => {
     handleImageAnalysis,
     isAuthenticated
   } = useChat();
+
+  if (!isAuthenticated) {
+    return (
+      <div className="min-h-[100dvh] flex flex-col relative overflow-hidden">
+        <div className="fixed inset-0 bg-gradient-luxury opacity-50" />
+        <div className="fixed inset-0 bg-stars opacity-10 animate-float" />
+        <div className="fixed inset-0 backdrop-blur-[100px]" />
+        
+        <div className="relative z-10 flex flex-col items-center justify-center min-h-[100dvh] p-4">
+          <AnimatePresence mode="wait">
+            {!showRegistration && !showLogin && (
+              <WelcomeMessage
+                onRegister={() => setShowRegistration(true)}
+                onLogin={() => setShowLogin(true)}
+              />
+            )}
+            
+            {showRegistration && (
+              <motion.div
+                key="registration"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="w-full max-w-md"
+              >
+                <button 
+                  onClick={() => setShowRegistration(false)}
+                  className="mb-4 text-sm text-gray-500 hover:text-gray-700"
+                >
+                  ← Back
+                </button>
+                <RegistrationForm />
+              </motion.div>
+            )}
+            
+            {showLogin && (
+              <motion.div
+                key="login"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="w-full max-w-md bg-white rounded-xl shadow-lg p-6"
+              >
+                <button 
+                  onClick={() => setShowLogin(false)}
+                  className="mb-4 text-sm text-gray-500 hover:text-gray-700"
+                >
+                  ← Back
+                </button>
+                <Auth
+                  supabaseClient={supabase}
+                  appearance={{ theme: ThemeSupa }}
+                  theme="light"
+                  showLinks={false}
+                  providers={[]}
+                  view="sign_in"
+                />
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <AnimatePresence>
@@ -40,7 +112,6 @@ const Index = () => {
         {/* Glass Morphism Effect */}
         <div className="fixed inset-0 backdrop-blur-[100px]" />
         
-        {/* Content */}
         <div className="relative z-10 flex flex-col h-[100dvh] w-full">
           <TooltipProvider>
             <CollapsiblePanel 
