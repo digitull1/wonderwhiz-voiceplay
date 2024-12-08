@@ -11,17 +11,19 @@ serve(async (req) => {
   }
 
   try {
-    const { topic } = await req.json();
-    console.log('Generating quiz for topic:', topic);
+    const { topic, age = 8 } = await req.json();
+    console.log('Generating quiz for topic:', topic, 'age:', age);
 
     const prompt = `Generate 5 engaging and educational quiz questions about ${topic}. 
     The questions should:
-    - Be specifically about ${topic}, not general knowledge
+    - Be specifically about ${topic}
+    - Be appropriate for a ${age}-year-old child
     - Start with easier questions and progressively get more challenging
-    - Include interesting facts in the questions and options
-    - Be age-appropriate for children (8-12 years)
+    - Use simple, clear language that a ${age}-year-old can understand
+    - Include fun facts that children find interesting
     - Have clear, unambiguous correct answers
-    - Include fun and engaging language
+    - Use encouraging, positive language
+    - Avoid complex terminology
     
     The response should be in JSON format with the following structure:
     {
@@ -48,7 +50,7 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: "You are an educational quiz generator for children. Create fun, engaging, and topic-specific questions!"
+            content: `You are an educational quiz generator for children aged ${age}. Create fun, engaging, and age-appropriate questions!`
           },
           { role: "user", content: prompt }
         ],

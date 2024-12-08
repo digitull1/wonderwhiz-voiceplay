@@ -1,9 +1,10 @@
 import React, { useState, useRef } from "react";
 import { Button } from "./ui/button";
-import { Mic, Send, Upload } from "lucide-react";
+import { Mic, Send, Upload, Dice6 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { ImageUpload } from "./ImageUpload";
 import { useToast } from "./ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface ChatInputProps {
   input: string;
@@ -28,6 +29,43 @@ export const ChatInput = ({
   const [isListening, setIsListening] = useState(false);
   const { toast } = useToast();
   const recognition = useRef<any>(null);
+
+  const generateRandomQuestion = async () => {
+    try {
+      const { data: profileData } = await supabase.auth.getUser();
+      if (!profileData?.user?.id) return;
+
+      const { data: userProfile } = await supabase
+        .from('profiles')
+        .select('age')
+        .eq('id', profileData.user.id)
+        .single();
+
+      const age = userProfile?.age || 8;
+
+      const { data, error } = await supabase.functions.invoke('generate-random-question', {
+        body: { age }
+      });
+
+      if (error) throw error;
+
+      if (data?.question) {
+        setInput(data.question);
+        toast({
+          title: "✨ Here's something interesting!",
+          description: "Click send to explore this topic!",
+          className: "bg-primary text-white"
+        });
+      }
+    } catch (error) {
+      console.error('Error generating random question:', error);
+      toast({
+        title: "Oops!",
+        description: "Couldn't generate a question right now. Try again!",
+        variant: "destructive"
+      });
+    }
+  };
 
   const startListening = () => {
     try {
@@ -140,6 +178,19 @@ export const ChatInput = ({
             disabled={isLoading}
           />
         </div>
+
+        <Button
+          onClick={generateRandomQuestion}
+          variant="ghost"
+          size="icon"
+          className={cn(
+            "bg-white/95 backdrop-blur-xl shadow-luxury border border-white/20",
+            "hover:bg-white hover:scale-110 active:scale-95",
+            "transition-all duration-300"
+          )}
+        >
+          <Dice6 className="w-4 h-4" />
+        </Button>
 
         <Button
           onClick={toggleListening}

@@ -72,15 +72,28 @@ export const ChatBlocks = ({ blocks, onBlockClick }: ChatBlocksProps) => {
     } else if (block.metadata.type === 'quiz') {
       try {
         console.log('Generating quiz for topic:', block.title);
+        
+        // Get user's age
+        const { data: userData } = await supabase.auth.getUser();
+        const { data: profileData } = await supabase
+          .from('profiles')
+          .select('age')
+          .eq('id', userData.user?.id)
+          .single();
+
+        const age = profileData?.age || 8;
+
         const { data: quizData, error: quizError } = await supabase.functions.invoke('generate-quiz', {
-          body: { topic: block.metadata.topic || block.title }
+          body: { 
+            topic: block.metadata.topic || block.title,
+            age
+          }
         });
 
         if (quizError) throw quizError;
         console.log('Quiz data received:', quizData);
 
         if (quizData?.questions) {
-          // Dispatch a custom event with the quiz data
           const event = new CustomEvent('wonderwhiz:newMessage', {
             detail: {
               text: "Let's test your knowledge with a fun quiz! 🎯",
