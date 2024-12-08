@@ -1,10 +1,10 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { Auth, AuthChangeEvent } from "@supabase/auth-ui-react";
+import { Auth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
-import { Session } from "@supabase/supabase-js";
+import { AuthChangeEvent, Session } from "@supabase/supabase-js";
 
 interface AuthOverlayProps {
   showLogin: boolean;
@@ -118,7 +118,7 @@ export const AuthOverlay: React.FC<AuthOverlayProps> = ({ showLogin, onClose }) 
             providers={[]}
             view={showLogin ? "sign_in" : "sign_up"}
             redirectTo={window.location.origin}
-            onAuthStateChange={handleAuthEvent}
+            onEvent={handleAuthEvent}
           />
         </div>
       </motion.div>
