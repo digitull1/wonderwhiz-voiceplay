@@ -49,6 +49,14 @@ export const MainContainer: React.FC<MainContainerProps> = ({
   const [showLogin, setShowLogin] = useState(false);
   const [isPanelOpen, setIsPanelOpen] = useState(false);
 
+  const welcomeMessage = {
+    text: "Hi! I'm WonderWhiz! Your friendly AI Assistant! Please login or register to continue 😊",
+    isAi: true,
+    showAuthPrompt: !isAuthenticated
+  };
+
+  const displayMessages = isAuthenticated ? messages : [welcomeMessage];
+
   return (
     <motion.div 
       className="h-[100dvh] w-full flex flex-col relative overflow-hidden"
@@ -59,7 +67,6 @@ export const MainContainer: React.FC<MainContainerProps> = ({
       <div className="absolute inset-0 bg-gradient-luxury opacity-50" />
       
       <div className="relative z-10 w-full h-full flex flex-col">
-        {/* Top Navigation Bar */}
         <div className="flex items-center justify-between p-4 bg-white/80 backdrop-blur-sm">
           <ChatHeader />
           <div className="flex items-center gap-2">
@@ -113,15 +120,10 @@ export const MainContainer: React.FC<MainContainerProps> = ({
           className="flex-1 flex flex-col h-full relative overflow-hidden"
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
-          transition={{ 
-            duration: 0.5,
-            type: "spring",
-            stiffness: 260,
-            damping: 20
-          }}
+          transition={{ duration: 0.5 }}
         >
           <ChatContainer 
-            messages={messages}
+            messages={displayMessages}
             handleListen={handleListen}
             onBlockClick={handleBlockClick}
             quizState={quizState}
@@ -129,56 +131,58 @@ export const MainContainer: React.FC<MainContainerProps> = ({
             onAuthPromptClick={() => setShowAuthForm(true)}
           />
 
-          {showAuthForm && (
-            <motion.div 
-              className="absolute inset-0 bg-white/95 backdrop-blur-xl p-4 
-                flex items-center justify-center z-50"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            >
-              <div className="w-full max-w-md">
-                <button 
-                  onClick={() => setShowAuthForm(false)}
-                  className="absolute top-4 right-4 text-gray-500 hover:text-gray-700
-                    w-8 h-8 flex items-center justify-center rounded-full
-                    hover:bg-gray-100 transition-colors"
-                >
-                  ✕
-                </button>
-                {showLogin ? (
-                  <div className="bg-white rounded-xl shadow-lg p-6">
-                    <Auth
-                      supabaseClient={supabase}
-                      appearance={{ theme: ThemeSupa }}
-                      theme="light"
-                      showLinks={false}
-                      providers={[]}
-                      view="sign_in"
-                    />
-                    <Button
-                      variant="link"
-                      onClick={() => setShowLogin(false)}
-                      className="mt-4 text-sm text-gray-500"
-                    >
-                      Don't have an account? Register
-                    </Button>
-                  </div>
-                ) : (
-                  <>
-                    <AuthForm onComplete={() => setShowAuthForm(false)} />
-                    <Button
-                      variant="link"
-                      onClick={() => setShowLogin(true)}
-                      className="mt-4 text-sm text-gray-500"
-                    >
-                      Already have an account? Sign in
-                    </Button>
-                  </>
-                )}
-              </div>
-            </motion.div>
-          )}
+          <AnimatePresence>
+            {showAuthForm && (
+              <motion.div 
+                className="absolute inset-0 bg-white/95 backdrop-blur-xl p-4 
+                  flex items-center justify-center z-50"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
+                <div className="w-full max-w-md">
+                  <button 
+                    onClick={() => setShowAuthForm(false)}
+                    className="absolute top-4 right-4 text-gray-500 hover:text-gray-700
+                      w-8 h-8 flex items-center justify-center rounded-full
+                      hover:bg-gray-100 transition-colors"
+                  >
+                    ✕
+                  </button>
+                  {showLogin ? (
+                    <div className="bg-white rounded-xl shadow-lg p-6">
+                      <Auth
+                        supabaseClient={supabase}
+                        appearance={{ theme: ThemeSupa }}
+                        theme="light"
+                        showLinks={false}
+                        providers={[]}
+                        view="sign_in"
+                      />
+                      <Button
+                        variant="link"
+                        onClick={() => setShowLogin(false)}
+                        className="mt-4 text-sm text-gray-500"
+                      >
+                        Don't have an account? Register
+                      </Button>
+                    </div>
+                  ) : (
+                    <>
+                      <AuthForm onComplete={() => setShowAuthForm(false)} />
+                      <Button
+                        variant="link"
+                        onClick={() => setShowLogin(true)}
+                        className="mt-4 text-sm text-gray-500"
+                      >
+                        Already have an account? Sign in
+                      </Button>
+                    </>
+                  )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           <ChatInput 
             input={input}

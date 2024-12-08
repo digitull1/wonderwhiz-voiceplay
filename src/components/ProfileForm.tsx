@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/form";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
 
@@ -21,7 +22,17 @@ const formSchema = z.object({
     return num >= 4 && num <= 12;
   }, "Age must be between 4 and 12"),
   gender: z.enum(["boy", "girl", "other"]),
+  language: z.string().min(2).max(10),
 });
+
+const languages = [
+  { value: "en", label: "English" },
+  { value: "vi", label: "Vietnamese" },
+  { value: "es", label: "Spanish" },
+  { value: "fr", label: "French" },
+  { value: "zh", label: "Chinese" },
+  { value: "de", label: "German" },
+];
 
 export function ProfileForm({ onComplete }: { onComplete: () => void }) {
   const { toast } = useToast();
@@ -30,6 +41,7 @@ export function ProfileForm({ onComplete }: { onComplete: () => void }) {
     defaultValues: {
       age: "",
       gender: "boy",
+      language: "en",
     },
   });
 
@@ -40,6 +52,7 @@ export function ProfileForm({ onComplete }: { onComplete: () => void }) {
         .update({
           age: parseInt(values.age),
           gender: values.gender,
+          language: values.language,
         })
         .eq("id", (await supabase.auth.getUser()).data.user?.id);
 
@@ -109,6 +122,31 @@ export function ProfileForm({ onComplete }: { onComplete: () => void }) {
                     </div>
                   </RadioGroup>
                 </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <FormField
+            control={form.control}
+            name="language"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Preferred Language</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a language" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {languages.map((lang) => (
+                      <SelectItem key={lang.value} value={lang.value}>
+                        {lang.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <FormMessage />
               </FormItem>
             )}
