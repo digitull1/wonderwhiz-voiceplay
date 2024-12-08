@@ -36,6 +36,30 @@ export type Database = {
         }
         Relationships: []
       }
+      content_translations: {
+        Row: {
+          content_key: string
+          created_at: string
+          id: string
+          language: string
+          translated_content: string
+        }
+        Insert: {
+          content_key: string
+          created_at?: string
+          id?: string
+          language: string
+          translated_content: string
+        }
+        Update: {
+          content_key?: string
+          created_at?: string
+          id?: string
+          language?: string
+          translated_content?: string
+        }
+        Relationships: []
+      }
       explored_topics: {
         Row: {
           emoji: string
@@ -92,6 +116,7 @@ export type Database = {
           id: string
           language: string
           name: string | null
+          preferred_language: string | null
           topics_of_interest: string[] | null
           updated_at: string
         }
@@ -102,6 +127,7 @@ export type Database = {
           id: string
           language?: string
           name?: string | null
+          preferred_language?: string | null
           topics_of_interest?: string[] | null
           updated_at?: string
         }
@@ -112,6 +138,7 @@ export type Database = {
           id?: string
           language?: string
           name?: string | null
+          preferred_language?: string | null
           topics_of_interest?: string[] | null
           updated_at?: string
         }

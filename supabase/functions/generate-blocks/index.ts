@@ -202,7 +202,7 @@ serve(async (req) => {
       }
 
       const data = await response.json();
-      console.log("Received response from Groq API");
+      console.log('Received response from Groq API');
 
       const parsedContent = typeof data.choices[0].message.content === 'string' 
         ? JSON.parse(data.choices[0].message.content)
