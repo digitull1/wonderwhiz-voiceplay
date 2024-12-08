@@ -20,7 +20,7 @@ export const AuthOverlay: React.FC<AuthOverlayProps> = ({ showLogin, onClose }) 
         .from('user_progress')
         .select('*')
         .eq('user_id', userId)
-        .single();
+        .maybeSingle();
 
       console.log('Existing progress check:', { existingProgress, fetchError });
 
@@ -94,7 +94,7 @@ export const AuthOverlay: React.FC<AuthOverlayProps> = ({ showLogin, onClose }) 
             providers={[]}
             view={showLogin ? "sign_in" : "sign_up"}
             redirectTo={window.location.origin}
-            onAuthStateChange={async ({ event, session }) => {
+            onChange={async ({ event, session }) => {
               console.log('Auth state changed:', { event, session });
               
               if (event === 'SIGNED_IN' && session?.user) {
