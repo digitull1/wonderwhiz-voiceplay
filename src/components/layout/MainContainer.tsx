@@ -117,7 +117,7 @@ export const MainContainer: React.FC<MainContainerProps> = ({
       <CollapsiblePanel 
         userProgress={userProgress} 
         onLogout={onLogout}
-        className={isPanelOpen ? "" : "translate-x-full"}
+        isOpen={isPanelOpen}
       />
     </motion.div>
   );

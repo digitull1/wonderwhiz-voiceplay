@@ -1,5 +1,5 @@
 import React from "react";
-import { Menu, LogOut } from "lucide-react";
+import { Menu, LogOut, LogIn, UserPlus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface TopNavigationProps {
@@ -42,16 +42,18 @@ export const TopNavigation: React.FC<TopNavigationProps> = ({
             <Button 
               variant="ghost"
               onClick={() => onAuthClick(false)}
-              className="text-primary"
+              className="text-primary flex items-center gap-2"
             >
-              Register
+              <UserPlus className="h-5 w-5" />
+              Sign Up
             </Button>
             <Button 
               variant="ghost"
               onClick={() => onAuthClick(true)}
-              className="text-primary"
+              className="text-primary flex items-center gap-2"
             >
-              Sign In
+              <LogIn className="h-5 w-5" />
+              Log In
             </Button>
           </>
         )}

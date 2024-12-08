@@ -1,5 +1,5 @@
 import React from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { UserProgress } from "@/types/chat";
 import { ProgressCard } from "./panel/ProgressCard";
@@ -11,12 +11,14 @@ interface CollapsiblePanelProps {
   userProgress?: UserProgress;
   className?: string;
   onLogout?: () => void;
+  isOpen?: boolean;
 }
 
 export const CollapsiblePanel: React.FC<CollapsiblePanelProps> = ({
   userProgress,
   className,
-  onLogout
+  onLogout,
+  isOpen = false
 }) => {
   const handleTopicClick = (topic: string) => {
     console.log('Topic clicked:', topic);
@@ -32,7 +34,7 @@ export const CollapsiblePanel: React.FC<CollapsiblePanelProps> = ({
   return (
     <motion.div
       initial={{ x: "100%" }}
-      animate={{ x: 0 }}
+      animate={{ x: isOpen ? 0 : "100%" }}
       exit={{ x: "100%" }}
       transition={{ type: "spring", damping: 20, stiffness: 300 }}
       className={cn(
