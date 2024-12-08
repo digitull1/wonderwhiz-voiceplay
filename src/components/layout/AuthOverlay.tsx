@@ -89,7 +89,7 @@ export const AuthOverlay: React.FC<AuthOverlayProps> = ({ showLogin, onClose }) 
             providers={[]}
             view={showLogin ? "sign_in" : "sign_up"}
             redirectTo={window.location.origin}
-            authCallback={async ({ event, session }) => {
+            onAuthStateChange={async ({ event, session }) => {
               console.log('Auth state changed:', { event, session });
               
               if (event === 'SIGNED_IN' && session?.user) {
