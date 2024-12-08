@@ -6,12 +6,26 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { topic, age = 8, contextualPrompt } = await req.json();
+    // Properly parse the request body
+    const requestData = await req.json().catch(error => {
+      console.error('Error parsing request body:', error);
+      throw new Error('Invalid JSON in request body');
+    });
+
+    console.log('Request data received:', requestData);
+
+    const { topic, age = 8, contextualPrompt } = requestData;
+
+    if (!topic) {
+      throw new Error('Topic is required');
+    }
+
     console.log('Generating quiz for topic:', topic, 'age:', age);
     console.log('Using contextual prompt:', contextualPrompt);
 
@@ -61,7 +75,8 @@ serve(async (req) => {
     });
 
     if (!response.ok) {
-      throw new Error('Failed to generate quiz');
+      console.error('Error from Groq API:', await response.text());
+      throw new Error('Failed to generate quiz from Groq API');
     }
 
     const data = await response.json();
@@ -71,8 +86,14 @@ serve(async (req) => {
       throw new Error("Failed to generate quiz questions");
     }
 
-    const quizData = JSON.parse(data.choices[0].message.content);
-    console.log("Parsed quiz data:", quizData);
+    let quizData;
+    try {
+      quizData = JSON.parse(data.choices[0].message.content);
+      console.log("Parsed quiz data:", quizData);
+    } catch (error) {
+      console.error("Error parsing quiz data:", error);
+      throw new Error("Invalid quiz data format received from API");
+    }
 
     return new Response(
       JSON.stringify(quizData),
@@ -86,7 +107,10 @@ serve(async (req) => {
   } catch (error) {
     console.error("Error generating quiz:", error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message,
+        details: "Failed to generate quiz. Please try again."
+      }),
       { 
         headers: { 
           ...corsHeaders,
