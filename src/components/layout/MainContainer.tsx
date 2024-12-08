@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { ChatHeader } from "@/components/ChatHeader";
 import { ChatContainer } from "@/components/ChatContainer";
@@ -6,6 +6,8 @@ import { ChatInput } from "@/components/ChatInput";
 import { AuthForm } from "@/components/auth/AuthForm";
 import { CollapsiblePanel } from "@/components/CollapsiblePanel";
 import { UserProgress } from "@/types/chat";
+import { Button } from "@/components/ui/button";
+import { Menu, LogOut } from "lucide-react";
 
 interface MainContainerProps {
   messages: any[];
@@ -21,6 +23,7 @@ interface MainContainerProps {
   handleImageAnalysis: (response: string) => void;
   isAuthenticated: boolean;
   userProgress: UserProgress;
+  onLogout: () => void;
 }
 
 export const MainContainer: React.FC<MainContainerProps> = ({
@@ -36,9 +39,12 @@ export const MainContainer: React.FC<MainContainerProps> = ({
   sendMessage,
   handleImageAnalysis,
   isAuthenticated,
-  userProgress
+  userProgress,
+  onLogout
 }) => {
-  const [showAuthForm, setShowAuthForm] = React.useState(false);
+  const [showAuthForm, setShowAuthForm] = useState(false);
+  const [showLogin, setShowLogin] = useState(false);
+  const [isPanelOpen, setIsPanelOpen] = useState(false);
 
   return (
     <motion.div 
@@ -50,6 +56,56 @@ export const MainContainer: React.FC<MainContainerProps> = ({
       <div className="absolute inset-0 bg-gradient-luxury opacity-50" />
       
       <div className="relative z-10 w-full h-full flex flex-col">
+        {/* Top Navigation Bar */}
+        <div className="flex items-center justify-between p-4 bg-white/80 backdrop-blur-sm">
+          <ChatHeader />
+          <div className="flex items-center gap-2">
+            {isAuthenticated ? (
+              <>
+                <Button 
+                  variant="ghost" 
+                  size="icon"
+                  onClick={onLogout}
+                  className="text-primary"
+                >
+                  <LogOut className="h-5 w-5" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setIsPanelOpen(!isPanelOpen)}
+                  className="text-primary"
+                >
+                  <Menu className="h-5 w-5" />
+                </Button>
+              </>
+            ) : (
+              <>
+                <Button 
+                  variant="ghost"
+                  onClick={() => {
+                    setShowAuthForm(true);
+                    setShowLogin(false);
+                  }}
+                  className="text-primary"
+                >
+                  Register
+                </Button>
+                <Button 
+                  variant="ghost"
+                  onClick={() => {
+                    setShowAuthForm(true);
+                    setShowLogin(true);
+                  }}
+                  className="text-primary"
+                >
+                  Sign In
+                </Button>
+              </>
+            )}
+          </div>
+        </div>
+
         <motion.div 
           className="flex-1 flex flex-col h-full relative overflow-hidden"
           initial={{ y: 20, opacity: 0 }}
@@ -61,8 +117,6 @@ export const MainContainer: React.FC<MainContainerProps> = ({
             damping: 20
           }}
         >
-          <ChatHeader />
-          
           <ChatContainer 
             messages={messages}
             handleListen={handleListen}
@@ -89,7 +143,36 @@ export const MainContainer: React.FC<MainContainerProps> = ({
                 >
                   ✕
                 </button>
-                <AuthForm onComplete={() => setShowAuthForm(false)} />
+                {showLogin ? (
+                  <div className="bg-white rounded-xl shadow-lg p-6">
+                    <Auth
+                      supabaseClient={supabase}
+                      appearance={{ theme: ThemeSupa }}
+                      theme="light"
+                      showLinks={false}
+                      providers={[]}
+                      view="sign_in"
+                    />
+                    <Button
+                      variant="link"
+                      onClick={() => setShowLogin(false)}
+                      className="mt-4 text-sm text-gray-500"
+                    >
+                      Don't have an account? Register
+                    </Button>
+                  </div>
+                ) : (
+                  <>
+                    <AuthForm onComplete={() => setShowAuthForm(false)} />
+                    <Button
+                      variant="link"
+                      onClick={() => setShowLogin(true)}
+                      className="mt-4 text-sm text-gray-500"
+                    >
+                      Already have an account? Sign in
+                    </Button>
+                  </>
+                )}
               </div>
             </motion.div>
           )}
@@ -107,7 +190,11 @@ export const MainContainer: React.FC<MainContainerProps> = ({
         </motion.div>
       </div>
 
-      <CollapsiblePanel userProgress={userProgress} />
+      <CollapsiblePanel 
+        userProgress={userProgress} 
+        onLogout={onLogout}
+        className={isPanelOpen ? "" : "translate-x-full"}
+      />
     </motion.div>
   );
 };
