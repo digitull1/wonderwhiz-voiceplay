@@ -79,7 +79,7 @@ export const AuthOverlay: React.FC<AuthOverlayProps> = ({ showLogin, onClose }) 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event: AuthChangeEvent, session) => {
       console.log('Auth state changed:', event, session);
-      if (event === 'SIGNED_IN' || event === 'SIGNED_UP') {
+      if (event === 'USER_UPDATED' || event === 'SIGNED_OUT') {
         handleAuthSuccess(session);
       }
     });
