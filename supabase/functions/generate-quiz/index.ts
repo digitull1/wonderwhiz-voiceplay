@@ -69,6 +69,7 @@ serve(async (req) => {
     4. Each question must be unique and directly related to ${topic}
     5. Format must match the example exactly - no extra text or explanations`;
 
+    console.log('Sending prompt to Groq API');
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -80,7 +81,7 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: `You are a quiz generator for children aged ${age}. You ONLY respond with properly formatted JSON containing quiz questions.`
+            content: `You are a quiz generator for children aged ${age}. You MUST ONLY respond with properly formatted JSON containing quiz questions. Do not include any additional text or explanations.`
           },
           { role: "user", content: prompt }
         ],
@@ -103,10 +104,19 @@ serve(async (req) => {
 
     let quizData: QuizData;
     try {
-      const parsedContent = data.choices[0].message.content.trim();
-      console.log("Content to parse:", parsedContent);
-      quizData = JSON.parse(parsedContent);
-      console.log("Parsed quiz data:", quizData);
+      // Clean up the response content
+      const content = data.choices[0].message.content;
+      console.log("Raw content before parsing:", content);
+      
+      // Remove any potential leading/trailing whitespace and verify it starts with {
+      const cleanContent = content.trim();
+      if (!cleanContent.startsWith('{')) {
+        throw new Error("Response does not start with valid JSON");
+      }
+      
+      console.log("Cleaned content to parse:", cleanContent);
+      quizData = JSON.parse(cleanContent);
+      console.log("Successfully parsed quiz data:", quizData);
 
       // Validate quiz data structure
       if (!Array.isArray(quizData.questions)) {
