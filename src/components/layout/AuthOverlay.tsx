@@ -51,6 +51,29 @@ export const AuthOverlay: React.FC<AuthOverlayProps> = ({ showLogin, onClose }) 
     }
   };
 
+  const handleAuthEvent = async ({ event, session }: { event: string; session: any }) => {
+    console.log('Auth state changed:', { event, session });
+    
+    if (event === 'SIGNED_IN' && session?.user) {
+      try {
+        await ensureUserProgress(session.user.id);
+        
+        toast({
+          title: "Welcome to WonderWhiz!",
+          description: "Successfully signed in.",
+        });
+        onClose();
+      } catch (error) {
+        console.error('Error in auth state change:', error);
+        toast({
+          title: "Error",
+          description: "There was an error setting up your account. Please try again.",
+          variant: "destructive"
+        });
+      }
+    }
+  };
+
   return (
     <motion.div 
       className="fixed inset-0 bg-white/95 backdrop-blur-xl p-4 
@@ -89,28 +112,7 @@ export const AuthOverlay: React.FC<AuthOverlayProps> = ({ showLogin, onClose }) 
             providers={[]}
             view={showLogin ? "sign_in" : "sign_up"}
             redirectTo={window.location.origin}
-            onAuthStateChange={async ({ event, session }) => {
-              console.log('Auth state changed:', { event, session });
-              
-              if (event === 'SIGNED_IN' && session?.user) {
-                try {
-                  await ensureUserProgress(session.user.id);
-                  
-                  toast({
-                    title: "Welcome to WonderWhiz!",
-                    description: "Successfully signed in.",
-                  });
-                  onClose();
-                } catch (error) {
-                  console.error('Error in auth state change:', error);
-                  toast({
-                    title: "Error",
-                    description: "There was an error setting up your account. Please try again.",
-                    variant: "destructive"
-                  });
-                }
-              }
-            }}
+            onSuccess={handleAuthEvent}
           />
         </div>
       </div>
