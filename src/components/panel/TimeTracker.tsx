@@ -26,22 +26,29 @@ export const TimeTracker = () => {
         const weekAgo = new Date();
         weekAgo.setDate(weekAgo.getDate() - 7);
         
-        // Fetch today's time
-        const { data: todayData } = await supabase
+        // Fetch today's time - handle case where no entry exists
+        const { data: todayData, error: todayError } = await supabase
           .from('learning_time')
           .select('minutes_spent')
           .eq('user_id', user.id)
-          .eq('date', today)
-          .single();
+          .eq('date', today);
+
+        if (todayError) {
+          console.error('Error fetching today\'s learning time:', todayError);
+        }
 
         // Fetch week's time
-        const { data: weekData } = await supabase
+        const { data: weekData, error: weekError } = await supabase
           .from('learning_time')
           .select('minutes_spent')
           .gte('date', weekAgo.toISOString().split('T')[0]);
 
-        const todayMinutes = todayData?.minutes_spent || 0;
-        const weekMinutes = weekData?.reduce((acc, curr) => acc + (curr.minutes_spent || 0), 0) || 0;
+        if (weekError) {
+          console.error('Error fetching week\'s learning time:', weekError);
+        }
+
+        const todayMinutes = todayData && todayData[0] ? todayData[0].minutes_spent : 0;
+        const weekMinutes = weekData ? weekData.reduce((acc, curr) => acc + (curr.minutes_spent || 0), 0) : 0;
 
         setTimeSpent({
           today: todayMinutes,
