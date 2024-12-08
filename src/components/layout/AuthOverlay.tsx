@@ -13,7 +13,7 @@ interface AuthOverlayProps {
 export const AuthOverlay: React.FC<AuthOverlayProps> = ({ showLogin, onClose }) => {
   return (
     <motion.div 
-      className="absolute inset-0 bg-white/95 backdrop-blur-xl p-4 
+      className="fixed inset-0 bg-white/95 backdrop-blur-xl p-4 
         flex items-center justify-center z-50"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
@@ -29,21 +29,27 @@ export const AuthOverlay: React.FC<AuthOverlayProps> = ({ showLogin, onClose }) 
           ✕
         </button>
         <div className="bg-white rounded-xl shadow-lg p-6">
+          <h2 className="text-2xl font-bold mb-6 text-center">
+            {showLogin ? "Welcome Back!" : "Join WonderWhiz"}
+          </h2>
           <Auth
             supabaseClient={supabase}
-            appearance={{ theme: ThemeSupa }}
+            appearance={{ 
+              theme: ThemeSupa,
+              variables: {
+                default: {
+                  colors: {
+                    brand: '#9b87f5',
+                    brandAccent: '#7E69AB',
+                  },
+                },
+              },
+            }}
             theme="light"
-            showLinks={false}
             providers={[]}
             view={showLogin ? "sign_in" : "sign_up"}
+            redirectTo={window.location.origin}
           />
-          <Button
-            variant="link"
-            onClick={() => onClose()}
-            className="mt-4 text-sm text-gray-500"
-          >
-            {showLogin ? "Don't have an account? Register" : "Already have an account? Sign in"}
-          </Button>
         </div>
       </div>
     </motion.div>
