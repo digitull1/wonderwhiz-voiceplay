@@ -10,7 +10,8 @@ import { getGroqResponse } from "@/utils/groq";
 export const useChat = () => {
   const [messages, setMessages] = useState<any[]>([{
     text: "Hi! I'm WonderWhiz! Your friendly AI Assistant! Please login or register to continue 😊",
-    isAi: true
+    isAi: true,
+    showAuthPrompt: true
   }]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -80,39 +81,7 @@ export const useChat = () => {
     setIsLoading(true);
 
     try {
-      if (!userName) {
-        setUserName(message);
-        setMessages(prev => [...prev, {
-          text: `Nice to meet you, ${message}! How old are you? This helps me make our chats perfect for you! 🎯`,
-          isAi: true
-        }]);
-        setIsLoading(false);
-        return;
-      }
-
-      if (!userAge && userName) {
-        const age = parseInt(message);
-        if (isNaN(age) || age < 4 || age > 12) {
-          setMessages(prev => [...prev, {
-            text: "Oops! Please tell me your age as a number between 4 and 12! 🎈",
-            isAi: true
-          }]);
-          setIsLoading(false);
-          return;
-        }
-        setUserAge(age);
-        const blocks = await generateDynamicBlocks("Welcome topics for kids", "general");
-        setMessages(prev => [...prev, {
-          text: `Awesome! ${age} is a perfect age for amazing discoveries! 🌟 Let me show you what we can do together:
-
-📸 You can share pictures of your homework or anything you're curious about
-✨ I can create magical pictures to help you learn
-🧠 We'll have fun quizzes to test what you've learned
-
-I've got some mind-blowing facts that will blow your socks off! Check these out and click on what interests you the most! 🚀`,
-          isAi: true,
-          blocks
-        }]);
+      if (!isAuthenticated) {
         setIsLoading(false);
         return;
       }
@@ -139,7 +108,7 @@ I've got some mind-blowing facts that will blow your socks off! Check these out 
     } finally {
       setIsLoading(false);
     }
-  }, [currentTopic, generateDynamicBlocks, isLoading, userName, userAge, blocksExplored, updateBlocksExplored]);
+  }, [currentTopic, generateDynamicBlocks, isLoading, isAuthenticated, updateBlocksExplored]);
 
   const handleImageAnalysis = useCallback(async (imageData: string) => {
     setIsLoading(true);

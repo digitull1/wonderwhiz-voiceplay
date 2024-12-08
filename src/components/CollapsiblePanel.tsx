@@ -8,28 +8,49 @@ import { ProgressCard } from "./panel/ProgressCard";
 import { TalkToWizzy } from "./panel/TalkToWizzy";
 import { TimeTracker } from "./panel/TimeTracker";
 import { TopicHistory } from "./panel/TopicHistory";
+import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "./ui/use-toast";
 
 interface CollapsiblePanelProps {
   userProgress?: UserProgress;
   className?: string;
+  onLogout?: () => void;
 }
 
 export const CollapsiblePanel: React.FC<CollapsiblePanelProps> = ({
   userProgress,
-  className
+  className,
+  onLogout
 }) => {
   const [isOpen, setIsOpen] = useState(false);
+  const { toast } = useToast();
 
   const handleToggle = () => {
     console.log('Toggle panel:', !isOpen);
     setIsOpen(!isOpen);
   };
 
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+      if (onLogout) onLogout();
+      toast({
+        title: "Logged out successfully",
+        description: "Come back soon! 👋",
+      });
+    } catch (error) {
+      console.error('Error logging out:', error);
+      toast({
+        title: "Error logging out",
+        description: "Please try again",
+        variant: "destructive",
+      });
+    }
+  };
+
   const handleTopicClick = (topic: string) => {
     console.log('Topic clicked:', topic);
-    // Close panel when topic is clicked
     setIsOpen(false);
-    // Send message to chat
     const event = new CustomEvent('wonderwhiz:newMessage', {
       detail: {
         text: `Tell me about "${topic}"`,
@@ -107,6 +128,13 @@ export const CollapsiblePanel: React.FC<CollapsiblePanelProps> = ({
               <TimeTracker />
               <TopicHistory onTopicClick={handleTopicClick} />
               <TalkToWizzy />
+              <Button 
+                onClick={handleLogout}
+                variant="ghost"
+                className="w-full mt-4 text-red-500 hover:text-red-600 hover:bg-red-50"
+              >
+                Logout
+              </Button>
             </div>
           </motion.div>
         )}

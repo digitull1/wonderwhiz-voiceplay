@@ -144,6 +144,7 @@ const Index = () => {
 
             <CollapsiblePanel 
               userProgress={userProgress}
+              onLogout={handleLogout}
               aria-label="User Progress Panel"
             />
 
