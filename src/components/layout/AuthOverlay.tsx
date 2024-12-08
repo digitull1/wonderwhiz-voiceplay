@@ -14,7 +14,7 @@ interface AuthOverlayProps {
 export const AuthOverlay: React.FC<AuthOverlayProps> = ({ showLogin, onClose }) => {
   const { toast } = useToast();
 
-  const handleAuthStateChange = async (event: any, session: any) => {
+  const handleAuthStateChange = async (event: string) => {
     if (event === 'SIGNED_IN') {
       toast({
         title: "Welcome to WonderWhiz!",
@@ -62,7 +62,7 @@ export const AuthOverlay: React.FC<AuthOverlayProps> = ({ showLogin, onClose }) 
             providers={[]}
             view={showLogin ? "sign_in" : "sign_up"}
             redirectTo={window.location.origin}
-            onAuthStateChange={handleAuthStateChange}
+            onAuthStateChange={({ event }) => handleAuthStateChange(event)}
           />
         </div>
       </div>
