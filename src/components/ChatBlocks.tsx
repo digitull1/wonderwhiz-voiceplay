@@ -7,6 +7,8 @@ import { EnhancedBlockCard } from "./blocks/EnhancedBlockCard";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "./ui/use-toast";
+import { handleQuizGeneration } from "./quiz/QuizGenerator";
+import { handleImageGeneration } from "./image/ImageGenerator";
 
 interface ChatBlocksProps {
   blocks: Block[];
@@ -49,28 +51,7 @@ export const ChatBlocks = ({ blocks, onBlockClick }: ChatBlocksProps) => {
         });
         window.dispatchEvent(loadingEvent);
 
-        const { data: imageData, error: imageError } = await supabase.functions.invoke('generate-image', {
-          body: { prompt: block.title }
-        });
-
-        if (imageError) throw imageError;
-
-        if (imageData?.image) {
-          const event = new CustomEvent('wonderwhiz:newMessage', {
-            detail: {
-              text: "Here's what I imagined based on your request! What do you think? ✨",
-              isAi: true,
-              imageUrl: imageData.image
-            }
-          });
-          window.dispatchEvent(event);
-
-          toast({
-            title: "Image created! ✨",
-            description: "Here's what I imagined!",
-            className: "bg-primary text-white"
-          });
-        }
+        await handleImageGeneration(block.title, toast);
       } catch (error) {
         console.error('Error generating image:', error);
         toast({
@@ -94,44 +75,7 @@ export const ChatBlocks = ({ blocks, onBlockClick }: ChatBlocksProps) => {
         const age = profileData?.age || 8;
         console.log('User age for quiz generation:', age);
 
-        const { data: quizData, error: quizError } = await supabase.functions.invoke('generate-quiz', {
-          body: { 
-            topic: block.metadata.topic || block.title,
-            age,
-            contextualPrompt: `Create ${age}-appropriate quiz questions specifically about ${block.metadata.topic || block.title}. 
-            The questions should be fun, engaging, and directly related to the topic.
-            Start with simpler questions and gradually increase difficulty.`
-          }
-        });
-
-        if (quizError) {
-          console.error('Quiz generation error:', quizError);
-          throw quizError;
-        }
-        
-        console.log('Quiz data received:', quizData);
-
-        if (quizData?.questions) {
-          const event = new CustomEvent('wonderwhiz:newMessage', {
-            detail: {
-              text: `Let's test what you've learned about ${block.metadata.topic || block.title}! 🎯`,
-              isAi: true,
-              quizState: {
-                isActive: true,
-                currentQuestion: quizData.questions,
-                blocksExplored: 0,
-                currentTopic: block.metadata.topic
-              }
-            }
-          });
-          window.dispatchEvent(event);
-
-          toast({
-            title: "Quiz time! 🎯",
-            description: "Let's test what you've learned!",
-            className: "bg-primary text-white"
-          });
-        }
+        await handleQuizGeneration(block.metadata.topic || block.title, age, toast);
       } catch (error) {
         console.error('Error generating quiz:', error);
         toast({
