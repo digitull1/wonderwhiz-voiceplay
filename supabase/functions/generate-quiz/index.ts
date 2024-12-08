@@ -5,14 +5,23 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+interface QuizQuestion {
+  question: string;
+  options: string[];
+  correctAnswer: number;
+  topic: string;
+}
+
+interface QuizData {
+  questions: QuizQuestion[];
+}
+
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    // Parse request body
     let requestData;
     try {
       requestData = await req.json();
@@ -22,7 +31,7 @@ serve(async (req) => {
       throw new Error('Invalid JSON in request body');
     }
 
-    const { topic, age = 8, contextualPrompt } = requestData;
+    const { topic, age = 8 } = requestData;
 
     if (!topic) {
       throw new Error('Topic is required');
@@ -41,7 +50,7 @@ serve(async (req) => {
     - Use encouraging, positive language
     - Avoid complex terminology
     
-    Format the response EXACTLY like this example:
+    You MUST format the response EXACTLY like this example, with NO additional text:
     {
       "questions": [
         {
@@ -53,9 +62,12 @@ serve(async (req) => {
       ]
     }
     
-    IMPORTANT: Generate exactly 5 questions, each with unique content about ${topic}.
-    Each question MUST have exactly 4 options.
-    The correctAnswer MUST be a number between 0 and 3.`;
+    IMPORTANT RULES:
+    1. Generate exactly 5 questions about ${topic}
+    2. Each question MUST have exactly 4 options
+    3. The correctAnswer MUST be a number between 0 and 3
+    4. Each question must be unique and directly related to ${topic}
+    5. Format must match the example exactly - no extra text or explanations`;
 
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
@@ -68,7 +80,7 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: `You are an educational quiz generator for children aged ${age}. Create fun, engaging, and age-appropriate questions!`
+            content: `You are a quiz generator for children aged ${age}. You ONLY respond with properly formatted JSON containing quiz questions.`
           },
           { role: "user", content: prompt }
         ],
@@ -89,9 +101,11 @@ serve(async (req) => {
       throw new Error("No content in Groq API response");
     }
 
-    let quizData;
+    let quizData: QuizData;
     try {
-      quizData = JSON.parse(data.choices[0].message.content);
+      const parsedContent = data.choices[0].message.content.trim();
+      console.log("Content to parse:", parsedContent);
+      quizData = JSON.parse(parsedContent);
       console.log("Parsed quiz data:", quizData);
 
       // Validate quiz data structure
@@ -99,20 +113,26 @@ serve(async (req) => {
         throw new Error("Quiz data must contain a questions array");
       }
 
+      if (quizData.questions.length !== 5) {
+        throw new Error(`Expected 5 questions, got ${quizData.questions.length}`);
+      }
+
       // Validate each question
-      quizData.questions.forEach((question: any, index: number) => {
-        if (!question.question || !Array.isArray(question.options) || 
+      quizData.questions.forEach((question: QuizQuestion, index: number) => {
+        if (!question.question || 
+            !Array.isArray(question.options) || 
             question.options.length !== 4 || 
             typeof question.correctAnswer !== 'number' ||
             question.correctAnswer < 0 || 
-            question.correctAnswer > 3) {
+            question.correctAnswer > 3 ||
+            !question.topic) {
           throw new Error(`Invalid question format at index ${index}`);
         }
       });
 
     } catch (error) {
       console.error("Error parsing or validating quiz data:", error);
-      throw new Error("Invalid quiz data format received from API");
+      throw new Error(`Invalid quiz data format: ${error.message}`);
     }
 
     return new Response(
