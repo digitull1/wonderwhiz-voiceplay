@@ -20,34 +20,36 @@ export const AuthOverlay: React.FC<AuthOverlayProps> = ({ showLogin, onClose }) 
         .from('user_progress')
         .select('*')
         .eq('user_id', userId)
-        .maybeSingle();
+        .limit(1)
+        .single();
 
       console.log('Existing progress check:', { existingProgress, fetchError });
 
-      if (fetchError && fetchError.code !== 'PGRST116') {
-        console.error('Error fetching user progress:', fetchError);
-        throw fetchError;
-      }
+      if (fetchError) {
+        if (fetchError.code === 'PGRST116') {
+          // No progress exists, create it
+          console.log('No progress found, creating new progress record');
+          const { error: insertError } = await supabase
+            .from('user_progress')
+            .insert([
+              { 
+                user_id: userId,
+                points: 100, // Initial points
+                level: 1,
+                streak_days: 0,
+                topics_explored: 0,
+                questions_asked: 0,
+                quiz_score: 0
+              }
+            ]);
 
-      if (!existingProgress) {
-        // If no progress exists, create it
-        const { error: insertError } = await supabase
-          .from('user_progress')
-          .insert([
-            { 
-              user_id: userId,
-              points: 100, // Initial points
-              level: 1,
-              streak_days: 0,
-              topics_explored: 0,
-              questions_asked: 0,
-              quiz_score: 0
-            }
-          ]);
-
-        if (insertError) {
-          console.error('Error creating user progress:', insertError);
-          throw insertError;
+          if (insertError) {
+            console.error('Error creating user progress:', insertError);
+            throw insertError;
+          }
+        } else {
+          console.error('Error fetching user progress:', fetchError);
+          throw fetchError;
         }
       }
     } catch (error) {
@@ -94,7 +96,7 @@ export const AuthOverlay: React.FC<AuthOverlayProps> = ({ showLogin, onClose }) 
             providers={[]}
             view={showLogin ? "sign_in" : "sign_up"}
             redirectTo={window.location.origin}
-            onChange={async ({ event, session }) => {
+            onAuthStateChange={async ({ event, session }) => {
               console.log('Auth state changed:', { event, session });
               
               if (event === 'SIGNED_IN' && session?.user) {
