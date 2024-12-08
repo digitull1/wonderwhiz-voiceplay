@@ -1,6 +1,7 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { Auth, AuthChangeEvent, Session } from "@supabase/auth-ui-react";
+import { Auth } from "@supabase/auth-ui-react";
+import { AuthChangeEvent, Session } from "@supabase/supabase-js";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
@@ -13,13 +14,47 @@ interface AuthOverlayProps {
 export const AuthOverlay: React.FC<AuthOverlayProps> = ({ showLogin, onClose }) => {
   const { toast } = useToast();
 
-  const handleAuthStateChange = async ({ event }: { event: AuthChangeEvent }) => {
-    if (event === 'SIGNED_IN') {
-      toast({
-        title: "Welcome to WonderWhiz!",
-        description: "Successfully signed in.",
-      });
-      onClose();
+  const handleAuthStateChange = async (event: AuthChangeEvent, session: Session | null) => {
+    console.log('Auth state changed:', event, session);
+    
+    if (event === 'SIGNED_IN' && session?.user) {
+      try {
+        // Ensure user progress exists
+        const { data: existingProgress, error: fetchError } = await supabase
+          .from('user_progress')
+          .select('*')
+          .eq('user_id', session.user.id)
+          .single();
+
+        if (fetchError && fetchError.code === 'PGRST116') {
+          // If no progress exists, create it
+          const { error: insertError } = await supabase
+            .from('user_progress')
+            .insert([
+              { 
+                user_id: session.user.id,
+                points: 100, // Initial points
+                level: 1,
+                streak_days: 0,
+                topics_explored: 0,
+                questions_asked: 0,
+                quiz_score: 0
+              }
+            ]);
+
+          if (insertError) {
+            console.error('Error creating user progress:', insertError);
+          }
+        }
+
+        toast({
+          title: "Welcome to WonderWhiz!",
+          description: "Successfully signed in.",
+        });
+        onClose();
+      } catch (error) {
+        console.error('Error in auth state change:', error);
+      }
     }
   };
 
@@ -61,7 +96,7 @@ export const AuthOverlay: React.FC<AuthOverlayProps> = ({ showLogin, onClose }) 
             providers={[]}
             view={showLogin ? "sign_in" : "sign_up"}
             redirectTo={window.location.origin}
-            onAuthStateChange={handleAuthStateChange}
+            onAuthStateChange={({ event, session }) => handleAuthStateChange(event, session)}
           />
         </div>
       </div>
