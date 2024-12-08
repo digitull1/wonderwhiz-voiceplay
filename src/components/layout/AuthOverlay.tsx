@@ -24,6 +24,11 @@ export const AuthOverlay: React.FC<AuthOverlayProps> = ({ showLogin, onClose }) 
 
       console.log('Existing progress check:', { existingProgress, fetchError });
 
+      if (!existingProgress && fetchError?.code !== 'PGRST116') {
+        console.error('Error fetching user progress:', fetchError);
+        throw fetchError;
+      }
+
       if (!existingProgress) {
         // If no progress exists, create it
         const { error: insertError } = await supabase
@@ -89,12 +94,12 @@ export const AuthOverlay: React.FC<AuthOverlayProps> = ({ showLogin, onClose }) 
             providers={[]}
             view={showLogin ? "sign_in" : "sign_up"}
             redirectTo={window.location.origin}
-            onAuthStateChange={async (event) => {
-              console.log('Auth state changed:', event);
+            authListener={async ({ event, session }) => {
+              console.log('Auth state changed:', { event, session });
               
-              if (event.event === 'SIGNED_IN' && event.session?.user) {
+              if (event === 'SIGNED_IN' && session?.user) {
                 try {
-                  await ensureUserProgress(event.session.user.id);
+                  await ensureUserProgress(session.user.id);
                   
                   toast({
                     title: "Welcome to WonderWhiz!",
