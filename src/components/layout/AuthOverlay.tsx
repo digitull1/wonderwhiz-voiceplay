@@ -14,22 +14,12 @@ interface AuthOverlayProps {
 export const AuthOverlay: React.FC<AuthOverlayProps> = ({ showLogin, onClose }) => {
   const { toast } = useToast();
 
-  const handleAuthSubmit = async (event: { data: { session: Session | null }, error: AuthError | null }) => {
-    console.log('Auth event received:', event);
+  const handleAuthStateChange = async (event: any, session: Session | null) => {
+    console.log('Auth state change:', { event, session });
     
-    if (event.error) {
-      console.error('Error in auth event:', event.error);
-      toast({
-        title: "Authentication Error",
-        description: event.error.message,
-        variant: "destructive"
-      });
-      return;
-    }
-
-    if (event.data.session?.user) {
+    if (session?.user) {
       try {
-        await ensureUserProgress(event.data.session.user.id);
+        await ensureUserProgress(session.user.id);
         
         toast({
           title: "Welcome to WonderWhiz!",
@@ -128,7 +118,7 @@ export const AuthOverlay: React.FC<AuthOverlayProps> = ({ showLogin, onClose }) 
             providers={[]}
             view={showLogin ? "sign_in" : "sign_up"}
             redirectTo={window.location.origin}
-            onSubmit={handleAuthSubmit}
+            onAuthStateChange={handleAuthStateChange}
           />
         </div>
       </motion.div>
