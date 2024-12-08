@@ -38,9 +38,28 @@ export const AuthForm = ({ onComplete }: AuthFormProps) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    console.log("Starting registration process...");
 
     try {
-      const { error: signUpError } = await supabase.auth.signUp({
+      // First check if user exists
+      const { data: existingUser, error: checkError } = await supabase.auth.signInWithPassword({
+        email: formData.email,
+        password: formData.password,
+      });
+
+      if (existingUser?.user) {
+        console.log('User exists, signing in instead');
+        toast({
+          title: "Welcome back! 👋",
+          description: "Successfully signed in to your account.",
+        });
+        onComplete?.();
+        return;
+      }
+
+      // If user doesn't exist, proceed with registration
+      console.log("Creating new user...");
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
         options: {
@@ -52,31 +71,19 @@ export const AuthForm = ({ onComplete }: AuthFormProps) => {
       });
 
       if (signUpError) {
-        if (signUpError.message === "User already registered") {
-          console.log('User exists, trying sign in instead');
-          const { error: signInError } = await supabase.auth.signInWithPassword({
-            email: formData.email,
-            password: formData.password,
-          });
-          
-          if (signInError) throw signInError;
-          
-          toast({
-            title: "Welcome back! 👋",
-            description: "Successfully signed in to your account.",
-          });
-          onComplete?.();
-          return;
-        }
+        console.error("Registration error:", signUpError);
         throw signUpError;
       }
 
-      triggerCelebration(formData.name);
-      onComplete?.();
+      if (signUpData.user) {
+        console.log("User created successfully:", signUpData.user.id);
+        triggerCelebration(formData.name);
+        onComplete?.();
+      }
     } catch (error: any) {
       console.error("Auth error:", error);
       toast({
-        title: "Oops!",
+        title: "Registration failed",
         description: error.message || "Something went wrong. Please try again.",
         variant: "destructive",
       });
