@@ -89,27 +89,25 @@ export const AuthOverlay: React.FC<AuthOverlayProps> = ({ showLogin, onClose }) 
             providers={[]}
             view={showLogin ? "sign_in" : "sign_up"}
             redirectTo={window.location.origin}
-            listeners={{
-              async onAuthStateChange(event, session) {
-                console.log('Auth state changed:', event, session);
-                
-                if (event === 'SIGNED_IN' && session?.user) {
-                  try {
-                    await ensureUserProgress(session.user.id);
-                    
-                    toast({
-                      title: "Welcome to WonderWhiz!",
-                      description: "Successfully signed in.",
-                    });
-                    onClose();
-                  } catch (error) {
-                    console.error('Error in auth state change:', error);
-                    toast({
-                      title: "Error",
-                      description: "There was an error setting up your account. Please try again.",
-                      variant: "destructive"
-                    });
-                  }
+            onAuthStateChange={async (event) => {
+              console.log('Auth state changed:', event);
+              
+              if (event.event === 'SIGNED_IN' && event.session?.user) {
+                try {
+                  await ensureUserProgress(event.session.user.id);
+                  
+                  toast({
+                    title: "Welcome to WonderWhiz!",
+                    description: "Successfully signed in.",
+                  });
+                  onClose();
+                } catch (error) {
+                  console.error('Error in auth state change:', error);
+                  toast({
+                    title: "Error",
+                    description: "There was an error setting up your account. Please try again.",
+                    variant: "destructive"
+                  });
                 }
               }
             }}
