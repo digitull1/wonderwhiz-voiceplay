@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { ChatHeader } from "@/components/ChatHeader";
 import { ChatContainer } from "@/components/ChatContainer";
 import { ChatInput } from "@/components/ChatInput";
@@ -8,6 +8,9 @@ import { CollapsiblePanel } from "@/components/CollapsiblePanel";
 import { UserProgress } from "@/types/chat";
 import { Button } from "@/components/ui/button";
 import { Menu, LogOut } from "lucide-react";
+import { Auth } from "@supabase/auth-ui-react";
+import { supabase } from "@/integrations/supabase/client";
+import { ThemeSupa } from "@supabase/auth-ui-shared";
 
 interface MainContainerProps {
   messages: any[];
