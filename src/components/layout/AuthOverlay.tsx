@@ -118,20 +118,9 @@ export const AuthOverlay: React.FC<AuthOverlayProps> = ({ showLogin, onClose }) 
             providers={[]}
             view={showLogin ? "sign_in" : "sign_up"}
             redirectTo={window.location.origin}
-            onEvent={async (event) => {
-              if (event.type === 'SIGNED_IN' || event.type === 'SIGNED_UP') {
-                const { session, error } = event.data;
-                if (error) {
-                  console.error('Auth error:', error);
-                  toast({
-                    title: "Error",
-                    description: error.message,
-                    variant: "destructive"
-                  });
-                  return;
-                }
-                handleAuthSuccess(session);
-              }
+            onSuccess={async (response) => {
+              console.log('Auth success response:', response);
+              handleAuthSuccess(response.session);
             }}
           />
         </div>
