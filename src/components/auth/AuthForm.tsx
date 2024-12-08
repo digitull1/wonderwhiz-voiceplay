@@ -37,9 +37,9 @@ export const AuthForm = ({ onComplete }: AuthFormProps) => {
       });
 
       if (signUpError) {
-        // If rate limit error, try to sign in instead
-        if (signUpError.status === 429) {
-          console.log('Rate limit reached, trying sign in instead');
+        // If user already exists, try to sign in instead
+        if (signUpError.message === "User already registered") {
+          console.log('User exists, trying sign in instead');
           const { error: signInError } = await supabase.auth.signInWithPassword({
             email: formData.email,
             password: formData.password,
