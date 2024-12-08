@@ -38,6 +38,17 @@ export const ChatBlocks = ({ blocks, onBlockClick }: ChatBlocksProps) => {
     if (block.metadata.type === 'image') {
       try {
         console.log('Generating image for prompt:', block.title);
+        
+        // Dispatch loading animation event
+        const loadingEvent = new CustomEvent('wonderwhiz:newMessage', {
+          detail: {
+            text: "✨ Creating something magical for you! Watch the sparkles...",
+            isAi: true,
+            isLoading: true
+          }
+        });
+        window.dispatchEvent(loadingEvent);
+
         const { data: imageData, error: imageError } = await supabase.functions.invoke('generate-image', {
           body: { prompt: block.title }
         });
@@ -45,7 +56,6 @@ export const ChatBlocks = ({ blocks, onBlockClick }: ChatBlocksProps) => {
         if (imageError) throw imageError;
 
         if (imageData?.image) {
-          // Dispatch a custom event with the image URL
           const event = new CustomEvent('wonderwhiz:newMessage', {
             detail: {
               text: "Here's what I imagined based on your request! What do you think? ✨",
@@ -71,7 +81,7 @@ export const ChatBlocks = ({ blocks, onBlockClick }: ChatBlocksProps) => {
       }
     } else if (block.metadata.type === 'quiz') {
       try {
-        console.log('Generating quiz for topic:', block.title);
+        console.log('Generating quiz for topic:', block.metadata.topic || block.title);
         
         // Get user's age
         const { data: userData } = await supabase.auth.getUser();
@@ -82,21 +92,29 @@ export const ChatBlocks = ({ blocks, onBlockClick }: ChatBlocksProps) => {
           .single();
 
         const age = profileData?.age || 8;
+        console.log('User age for quiz generation:', age);
 
         const { data: quizData, error: quizError } = await supabase.functions.invoke('generate-quiz', {
           body: { 
             topic: block.metadata.topic || block.title,
-            age
+            age,
+            contextualPrompt: `Create ${age}-appropriate quiz questions specifically about ${block.metadata.topic || block.title}. 
+            The questions should be fun, engaging, and directly related to the topic.
+            Start with simpler questions and gradually increase difficulty.`
           }
         });
 
-        if (quizError) throw quizError;
+        if (quizError) {
+          console.error('Quiz generation error:', quizError);
+          throw quizError;
+        }
+        
         console.log('Quiz data received:', quizData);
 
         if (quizData?.questions) {
           const event = new CustomEvent('wonderwhiz:newMessage', {
             detail: {
-              text: "Let's test your knowledge with a fun quiz! 🎯",
+              text: `Let's test what you've learned about ${block.metadata.topic || block.title}! 🎯`,
               isAi: true,
               quizState: {
                 isActive: true,

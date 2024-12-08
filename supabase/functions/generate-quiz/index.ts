@@ -11,10 +11,11 @@ serve(async (req) => {
   }
 
   try {
-    const { topic, age = 8 } = await req.json();
+    const { topic, age = 8, contextualPrompt } = await req.json();
     console.log('Generating quiz for topic:', topic, 'age:', age);
+    console.log('Using contextual prompt:', contextualPrompt);
 
-    const prompt = `Generate 5 engaging and educational quiz questions about ${topic}. 
+    const prompt = contextualPrompt || `Generate 5 engaging and educational quiz questions about ${topic}. 
     The questions should:
     - Be specifically about ${topic}
     - Be appropriate for a ${age}-year-old child
@@ -85,71 +86,13 @@ serve(async (req) => {
   } catch (error) {
     console.error("Error generating quiz:", error);
     return new Response(
-      JSON.stringify({ 
-        error: error.message,
-        questions: [
-          {
-            question: "What makes learning fun?",
-            options: [
-              "Making new discoveries",
-              "Solving puzzles",
-              "Learning with friends",
-              "All of the above"
-            ],
-            correctAnswer: 3,
-            topic: "learning"
-          },
-          {
-            question: "Why is curiosity important?",
-            options: [
-              "It helps us learn new things",
-              "It makes us ask questions",
-              "It leads to discoveries",
-              "All of these reasons"
-            ],
-            correctAnswer: 3,
-            topic: "learning"
-          },
-          {
-            question: "What's the best way to remember something new?",
-            options: [
-              "Practice it regularly",
-              "Teach it to someone else",
-              "Write it down",
-              "All of these methods"
-            ],
-            correctAnswer: 3,
-            topic: "learning"
-          },
-          {
-            question: "How can we learn from mistakes?",
-            options: [
-              "Try again with a new approach",
-              "Ask for help when needed",
-              "Think about what went wrong",
-              "All of these ways"
-            ],
-            correctAnswer: 3,
-            topic: "learning"
-          },
-          {
-            question: "What makes a good learner?",
-            options: [
-              "Being patient and persistent",
-              "Asking questions when confused",
-              "Helping others learn too",
-              "All of these qualities"
-            ],
-            correctAnswer: 3,
-            topic: "learning"
-          }
-        ]
-      }),
+      JSON.stringify({ error: error.message }),
       { 
         headers: { 
           ...corsHeaders,
           'Content-Type': 'application/json'
-        }
+        },
+        status: 500
       }
     );
   }

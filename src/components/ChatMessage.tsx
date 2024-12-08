@@ -7,6 +7,7 @@ import MessageContent from "./chat/MessageContent";
 import { QuizCard } from "./quiz/QuizCard";
 import { LoaderCircle } from "lucide-react";
 import { RewardAnimation } from "./rewards/RewardAnimation";
+import { LoadingSparkles } from './LoadingSparkles';
 
 interface ChatMessageProps {
   isAi?: boolean;
@@ -21,6 +22,7 @@ interface ChatMessageProps {
   onQuizAnswer?: (isCorrect: boolean) => void;
   messageIndex?: number;
   onImageAnalyzed?: (response: string) => void;
+  isLoading?: boolean;
 }
 
 const ChatMessage: React.FC<ChatMessageProps> = ({ 
@@ -35,7 +37,8 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
   quizState,
   onQuizAnswer,
   messageIndex = 0,
-  onImageAnalyzed
+  onImageAnalyzed,
+  isLoading
 }) => {
   const [isTyping, setIsTyping] = useState(false);
   const [showBlocks, setShowBlocks] = useState(false);
@@ -105,18 +108,22 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
             )}
             layout
           >
-            <MessageContent 
-              message={message} 
-              isAi={isAi} 
-              onListen={onListen}
-              onQuizGenerated={onQuizGenerated}
-              onPanelOpen={onPanelOpen}
-              imageUrl={imageUrl}
-              showActions={showActions && !isTyping}
-              isTyping={isTyping}
-              onTypingComplete={handleTypingComplete}
-              onImageAnalyzed={onImageAnalyzed}
-            />
+            {isLoading ? (
+              <LoadingSparkles />
+            ) : (
+              <MessageContent 
+                message={message} 
+                isAi={isAi} 
+                onListen={onListen}
+                onQuizGenerated={onQuizGenerated}
+                onPanelOpen={onPanelOpen}
+                imageUrl={imageUrl}
+                showActions={showActions && !isTyping}
+                isTyping={isTyping}
+                onTypingComplete={handleTypingComplete}
+                onImageAnalyzed={onImageAnalyzed}
+              />
+            )}
             
             {isAi && blocks && blocks.length > 0 && onBlockClick && showBlocks && !isTyping && (
               <RelatedBlocks 
