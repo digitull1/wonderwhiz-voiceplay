@@ -4,7 +4,7 @@ import { Auth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
-import { AuthChangeEvent, Session } from "@supabase/supabase-js";
+import { AuthError, Session } from "@supabase/supabase-js";
 
 interface AuthOverlayProps {
   showLogin: boolean;
@@ -14,12 +14,22 @@ interface AuthOverlayProps {
 export const AuthOverlay: React.FC<AuthOverlayProps> = ({ showLogin, onClose }) => {
   const { toast } = useToast();
 
-  const handleAuthEvent = async (event: AuthChangeEvent, session: Session | null) => {
-    console.log('Auth event received:', { event, session });
+  const handleAuthSubmit = async (event: { data: { session: Session | null }, error: AuthError | null }) => {
+    console.log('Auth event received:', event);
     
-    if ((event === 'SIGNED_IN' || event === 'SIGNED_UP') && session?.user) {
+    if (event.error) {
+      console.error('Error in auth event:', event.error);
+      toast({
+        title: "Authentication Error",
+        description: event.error.message,
+        variant: "destructive"
+      });
+      return;
+    }
+
+    if (event.data.session?.user) {
       try {
-        await ensureUserProgress(session.user.id);
+        await ensureUserProgress(event.data.session.user.id);
         
         toast({
           title: "Welcome to WonderWhiz!",
@@ -118,7 +128,7 @@ export const AuthOverlay: React.FC<AuthOverlayProps> = ({ showLogin, onClose }) 
             providers={[]}
             view={showLogin ? "sign_in" : "sign_up"}
             redirectTo={window.location.origin}
-            onEvent={handleAuthEvent}
+            onSubmit={handleAuthSubmit}
           />
         </div>
       </motion.div>
