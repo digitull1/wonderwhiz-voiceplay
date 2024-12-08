@@ -90,6 +90,7 @@ export type Database = {
           created_at: string
           gender: string
           id: string
+          language: string
           name: string | null
           topics_of_interest: string[] | null
           updated_at: string
@@ -99,6 +100,7 @@ export type Database = {
           created_at?: string
           gender: string
           id: string
+          language?: string
           name?: string | null
           topics_of_interest?: string[] | null
           updated_at?: string
@@ -108,6 +110,7 @@ export type Database = {
           created_at?: string
           gender?: string
           id?: string
+          language?: string
           name?: string | null
           topics_of_interest?: string[] | null
           updated_at?: string
