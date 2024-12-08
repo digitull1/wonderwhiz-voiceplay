@@ -25,7 +25,7 @@ export const QuizCompletion = ({
       .join(' ');
 
     // Generate diverse related topics based on the current topic
-    const relatedTopics = [
+    const relatedTopics: Block[] = [
       {
         title: `How do ${formattedTopic} affect our daily lives? 🌟`,
         description: "Discover real-world connections",
