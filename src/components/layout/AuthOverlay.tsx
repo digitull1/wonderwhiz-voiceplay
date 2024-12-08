@@ -22,7 +22,7 @@ export const AuthOverlay: React.FC<AuthOverlayProps> = ({ showLogin, onClose }) 
         .eq('user_id', userId)
         .maybeSingle();
 
-      console.log('Existing progress check:', { existingProgress, fetchError });
+      console.log('Checking user progress:', { existingProgress, fetchError });
 
       if (!existingProgress) {
         console.log('No progress found, creating new progress record');
