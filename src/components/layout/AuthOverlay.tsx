@@ -1,7 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { Auth } from "@supabase/auth-ui-react";
-import { AuthChangeEvent, Session } from "@supabase/supabase-js";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
@@ -14,47 +13,41 @@ interface AuthOverlayProps {
 export const AuthOverlay: React.FC<AuthOverlayProps> = ({ showLogin, onClose }) => {
   const { toast } = useToast();
 
-  const handleAuthStateChange = async (event: AuthChangeEvent, session: Session | null) => {
-    console.log('Auth state changed:', event, session);
-    
-    if (event === 'SIGNED_IN' && session?.user) {
-      try {
-        // Ensure user progress exists
-        const { data: existingProgress, error: fetchError } = await supabase
+  const ensureUserProgress = async (userId: string) => {
+    try {
+      // First check if user progress exists
+      const { data: existingProgress, error: fetchError } = await supabase
+        .from('user_progress')
+        .select('*')
+        .eq('user_id', userId)
+        .maybeSingle();
+
+      console.log('Existing progress check:', { existingProgress, fetchError });
+
+      if (!existingProgress) {
+        // If no progress exists, create it
+        const { error: insertError } = await supabase
           .from('user_progress')
-          .select('*')
-          .eq('user_id', session.user.id)
-          .single();
+          .insert([
+            { 
+              user_id: userId,
+              points: 100, // Initial points
+              level: 1,
+              streak_days: 0,
+              topics_explored: 0,
+              questions_asked: 0,
+              quiz_score: 0
+            }
+          ]);
 
-        if (fetchError && fetchError.code === 'PGRST116') {
-          // If no progress exists, create it
-          const { error: insertError } = await supabase
-            .from('user_progress')
-            .insert([
-              { 
-                user_id: session.user.id,
-                points: 100, // Initial points
-                level: 1,
-                streak_days: 0,
-                topics_explored: 0,
-                questions_asked: 0,
-                quiz_score: 0
-              }
-            ]);
-
-          if (insertError) {
-            console.error('Error creating user progress:', insertError);
-          }
+        if (insertError) {
+          console.error('Error creating user progress:', insertError);
+          throw insertError;
         }
-
-        toast({
-          title: "Welcome to WonderWhiz!",
-          description: "Successfully signed in.",
-        });
-        onClose();
-      } catch (error) {
-        console.error('Error in auth state change:', error);
       }
+    } catch (error) {
+      console.error('Error in ensureUserProgress:', error);
+      throw error;
     }
   };
 
@@ -96,7 +89,30 @@ export const AuthOverlay: React.FC<AuthOverlayProps> = ({ showLogin, onClose }) 
             providers={[]}
             view={showLogin ? "sign_in" : "sign_up"}
             redirectTo={window.location.origin}
-            onAuthStateChange={({ event, session }) => handleAuthStateChange(event, session)}
+            listeners={{
+              async onAuthStateChange(event, session) {
+                console.log('Auth state changed:', event, session);
+                
+                if (event === 'SIGNED_IN' && session?.user) {
+                  try {
+                    await ensureUserProgress(session.user.id);
+                    
+                    toast({
+                      title: "Welcome to WonderWhiz!",
+                      description: "Successfully signed in.",
+                    });
+                    onClose();
+                  } catch (error) {
+                    console.error('Error in auth state change:', error);
+                    toast({
+                      title: "Error",
+                      description: "There was an error setting up your account. Please try again.",
+                      variant: "destructive"
+                    });
+                  }
+                }
+              }
+            }}
           />
         </div>
       </div>
