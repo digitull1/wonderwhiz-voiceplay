@@ -12,13 +12,15 @@ serve(async (req) => {
   }
 
   try {
-    // Properly parse the request body
-    const requestData = await req.json().catch(error => {
+    // Parse request body
+    let requestData;
+    try {
+      requestData = await req.json();
+      console.log('Request data received:', requestData);
+    } catch (error) {
       console.error('Error parsing request body:', error);
       throw new Error('Invalid JSON in request body');
-    });
-
-    console.log('Request data received:', requestData);
+    }
 
     const { topic, age = 8, contextualPrompt } = requestData;
 
@@ -27,9 +29,8 @@ serve(async (req) => {
     }
 
     console.log('Generating quiz for topic:', topic, 'age:', age);
-    console.log('Using contextual prompt:', contextualPrompt);
 
-    const prompt = contextualPrompt || `Generate 5 engaging and educational quiz questions about ${topic}. 
+    const prompt = `Generate 5 engaging and educational quiz questions about ${topic}. 
     The questions should:
     - Be specifically about ${topic}
     - Be appropriate for a ${age}-year-old child
@@ -40,19 +41,21 @@ serve(async (req) => {
     - Use encouraging, positive language
     - Avoid complex terminology
     
-    The response should be in JSON format with the following structure:
+    Format the response EXACTLY like this example:
     {
       "questions": [
         {
-          "question": "string",
-          "options": ["string", "string", "string", "string"],
-          "correctAnswer": number (0-3),
-          "topic": "${topic}"
+          "question": "What color is the sky on a clear day?",
+          "options": ["Blue", "Green", "Red", "Yellow"],
+          "correctAnswer": 0,
+          "topic": "Weather"
         }
       ]
     }
     
-    IMPORTANT: Generate exactly 5 questions, each with unique content about ${topic}.`;
+    IMPORTANT: Generate exactly 5 questions, each with unique content about ${topic}.
+    Each question MUST have exactly 4 options.
+    The correctAnswer MUST be a number between 0 and 3.`;
 
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
@@ -80,18 +83,35 @@ serve(async (req) => {
     }
 
     const data = await response.json();
-    console.log("Quiz generation response:", data);
+    console.log("Raw Groq API response:", data);
 
     if (!data.choices?.[0]?.message?.content) {
-      throw new Error("Failed to generate quiz questions");
+      throw new Error("No content in Groq API response");
     }
 
     let quizData;
     try {
       quizData = JSON.parse(data.choices[0].message.content);
       console.log("Parsed quiz data:", quizData);
+
+      // Validate quiz data structure
+      if (!Array.isArray(quizData.questions)) {
+        throw new Error("Quiz data must contain a questions array");
+      }
+
+      // Validate each question
+      quizData.questions.forEach((question: any, index: number) => {
+        if (!question.question || !Array.isArray(question.options) || 
+            question.options.length !== 4 || 
+            typeof question.correctAnswer !== 'number' ||
+            question.correctAnswer < 0 || 
+            question.correctAnswer > 3) {
+          throw new Error(`Invalid question format at index ${index}`);
+        }
+      });
+
     } catch (error) {
-      console.error("Error parsing quiz data:", error);
+      console.error("Error parsing or validating quiz data:", error);
       throw new Error("Invalid quiz data format received from API");
     }
 
@@ -104,6 +124,7 @@ serve(async (req) => {
         }
       }
     );
+
   } catch (error) {
     console.error("Error generating quiz:", error);
     return new Response(
