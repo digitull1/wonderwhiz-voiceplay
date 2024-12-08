@@ -116,7 +116,7 @@ export const AuthOverlay: React.FC<AuthOverlayProps> = ({ showLogin, onClose }) 
             providers={[]}
             view={showLogin ? "sign_in" : "sign_up"}
             redirectTo={window.location.origin}
-            onChange={handleAuthEvent}
+            onAuthStateChange={handleAuthEvent}
           />
         </div>
       </div>
