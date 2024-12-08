@@ -1,9 +1,8 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { Auth } from "@supabase/auth-ui-react";
+import { Auth, AuthChangeEvent, Session } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 
 interface AuthOverlayProps {
@@ -14,7 +13,7 @@ interface AuthOverlayProps {
 export const AuthOverlay: React.FC<AuthOverlayProps> = ({ showLogin, onClose }) => {
   const { toast } = useToast();
 
-  const handleAuthStateChange = async (event: string) => {
+  const handleAuthStateChange = async ({ event }: { event: AuthChangeEvent }) => {
     if (event === 'SIGNED_IN') {
       toast({
         title: "Welcome to WonderWhiz!",
@@ -62,7 +61,7 @@ export const AuthOverlay: React.FC<AuthOverlayProps> = ({ showLogin, onClose }) 
             providers={[]}
             view={showLogin ? "sign_in" : "sign_up"}
             redirectTo={window.location.origin}
-            onAuthStateChange={({ event }) => handleAuthStateChange(event)}
+            onAuthStateChange={handleAuthStateChange}
           />
         </div>
       </div>
