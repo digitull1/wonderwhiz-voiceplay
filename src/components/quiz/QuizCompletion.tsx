@@ -24,25 +24,42 @@ export const QuizCompletion = ({
       .map(word => word.charAt(0).toUpperCase() + word.slice(1))
       .join(' ');
 
-    return [
+    // Generate diverse related topics based on the current topic
+    const relatedTopics = [
       {
-        title: `Want to discover amazing facts about ${formattedTopic}? 🌟`,
-        description: "Explore fascinating details",
+        title: `How do ${formattedTopic} affect our daily lives? 🌟`,
+        description: "Discover real-world connections",
         metadata: {
-          topic: topic,
+          topic: `${topic}_applications`,
           type: "fact"
         }
       },
       {
-        title: `Ready to see ${formattedTopic} come to life? Let's create art! 🎨`,
-        description: "Generate creative images",
+        title: `Amazing experiments about ${formattedTopic}! 🔬`,
+        description: "Try fun science activities",
+        metadata: {
+          topic: `${topic}_experiments`,
+          type: "fact"
+        }
+      },
+      {
+        title: `The history of ${formattedTopic} through time! 📚`,
+        description: "Journey through history",
+        metadata: {
+          topic: `${topic}_history`,
+          type: "fact"
+        }
+      },
+      {
+        title: `Let's draw and explore ${formattedTopic}! 🎨`,
+        description: "Create amazing artwork",
         metadata: {
           topic: topic,
           type: "image"
         }
       },
       {
-        title: `Think you know everything about ${formattedTopic}? Try this! 🎯`,
+        title: `Ready for more ${formattedTopic} challenges? 🎯`,
         description: "Test your knowledge",
         metadata: {
           topic: topic,
@@ -50,6 +67,8 @@ export const QuizCompletion = ({
         }
       }
     ];
+
+    return relatedTopics;
   };
 
   const getCompletionMessage = () => {
@@ -117,7 +136,7 @@ export const QuizCompletion = ({
         transition={{ delay: 0.5 }}
       >
         <h4 className="text-white/90 text-lg font-medium mb-4">
-          Want to explore more about {currentTopic.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}? ✨
+          Let's explore more exciting topics about {currentTopic.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}! ✨
         </h4>
         <ChatBlocks blocks={generateRelatedBlocks(currentTopic)} onBlockClick={handleBlockClick} />
       </motion.div>
