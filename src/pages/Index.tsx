@@ -10,10 +10,15 @@ import { RegistrationForm } from "@/components/auth/RegistrationForm";
 import { Auth } from "@supabase/auth-ui-react";
 import { supabase } from "@/integrations/supabase/client";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
+import { PointsDisplay } from "@/components/PointsDisplay";
+import { Button } from "@/components/ui/button";
+import { LogOut } from "lucide-react";
+import { useToast } from "@/components/ui/use-toast";
 
 const Index = () => {
   const [showRegistration, setShowRegistration] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
+  const { toast } = useToast();
   
   const {
     messages,
@@ -30,6 +35,22 @@ const Index = () => {
     handleImageAnalysis,
     isAuthenticated
   } = useChat();
+
+  const handleLogout = async () => {
+    try {
+      await supabase.auth.signOut();
+      toast({
+        title: "Logged out successfully",
+        description: "Come back soon! 👋",
+      });
+    } catch (error) {
+      toast({
+        title: "Error logging out",
+        description: "Please try again",
+        variant: "destructive",
+      });
+    }
+  };
 
   if (!isAuthenticated) {
     return (
@@ -105,15 +126,30 @@ const Index = () => {
         role="main"
         aria-label="WonderWhiz Chat Interface"
       >
-        {/* Magical Background */}
         <div className="fixed inset-0 bg-gradient-luxury opacity-50 transition-opacity duration-1000" />
         <div className="fixed inset-0 bg-stars opacity-10 animate-float" />
-        
-        {/* Glass Morphism Effect */}
         <div className="fixed inset-0 backdrop-blur-[100px]" />
         
         <div className="relative z-10 flex flex-col h-[100dvh] w-full">
           <TooltipProvider>
+            <div className="flex items-center justify-between p-4 bg-white/80 backdrop-blur-sm">
+              {userProgress && (
+                <PointsDisplay 
+                  points={userProgress.points} 
+                  level={userProgress.level}
+                  streakDays={userProgress.streak_days}
+                />
+              )}
+              <Button 
+                variant="ghost" 
+                size="icon"
+                onClick={handleLogout}
+                className="ml-4"
+              >
+                <LogOut className="h-5 w-5" />
+              </Button>
+            </div>
+
             <CollapsiblePanel 
               userProgress={userProgress}
               aria-label="User Progress Panel"
@@ -146,7 +182,6 @@ const Index = () => {
           </TooltipProvider>
         </div>
 
-        {/* Ambient Light Effects */}
         <div className="fixed top-0 left-1/4 w-1/2 h-1/2 bg-primary/20 rounded-full blur-[120px] animate-pulse-soft" />
         <div className="fixed bottom-0 right-1/4 w-1/2 h-1/2 bg-secondary/20 rounded-full blur-[120px] animate-pulse-soft" />
       </motion.div>
