@@ -15,14 +15,15 @@ export const AuthOverlay: React.FC<AuthOverlayProps> = ({ showLogin, onClose }) 
 
   const ensureUserProgress = async (userId: string) => {
     try {
-      // First check if user progress exists
+      console.log('Checking user progress for:', userId);
+      
       const { data: existingProgress, error: fetchError } = await supabase
         .from('user_progress')
         .select('*')
         .eq('user_id', userId)
         .maybeSingle();
 
-      console.log('Checking user progress:', { existingProgress, fetchError });
+      console.log('Progress check result:', { existingProgress, fetchError });
 
       if (!existingProgress) {
         console.log('No progress found, creating new progress record');
@@ -31,7 +32,7 @@ export const AuthOverlay: React.FC<AuthOverlayProps> = ({ showLogin, onClose }) 
           .insert([
             { 
               user_id: userId,
-              points: 100, // Initial points
+              points: 100,
               level: 1,
               streak_days: 0,
               topics_explored: 0,
@@ -51,10 +52,13 @@ export const AuthOverlay: React.FC<AuthOverlayProps> = ({ showLogin, onClose }) 
     }
   };
 
-  const handleAuthEvent = async ({ event, session }: { event: string; session: any }) => {
+  const handleAuthEvent = async ({ event, session }: { 
+    event: 'SIGNED_IN' | 'SIGNED_UP' | 'SIGNED_OUT',
+    session: any 
+  }) => {
     console.log('Auth state changed:', { event, session });
     
-    if (event === 'SIGNED_IN' && session?.user) {
+    if ((event === 'SIGNED_IN' || event === 'SIGNED_UP') && session?.user) {
       try {
         await ensureUserProgress(session.user.id);
         
@@ -112,7 +116,7 @@ export const AuthOverlay: React.FC<AuthOverlayProps> = ({ showLogin, onClose }) 
             providers={[]}
             view={showLogin ? "sign_in" : "sign_up"}
             redirectTo={window.location.origin}
-            onAuthStateChange={handleAuthEvent}
+            onChange={handleAuthEvent}
           />
         </div>
       </div>
