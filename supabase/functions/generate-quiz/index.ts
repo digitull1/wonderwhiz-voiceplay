@@ -50,7 +50,7 @@ serve(async (req) => {
     - Use encouraging, positive language
     - Avoid complex terminology
     
-    You MUST format the response EXACTLY like this example, with NO additional text:
+    Format the response EXACTLY like this example, with NO additional text or characters:
     {
       "questions": [
         {
@@ -60,14 +60,7 @@ serve(async (req) => {
           "topic": "Weather"
         }
       ]
-    }
-    
-    IMPORTANT RULES:
-    1. Generate exactly 5 questions about ${topic}
-    2. Each question MUST have exactly 4 options
-    3. The correctAnswer MUST be a number between 0 and 3
-    4. Each question must be unique and directly related to ${topic}
-    5. Format must match the example exactly - no extra text or explanations`;
+    }`;
 
     console.log('Sending prompt to Groq API');
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
@@ -81,7 +74,7 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: `You are a quiz generator for children aged ${age}. You MUST ONLY respond with properly formatted JSON containing quiz questions. Do not include any additional text or explanations.`
+            content: "You are a quiz generator for children. You MUST ONLY respond with properly formatted JSON containing quiz questions. Do not include any additional text, whitespace, or explanations."
           },
           { role: "user", content: prompt }
         ],
@@ -104,18 +97,16 @@ serve(async (req) => {
 
     let quizData: QuizData;
     try {
-      // Clean up the response content
-      const content = data.choices[0].message.content;
+      // Clean up the response content by removing any whitespace before and after the JSON
+      const content = data.choices[0].message.content.trim();
       console.log("Raw content before parsing:", content);
       
-      // Remove any potential leading/trailing whitespace and verify it starts with {
-      const cleanContent = content.trim();
-      if (!cleanContent.startsWith('{')) {
-        throw new Error("Response does not start with valid JSON");
+      // Ensure the content starts with { and ends with }
+      if (!content.startsWith('{') || !content.endsWith('}')) {
+        throw new Error("Response is not a valid JSON object");
       }
       
-      console.log("Cleaned content to parse:", cleanContent);
-      quizData = JSON.parse(cleanContent);
+      quizData = JSON.parse(content);
       console.log("Successfully parsed quiz data:", quizData);
 
       // Validate quiz data structure
