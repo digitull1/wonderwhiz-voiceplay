@@ -13,6 +13,32 @@ interface AuthOverlayProps {
 export const AuthOverlay: React.FC<AuthOverlayProps> = ({ showLogin, onClose }) => {
   const { toast } = useToast();
 
+  const handleAuthEvent = async (event: {
+    event: 'SIGNED_IN' | 'SIGNED_UP' | 'SIGNED_OUT';
+    session: any;
+  }) => {
+    console.log('Auth event received:', event);
+    
+    if ((event.event === 'SIGNED_IN' || event.event === 'SIGNED_UP') && event.session?.user) {
+      try {
+        await ensureUserProgress(event.session.user.id);
+        
+        toast({
+          title: "Welcome to WonderWhiz!",
+          description: "Successfully signed in.",
+        });
+        onClose();
+      } catch (error) {
+        console.error('Error in auth state change:', error);
+        toast({
+          title: "Error",
+          description: "There was an error setting up your account. Please try again.",
+          variant: "destructive"
+        });
+      }
+    }
+  };
+
   const ensureUserProgress = async (userId: string) => {
     try {
       console.log('Checking user progress for:', userId);
@@ -52,41 +78,19 @@ export const AuthOverlay: React.FC<AuthOverlayProps> = ({ showLogin, onClose }) 
     }
   };
 
-  const handleAuthEvent = async (event: {
-    event: 'SIGNED_IN' | 'SIGNED_UP' | 'SIGNED_OUT';
-    session: any;
-  }) => {
-    console.log('Auth event received:', event);
-    
-    if ((event.event === 'SIGNED_IN' || event.event === 'SIGNED_UP') && event.session?.user) {
-      try {
-        await ensureUserProgress(event.session.user.id);
-        
-        toast({
-          title: "Welcome to WonderWhiz!",
-          description: "Successfully signed in.",
-        });
-        onClose();
-      } catch (error) {
-        console.error('Error in auth state change:', error);
-        toast({
-          title: "Error",
-          description: "There was an error setting up your account. Please try again.",
-          variant: "destructive"
-        });
-      }
-    }
-  };
-
   return (
     <motion.div 
-      className="fixed inset-0 bg-white/95 backdrop-blur-xl p-4 
-        flex items-center justify-center z-50"
+      className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
-      <div className="w-full max-w-md">
+      <motion.div
+        className="bg-white rounded-xl shadow-2xl p-8 w-full max-w-md mx-4"
+        initial={{ scale: 0.9, y: 20 }}
+        animate={{ scale: 1, y: 0 }}
+        exit={{ scale: 0.9, y: 20 }}
+      >
         <button 
           onClick={onClose}
           className="absolute top-4 right-4 text-gray-500 hover:text-gray-700
@@ -119,7 +123,7 @@ export const AuthOverlay: React.FC<AuthOverlayProps> = ({ showLogin, onClose }) 
             onAuthStateChange={handleAuthEvent}
           />
         </div>
-      </div>
+      </motion.div>
     </motion.div>
   );
 };
