@@ -4,7 +4,7 @@ import { Auth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
-import { Session } from "@supabase/supabase-js";
+import { Session, AuthChangeEvent } from "@supabase/supabase-js";
 
 interface AuthOverlayProps {
   showLogin: boolean;
@@ -77,7 +77,7 @@ export const AuthOverlay: React.FC<AuthOverlayProps> = ({ showLogin, onClose }) 
   };
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event: AuthChangeEvent, session) => {
       console.log('Auth state changed:', event, session);
       if (event === 'SIGNED_IN' || event === 'SIGNED_UP') {
         handleAuthSuccess(session);
