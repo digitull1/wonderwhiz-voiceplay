@@ -4,11 +4,12 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts"
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Max-Age': '86400',
 }
 
 const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-// Helper function to get age-specific instructions
 function getAgeSpecificInstructions(ageGroup: string): string {
   const [minAge, maxAge] = ageGroup.split('-').map(Number);
   
@@ -86,13 +87,30 @@ async function retryWithBackoff<T>(operation: () => Promise<T>, retries = 3, bas
 }
 
 serve(async (req) => {
+  // Log incoming request
+  console.log(`Received ${req.method} request to generate-blocks`);
+  
+  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    console.log('Handling CORS preflight request');
+    return new Response(null, { 
+      headers: corsHeaders,
+      status: 204
+    });
   }
 
   try {
+    if (req.method !== 'POST') {
+      throw new Error(`Method ${req.method} not allowed`);
+    }
+
+    // Parse request body
     const { query, context, age_group = "8-11" } = await req.json();
     console.log("Generating blocks for:", { query, context, age_group });
+
+    if (!query) {
+      throw new Error('Query parameter is required');
+    }
 
     const ageSpecificInstructions = getAgeSpecificInstructions(age_group);
 
@@ -156,6 +174,7 @@ serve(async (req) => {
     `;
 
     const makeRequest = async () => {
+      console.log('Making request to Groq API');
       const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
         method: "POST",
         headers: {
@@ -177,11 +196,13 @@ serve(async (req) => {
       });
 
       if (!response.ok) {
-        throw new Error((await response.json()).error?.message || "Failed to get response from Groq");
+        const errorData = await response.json();
+        console.error('Groq API error:', errorData);
+        throw new Error(errorData.error?.message || "Failed to get response from Groq");
       }
 
       const data = await response.json();
-      console.log("Raw response:", data);
+      console.log("Received response from Groq API");
 
       const parsedContent = typeof data.choices[0].message.content === 'string' 
         ? JSON.parse(data.choices[0].message.content)
@@ -204,15 +225,30 @@ serve(async (req) => {
     };
 
     const data = await retryWithBackoff(makeRequest);
+    console.log('Successfully generated blocks');
+
     return new Response(JSON.stringify(data), { 
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      headers: { 
+        ...corsHeaders, 
+        'Content-Type': 'application/json'
+      }
     });
 
   } catch (error) {
-    console.error('Error:', error);
+    console.error('Error in generate-blocks function:', error);
     return new Response(
-      JSON.stringify({ error: 'Failed to generate blocks', details: error.message }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+      JSON.stringify({ 
+        error: 'Failed to generate blocks', 
+        details: error.message,
+        timestamp: new Date().toISOString()
+      }),
+      { 
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json'
+        }, 
+        status: 500
+      }
     );
   }
 });
