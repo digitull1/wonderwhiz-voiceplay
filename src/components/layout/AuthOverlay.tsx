@@ -1,9 +1,10 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { Auth } from "@supabase/auth-ui-react";
+import { Auth, AuthChangeEvent } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
+import { Session } from "@supabase/supabase-js";
 
 interface AuthOverlayProps {
   showLogin: boolean;
@@ -13,15 +14,12 @@ interface AuthOverlayProps {
 export const AuthOverlay: React.FC<AuthOverlayProps> = ({ showLogin, onClose }) => {
   const { toast } = useToast();
 
-  const handleAuthEvent = async (event: {
-    event: 'SIGNED_IN' | 'SIGNED_UP' | 'SIGNED_OUT';
-    session: any;
-  }) => {
-    console.log('Auth event received:', event);
+  const handleAuthEvent = async (event: AuthChangeEvent, session: Session | null) => {
+    console.log('Auth event received:', { event, session });
     
-    if ((event.event === 'SIGNED_IN' || event.event === 'SIGNED_UP') && event.session?.user) {
+    if ((event === 'SIGNED_IN' || event === 'SIGNED_UP') && session?.user) {
       try {
-        await ensureUserProgress(event.session.user.id);
+        await ensureUserProgress(session.user.id);
         
         toast({
           title: "Welcome to WonderWhiz!",
