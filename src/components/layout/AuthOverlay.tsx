@@ -4,7 +4,7 @@ import { Auth } from "@supabase/auth-ui-react";
 import { ThemeSupa } from "@supabase/auth-ui-shared";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/components/ui/use-toast";
-import { AuthError, Session } from "@supabase/supabase-js";
+import { Session } from "@supabase/supabase-js";
 
 interface AuthOverlayProps {
   showLogin: boolean;
@@ -14,8 +14,8 @@ interface AuthOverlayProps {
 export const AuthOverlay: React.FC<AuthOverlayProps> = ({ showLogin, onClose }) => {
   const { toast } = useToast();
 
-  const handleAuthStateChange = async (event: any, session: Session | null) => {
-    console.log('Auth state change:', { event, session });
+  const handleAuthSuccess = async (session: Session | null) => {
+    console.log('Auth success:', { session });
     
     if (session?.user) {
       try {
@@ -27,7 +27,7 @@ export const AuthOverlay: React.FC<AuthOverlayProps> = ({ showLogin, onClose }) 
         });
         onClose();
       } catch (error) {
-        console.error('Error in auth state change:', error);
+        console.error('Error in auth success:', error);
         toast({
           title: "Error",
           description: "There was an error setting up your account. Please try again.",
@@ -118,7 +118,30 @@ export const AuthOverlay: React.FC<AuthOverlayProps> = ({ showLogin, onClose }) 
             providers={[]}
             view={showLogin ? "sign_in" : "sign_up"}
             redirectTo={window.location.origin}
-            onAuthStateChange={handleAuthStateChange}
+            onSignIn={({ data, error }) => {
+              if (error) {
+                console.error('Sign in error:', error);
+                toast({
+                  title: "Error",
+                  description: error.message,
+                  variant: "destructive"
+                });
+                return;
+              }
+              handleAuthSuccess(data?.session);
+            }}
+            onSignUp={({ data, error }) => {
+              if (error) {
+                console.error('Sign up error:', error);
+                toast({
+                  title: "Error",
+                  description: error.message,
+                  variant: "destructive"
+                });
+                return;
+              }
+              handleAuthSuccess(data?.session);
+            }}
           />
         </div>
       </motion.div>
