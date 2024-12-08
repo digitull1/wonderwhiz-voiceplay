@@ -1,9 +1,11 @@
 import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import confetti from "canvas-confetti";
 
 interface AuthFormProps {
   onComplete?: () => void;
@@ -19,12 +21,25 @@ export const AuthForm = ({ onComplete }: AuthFormProps) => {
     age: "",
   });
 
+  const triggerCelebration = (name: string) => {
+    confetti({
+      particleCount: 100,
+      spread: 70,
+      origin: { y: 0.6 }
+    });
+
+    toast({
+      title: `🎉 Welcome to WonderWhiz, ${name}!`,
+      description: "You've earned 100 points to start your learning adventure! 🚀",
+      className: "bg-primary text-white"
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
-      // Try to sign up first
       const { error: signUpError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
@@ -37,7 +52,6 @@ export const AuthForm = ({ onComplete }: AuthFormProps) => {
       });
 
       if (signUpError) {
-        // If user already exists, try to sign in instead
         if (signUpError.message === "User already registered") {
           console.log('User exists, trying sign in instead');
           const { error: signInError } = await supabase.auth.signInWithPassword({
@@ -45,15 +59,7 @@ export const AuthForm = ({ onComplete }: AuthFormProps) => {
             password: formData.password,
           });
           
-          if (signInError) {
-            console.error('Sign in error:', signInError);
-            toast({
-              title: "Error signing in",
-              description: signInError.message,
-              variant: "destructive",
-            });
-            throw signInError;
-          }
+          if (signInError) throw signInError;
           
           toast({
             title: "Welcome back! 👋",
@@ -62,21 +68,10 @@ export const AuthForm = ({ onComplete }: AuthFormProps) => {
           onComplete?.();
           return;
         }
-        
-        // Handle other signup errors
-        console.error('Sign up error:', signUpError);
-        toast({
-          title: "Error creating account",
-          description: signUpError.message,
-          variant: "destructive",
-        });
         throw signUpError;
       }
 
-      toast({
-        title: "Welcome to WonderWhiz! 🌟",
-        description: "Your account has been created successfully.",
-      });
+      triggerCelebration(formData.name);
       onComplete?.();
     } catch (error: any) {
       console.error("Auth error:", error);
@@ -91,64 +86,89 @@ export const AuthForm = ({ onComplete }: AuthFormProps) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4 w-full max-w-sm">
-      <div>
-        <Label htmlFor="name">Name</Label>
-        <Input
-          id="name"
-          type="text"
-          value={formData.name}
-          onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-          required
-          placeholder="Your name"
-          className="mt-1"
-        />
-      </div>
-      
-      <div>
-        <Label htmlFor="email">Email</Label>
-        <Input
-          id="email"
-          type="email"
-          value={formData.email}
-          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-          required
-          placeholder="your.email@example.com"
-          className="mt-1"
-        />
-      </div>
-      
-      <div>
-        <Label htmlFor="password">Password</Label>
-        <Input
-          id="password"
-          type="password"
-          value={formData.password}
-          onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-          required
-          placeholder="Choose a password"
-          className="mt-1"
-        />
-      </div>
-      
-      <div>
-        <Label htmlFor="age">Age</Label>
-        <Input
-          id="age"
-          type="number"
-          min="4"
-          max="12"
-          value={formData.age}
-          onChange={(e) => setFormData({ ...formData, age: e.target.value })}
-          required
-          placeholder="Your age"
-          className="mt-1"
-        />
-      </div>
-      
-      <Button type="submit" className="w-full" disabled={isLoading}>
-        {isLoading ? "Please wait..." : "Start Learning!"}
-      </Button>
-    </form>
+    <motion.div
+      className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+    >
+      <motion.div
+        className="bg-white rounded-xl shadow-2xl p-8 w-full max-w-md mx-4"
+        initial={{ scale: 0.9, y: 20 }}
+        animate={{ scale: 1, y: 0 }}
+        exit={{ scale: 0.9, y: 20 }}
+      >
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="text-center mb-6">
+            <h2 className="text-2xl font-bold text-gray-800">Welcome to WonderWhiz! 🌟</h2>
+            <p className="text-gray-600 mt-2">Let's create your magical learning account</p>
+          </div>
+
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="name">Child's Name</Label>
+              <Input
+                id="name"
+                type="text"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                required
+                placeholder="Your name"
+                className="mt-1"
+              />
+            </div>
+            
+            <div>
+              <Label htmlFor="email">Parent's Email</Label>
+              <Input
+                id="email"
+                type="email"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                required
+                placeholder="parent@example.com"
+                className="mt-1"
+              />
+            </div>
+            
+            <div>
+              <Label htmlFor="password">Password</Label>
+              <Input
+                id="password"
+                type="password"
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                required
+                placeholder="Choose a secure password"
+                className="mt-1"
+              />
+            </div>
+            
+            <div>
+              <Label htmlFor="age">Age</Label>
+              <Input
+                id="age"
+                type="number"
+                min="4"
+                max="12"
+                value={formData.age}
+                onChange={(e) => setFormData({ ...formData, age: e.target.value })}
+                required
+                placeholder="Your age (4-12)"
+                className="mt-1"
+              />
+            </div>
+          </div>
+          
+          <Button 
+            type="submit" 
+            className="w-full bg-primary hover:bg-primary-hover text-white"
+            disabled={isLoading}
+          >
+            {isLoading ? "Creating your magical account..." : "Start Your Adventure!"}
+          </Button>
+        </form>
+      </motion.div>
+    </motion.div>
   );
 };

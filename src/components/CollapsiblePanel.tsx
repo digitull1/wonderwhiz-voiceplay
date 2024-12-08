@@ -128,6 +128,25 @@ export const CollapsiblePanel: React.FC<CollapsiblePanelProps> = ({
               <TimeTracker />
               <TopicHistory onTopicClick={handleTopicClick} />
               <TalkToWizzy />
+              
+              {/* Profile Section */}
+              <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 shadow-sm">
+                <h3 className="text-lg font-semibold mb-4">Profile</h3>
+                {userProgress && (
+                  <div className="space-y-2">
+                    <p className="text-sm text-gray-600">
+                      Level {userProgress.level}
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      {userProgress.points} Points
+                    </p>
+                    <p className="text-sm text-gray-600">
+                      {userProgress.streak_days} Day Streak
+                    </p>
+                  </div>
+                )}
+              </div>
+              
               <Button 
                 onClick={handleLogout}
                 variant="ghost"
