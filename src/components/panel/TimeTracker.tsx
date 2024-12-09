@@ -89,6 +89,7 @@ export const TimeTracker = () => {
         <TimeTrackerRing 
           timeSpent={timeSpent} 
           isLoading={isLoading}
+          goal={30}  // Optional: set a default goal of 30 minutes
         />
       </div>
     </div>
