@@ -1,9 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+import { createClient } from '@supabase/supabase-js';
+import { corsHeaders } from '../_shared/cors.ts';
 
 interface QuizQuestion {
   question: string;
@@ -18,35 +15,24 @@ interface QuizData {
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response('ok', { headers: corsHeaders });
   }
 
   try {
-    let requestData;
-    try {
-      requestData = await req.json();
-      console.log('Request data received:', requestData);
-    } catch (error) {
-      console.error('Error parsing request body:', error);
-      throw new Error('Invalid JSON in request body');
-    }
-
-    const { topic, age = 8 } = requestData;
-
+    const { topic, age = 8 } = await req.json();
+    
     if (!topic) {
       throw new Error('Topic is required');
     }
 
-    console.log('Generating quiz for topic:', topic, 'age:', age);
+    console.log(`Generating quiz for topic: ${topic}, age: ${age}`);
 
-    const prompt = `Generate 5 engaging and educational quiz questions about ${topic}. 
-    The questions should:
-    - Be specifically about ${topic}
-    - Be appropriate for a ${age}-year-old child
-    - Start with easier questions and progressively get more challenging
-    - Use simple, clear language that a ${age}-year-old can understand
-    - Include fun facts that children find interesting
-    - Have clear, unambiguous correct answers
+    const prompt = `Generate a fun and educational quiz about ${topic} for children aged ${age}.
+
+    Guidelines:
+    - Keep questions simple and clear
+    - Use age-appropriate language
+    - Make it fun and engaging
     - Use encouraging, positive language
     - Avoid complex terminology
     
@@ -54,8 +40,8 @@ serve(async (req) => {
     {
       "questions": [
         {
-          "question": "What color is the sky on a clear day?",
-          "options": ["Blue", "Green", "Red", "Yellow"],
+          "question": "What causes rain?",
+          "options": ["Water vapor cooling", "Magic spells", "Dancing clouds", "Hot sunshine"],
           "correctAnswer": 0,
           "topic": "Weather"
         }
@@ -67,7 +53,7 @@ serve(async (req) => {
       method: "POST",
       headers: {
         "Authorization": `Bearer ${Deno.env.get('GROQ_API_KEY')}`,
-        "Content-Type": "application/json",
+        "Content-Type": "application/json"
       },
       body: JSON.stringify({
         model: "mixtral-8x7b-32768",
@@ -80,20 +66,17 @@ serve(async (req) => {
         ],
         temperature: 0.7,
         max_tokens: 1000,
-      }),
+      })
     });
 
     if (!response.ok) {
-      console.error('Error from Groq API:', await response.text());
-      throw new Error('Failed to generate quiz from Groq API');
+      const error = await response.text();
+      console.error('Groq API error:', error);
+      throw new Error(`Failed to generate quiz: ${error}`);
     }
 
     const data = await response.json();
-    console.log("Raw Groq API response:", data);
-
-    if (!data.choices?.[0]?.message?.content) {
-      throw new Error("No content in Groq API response");
-    }
+    console.log('Received response from Groq API');
 
     let quizData: QuizData;
     try {
@@ -110,55 +93,49 @@ serve(async (req) => {
       console.log("Successfully parsed quiz data:", quizData);
 
       // Validate quiz data structure
-      if (!Array.isArray(quizData.questions)) {
-        throw new Error("Quiz data must contain a questions array");
-      }
-
-      if (quizData.questions.length !== 5) {
-        throw new Error(`Expected 5 questions, got ${quizData.questions.length}`);
+      if (!quizData.questions || !Array.isArray(quizData.questions)) {
+        throw new Error("Invalid quiz data format: missing or invalid questions array");
       }
 
       // Validate each question
-      quizData.questions.forEach((question: QuizQuestion, index: number) => {
-        if (!question.question || 
-            !Array.isArray(question.options) || 
-            question.options.length !== 4 || 
-            typeof question.correctAnswer !== 'number' ||
-            question.correctAnswer < 0 || 
-            question.correctAnswer > 3 ||
-            !question.topic) {
+      quizData.questions.forEach((q, index) => {
+        if (!q.question || !Array.isArray(q.options) || q.options.length !== 4 || 
+            typeof q.correctAnswer !== 'number' || q.correctAnswer < 0 || q.correctAnswer > 3) {
           throw new Error(`Invalid question format at index ${index}`);
         }
       });
 
     } catch (error) {
-      console.error("Error parsing or validating quiz data:", error);
+      console.error('Error parsing quiz data:', error);
       throw new Error(`Invalid quiz data format: ${error.message}`);
     }
 
     return new Response(
-      JSON.stringify(quizData),
-      { 
-        headers: { 
-          ...corsHeaders,
-          'Content-Type': 'application/json'
-        }
-      }
-    );
-
-  } catch (error) {
-    console.error("Error generating quiz:", error);
-    return new Response(
       JSON.stringify({ 
-        error: error.message,
-        details: "Failed to generate quiz. Please try again."
+        success: true, 
+        data: quizData 
       }),
       { 
         headers: { 
           ...corsHeaders,
           'Content-Type': 'application/json'
-        },
-        status: 500
+        } 
+      }
+    );
+
+  } catch (error) {
+    console.error('Error in generate-quiz function:', error);
+    return new Response(
+      JSON.stringify({
+        error: error.message,
+        details: "Failed to generate quiz. Please try again."
+      }),
+      { 
+        status: 500,
+        headers: {
+          ...corsHeaders,
+          'Content-Type': 'application/json'
+        }
       }
     );
   }
