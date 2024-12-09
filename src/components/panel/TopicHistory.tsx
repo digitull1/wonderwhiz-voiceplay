@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { History, ChevronRight } from "lucide-react";
 import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/components/ui/use-toast";
 import {
   Tooltip,
   TooltipContent,
@@ -22,6 +23,7 @@ interface TopicHistoryProps {
 export const TopicHistory = ({ onTopicClick }: TopicHistoryProps) => {
   const [topics, setTopics] = useState<Topic[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const { toast } = useToast();
 
   useEffect(() => {
     const fetchTopics = async () => {
@@ -39,11 +41,20 @@ export const TopicHistory = ({ onTopicClick }: TopicHistoryProps) => {
           .order('last_explored_at', { ascending: false })
           .limit(5);
 
-        if (error) throw error;
+        if (error) {
+          console.error('Error fetching topics:', error);
+          toast({
+            title: "Error",
+            description: "Could not fetch recent adventures",
+            variant: "destructive"
+          });
+          return;
+        }
+
         setTopics(data || []);
         setIsLoading(false);
       } catch (error) {
-        console.error('Error fetching topics:', error);
+        console.error('Error in fetchTopics:', error);
         setIsLoading(false);
       }
     };
@@ -70,7 +81,7 @@ export const TopicHistory = ({ onTopicClick }: TopicHistoryProps) => {
     return () => {
       topicsChannel.unsubscribe();
     };
-  }, []);
+  }, [toast]);
 
   const formatTopicLabel = (topic: string) => {
     return topic
