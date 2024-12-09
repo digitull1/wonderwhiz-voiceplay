@@ -44,45 +44,58 @@ async function retryWithBackoff<T>(operation: () => Promise<T>, retries = 3, bas
   throw lastError;
 }
 
-function getAgeSpecificInstructions(ageGroup: string): string {
+function generateAgeSpecificInstructions(ageGroup: string, language: string = 'en'): string {
   const [minAge, maxAge] = ageGroup.split('-').map(Number);
   
+  const instructions = {
+    en: {
+      young: `For young explorers (${ageGroup} years):
+        - Use very simple, playful language
+        - Start with fun questions
+        - Include magical elements
+        - Keep it short and exciting`,
+      middle: `For curious minds (${ageGroup} years):
+        - Use clear language with some vocabulary
+        - Include relatable examples
+        - Mix in some jokes
+        - Focus on how things work`,
+      older: `For young scientists (${ageGroup} years):
+        - Use more sophisticated language
+        - Include real-world applications
+        - Add interesting connections
+        - Focus on deeper understanding`
+    },
+    vi: {
+      young: `Cho các nhà thám hiểm nhỏ (${ageGroup} tuổi):
+        - Sử dụng ngôn ngữ đơn giản, vui nhộn
+        - Bắt đầu với câu hỏi thú vị
+        - Thêm yếu tố kỳ diệu
+        - Giữ ngắn gọn và hấp dẫn`,
+      middle: `Cho tâm trí tò mò (${ageGroup} tuổi):
+        - Sử dụng ngôn ngữ rõ ràng
+        - Thêm ví dụ thực tế
+        - Kết hợp một số câu đùa
+        - Tập trung vào cách mọi thứ hoạt động`,
+      older: `Cho các nhà khoa học trẻ (${ageGroup} tuổi):
+        - Sử dụng ngôn ngữ phức tạp hơn
+        - Thêm ứng dụng thực tế
+        - Tạo các kết nối thú vị
+        - Tập trung vào hiểu sâu`
+    }
+  };
+
+  const langInstructions = instructions[language] || instructions.en;
+  
   if (minAge >= 5 && maxAge <= 7) {
-    return `
-      For young explorers (${ageGroup} years):
-      - Use very simple, playful language with basic words
-      - Start blocks with fun questions like "Do stars have bedtime stories?"
-      - Include magical and wonder-filled words
-      - Make comparisons to familiar things
-      - Keep sentences short and exciting
-      - Add fun, friendly emojis
-      - Focus on basic, fascinating facts
-    `;
+    return langInstructions.young;
   } else if (minAge >= 8 && maxAge <= 11) {
-    return `
-      For curious minds (${ageGroup} years):
-      - Use clear language with some interesting vocabulary
-      - Start blocks with intriguing questions
-      - Include relatable examples
-      - Add silly comparisons
-      - Mix in some playful jokes
-      - Use relevant emojis
-      - Focus on the 'how' and 'why'
-    `;
+    return langInstructions.middle;
   } else {
-    return `
-      For young scientists (${ageGroup} years):
-      - Use more sophisticated language while keeping it engaging
-      - Start blocks with thought-provoking questions
-      - Include real-world applications
-      - Add interesting facts and connections
-      - Use cool analogies
-      - Choose complementary emojis
-      - Focus on deeper understanding
-    `;
+    return langInstructions.older;
   }
 }
 
+// Update the serve function to include language support
 serve(async (req) => {
   console.log(`Received ${req.method} request to generate-blocks`);
   
@@ -99,20 +112,22 @@ serve(async (req) => {
       throw new Error(`Method ${req.method} not allowed`);
     }
 
-    const { query, context, age_group = "8-11" } = await req.json();
-    console.log("Generating blocks for:", { query, context, age_group });
+    const { query, context, age_group = "8-11", language = "en" } = await req.json();
+    console.log("Generating blocks for:", { query, context, age_group, language });
 
     if (!query) {
       throw new Error('Query parameter is required');
     }
 
-    const ageSpecificInstructions = getAgeSpecificInstructions(age_group);
+    const ageSpecificInstructions = generateAgeSpecificInstructions(age_group, language);
     const prompt = `
       Based on "${query}" and topic "${context}", generate 5 engaging, educational blocks.
       ${ageSpecificInstructions}
       
       Format as JSON with blocks array containing title and metadata.
       Each block must be under 70 characters and include an emoji.
+      
+      Generate the content in ${language === 'en' ? 'English' : 'Vietnamese'}.
     `;
 
     const makeRequest = async () => {

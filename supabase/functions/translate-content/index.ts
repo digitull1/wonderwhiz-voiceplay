@@ -1,8 +1,18 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import "https://deno.land/x/xhr@0.1.0/mod.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+};
+
+const LANGUAGE_CODES = {
+  en: 'English',
+  vi: 'Vietnamese',
+  es: 'Spanish',
+  fr: 'French',
+  zh: 'Chinese',
+  de: 'German'
 };
 
 serve(async (req) => {
@@ -18,9 +28,13 @@ serve(async (req) => {
       throw new Error('Missing GROQ API key');
     }
 
-    const prompt = `Translate the following text to ${targetLanguage}: "${content}"`;
+    if (!LANGUAGE_CODES[targetLanguage]) {
+      throw new Error(`Unsupported language: ${targetLanguage}`);
+    }
+
+    const prompt = `Translate the following text to ${LANGUAGE_CODES[targetLanguage]}, maintaining the same tone and style: "${content}"`;
     
-    const response = await fetch('https://api.groq.com/v1/completions', {
+    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${GROQ_API_KEY}`,
@@ -31,7 +45,7 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: 'You are a helpful translator. Translate the given text accurately while maintaining its meaning and tone.',
+            content: `You are a professional translator. Translate the text naturally to ${LANGUAGE_CODES[targetLanguage]}, keeping the original meaning and tone.`,
           },
           {
             role: 'user',
@@ -42,6 +56,11 @@ serve(async (req) => {
         max_tokens: 1000,
       }),
     });
+
+    if (!response.ok) {
+      const error = await response.json();
+      throw new Error(error.error?.message || 'Translation failed');
+    }
 
     const data = await response.json();
     const translation = data.choices[0].message.content;
@@ -56,9 +75,12 @@ serve(async (req) => {
       },
     );
   } catch (error) {
-    console.error('Error:', error);
+    console.error('Translation error:', error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message,
+        timestamp: new Date().toISOString()
+      }),
       { 
         status: 500,
         headers: { 

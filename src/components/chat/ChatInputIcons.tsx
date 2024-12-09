@@ -64,6 +64,29 @@ export const ChatInputIcons: React.FC<ChatInputIconsProps> = ({
           <TooltipContent>Use your voice</TooltipContent>
         </Tooltip>
 
+        {onImageAnalyzed && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <ImageUpload onImageAnalyzed={onImageAnalyzed}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className={cn(
+                    "bg-white/95 backdrop-blur-xl shadow-luxury border border-white/20",
+                    "hover:bg-white hover:scale-110 active:scale-95",
+                    "transition-all duration-300",
+                    "relative overflow-hidden"
+                  )}
+                >
+                  <Camera className="w-4 h-4" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-secondary/20 opacity-0 hover:opacity-100 transition-opacity duration-300" />
+                </Button>
+              </ImageUpload>
+            </TooltipTrigger>
+            <TooltipContent>Share a picture</TooltipContent>
+          </Tooltip>
+        )}
+
         <Tooltip>
           <TooltipTrigger asChild>
             <Button
@@ -81,27 +104,6 @@ export const ChatInputIcons: React.FC<ChatInputIconsProps> = ({
           </TooltipTrigger>
           <TooltipContent>Get a random question</TooltipContent>
         </Tooltip>
-
-        {onImageAnalyzed && (
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <ImageUpload onImageAnalyzed={onImageAnalyzed}>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className={cn(
-                    "bg-white/95 backdrop-blur-xl shadow-luxury border border-white/20",
-                    "hover:bg-white hover:scale-110 active:scale-95",
-                    "transition-all duration-300"
-                  )}
-                >
-                  <Camera className="w-4 h-4" />
-                </Button>
-              </ImageUpload>
-            </TooltipTrigger>
-            <TooltipContent>Share a picture</TooltipContent>
-          </Tooltip>
-        )}
 
         {onQuizGenerated && (
           <Tooltip>
