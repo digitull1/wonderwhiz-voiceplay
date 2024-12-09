@@ -34,13 +34,21 @@ serve(async (req) => {
     - Make it fun and engaging
     - Use encouraging, positive language
     - Avoid complex terminology
+    - MUST include exactly 4 options for each question
+    - MUST specify the correct answer index (0-3)
+    - MUST include the topic field
     
-    Format the response EXACTLY like this example, with NO additional text or characters:
+    Format the response EXACTLY like this example:
     {
       "questions": [
         {
           "question": "What causes rain?",
-          "options": ["Water vapor cooling", "Magic spells", "Dancing clouds", "Hot sunshine"],
+          "options": [
+            "Water vapor cooling",
+            "Magic spells",
+            "Dancing clouds",
+            "Hot sunshine"
+          ],
           "correctAnswer": 0,
           "topic": "Weather"
         }
@@ -79,11 +87,10 @@ serve(async (req) => {
 
     let quizData: QuizData;
     try {
-      // Clean up the response content by removing any whitespace before and after the JSON
+      // Clean up the response content
       const content = data.choices[0].message.content.trim();
       console.log("Raw content before parsing:", content);
       
-      // Ensure the content starts with { and ends with }
       if (!content.startsWith('{') || !content.endsWith('}')) {
         throw new Error("Response is not a valid JSON object");
       }
@@ -96,11 +103,26 @@ serve(async (req) => {
         throw new Error("Invalid quiz data format: missing or invalid questions array");
       }
 
-      // Validate each question
+      // Validate each question thoroughly
       quizData.questions.forEach((q, index) => {
-        if (!q.question || !Array.isArray(q.options) || q.options.length !== 4 || 
-            typeof q.correctAnswer !== 'number' || q.correctAnswer < 0 || q.correctAnswer > 3) {
-          throw new Error(`Invalid question format at index ${index}`);
+        if (!q.question || typeof q.question !== 'string') {
+          throw new Error(`Invalid question format at index ${index}: missing or invalid question text`);
+        }
+        
+        if (!Array.isArray(q.options) || q.options.length !== 4) {
+          throw new Error(`Invalid question format at index ${index}: must have exactly 4 options`);
+        }
+        
+        if (q.options.some(opt => typeof opt !== 'string')) {
+          throw new Error(`Invalid question format at index ${index}: all options must be strings`);
+        }
+        
+        if (typeof q.correctAnswer !== 'number' || q.correctAnswer < 0 || q.correctAnswer > 3) {
+          throw new Error(`Invalid question format at index ${index}: correctAnswer must be a number between 0 and 3`);
+        }
+        
+        if (!q.topic || typeof q.topic !== 'string') {
+          throw new Error(`Invalid question format at index ${index}: missing or invalid topic`);
         }
       });
 
