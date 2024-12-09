@@ -89,7 +89,7 @@ export const MainContainer: React.FC<MainContainerProps> = ({
     return {
       text: `Welcome back, ${name}! 🌟 ${interestText} What would you like to learn about today?`,
       isAi: true,
-      blocks: generateInitialBlocks(profile?.age || 8, interests)
+      blocks: generateInitialBlocks(profile?.age || 8)
     };
   };
 
