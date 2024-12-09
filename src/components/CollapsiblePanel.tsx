@@ -4,9 +4,10 @@ import { UserProgress } from "@/types/chat";
 import { ProgressCard } from "./panel/ProgressCard";
 import { TimeTracker } from "./panel/TimeTracker";
 import { TopicHistory } from "./panel/TopicHistory";
-import { X } from "lucide-react";
+import { X, LogOut } from "lucide-react";
 import { Button } from "./ui/button";
 import { ProfileSettings } from "./profile/ProfileSettings";
+import { cn } from "@/lib/utils";
 
 interface CollapsiblePanelProps {
   userProgress?: UserProgress;

@@ -1,5 +1,32 @@
 import { Message, UserProfile } from "@/types/chat";
-import { generateInitialBlocks } from "./blockUtils";
+import { Block } from "@/types/chat";
+import { supabase } from "@/integrations/supabase/client";
+
+export const generateInitialBlocks = async (age: number): Promise<Block[]> => {
+  try {
+    const { data, error } = await supabase.functions.invoke('generate-blocks', {
+      body: {
+        query: `Generate engaging educational topics for a ${age} year old`,
+        context: "general education",
+        age_group: `${age}-${age + 2}`
+      }
+    });
+
+    if (error) {
+      console.error('Error generating blocks:', error);
+      return [];
+    }
+
+    const parsedData = typeof data.choices[0].message.content === 'string' 
+      ? JSON.parse(data.choices[0].message.content) 
+      : data.choices[0].message.content;
+
+    return parsedData.blocks || [];
+  } catch (error) {
+    console.error('Error in generateInitialBlocks:', error);
+    return [];
+  }
+};
 
 export const handleNameInput = (
   name: string,
