@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChatHeader } from "@/components/ChatHeader";
 import { ChatContainer } from "@/components/ChatContainer";
@@ -7,6 +7,8 @@ import { CollapsiblePanel } from "@/components/CollapsiblePanel";
 import { AuthOverlay } from "./AuthOverlay";
 import { TopNavigation } from "./TopNavigation";
 import { UserProgress } from "@/types/chat";
+import { supabase } from "@/integrations/supabase/client";
+import { generateInitialBlocks } from "@/utils/profileUtils";
 
 interface MainContainerProps {
   messages: any[];
@@ -44,26 +46,54 @@ export const MainContainer: React.FC<MainContainerProps> = ({
   const [showAuthForm, setShowAuthForm] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
   const [isPanelOpen, setIsPanelOpen] = useState(false);
+  const [profile, setProfile] = useState<any>(null);
 
-  const handleAuthClick = (isLogin: boolean) => {
-    setShowLogin(isLogin);
-    setShowAuthForm(true);
+  useEffect(() => {
+    if (isAuthenticated) {
+      loadUserProfile();
+    }
+  }, [isAuthenticated]);
+
+  const loadUserProfile = async () => {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', user.id)
+        .single();
+
+      setProfile(profile);
+    } catch (error) {
+      console.error('Error loading profile:', error);
+    }
   };
 
-  const handlePanelToggle = () => {
-    setIsPanelOpen(!isPanelOpen);
+  const getWelcomeMessage = () => {
+    if (!isAuthenticated) {
+      return {
+        text: "Hi! I'm WonderWhiz! Your friendly AI Assistant! Please login or register to continue 😊",
+        isAi: true,
+        showAuthPrompt: true
+      };
+    }
+
+    const name = profile?.name || "friend";
+    const interests = profile?.topics_of_interest || [];
+    const interestText = interests.length > 0
+      ? `I see you're interested in ${interests.join(", ")}! Let's explore those topics together!`
+      : "Let's explore some exciting topics together!";
+
+    return {
+      text: `Welcome back, ${name}! 🌟 ${interestText} What would you like to learn about today?`,
+      isAi: true,
+      blocks: generateInitialBlocks(profile?.age || 8, interests)
+    };
   };
 
-  const handlePanelClose = () => {
-    setIsPanelOpen(false);
-  };
-
-  const welcomeMessage = {
-    text: "Hi! I'm WonderWhiz! Your friendly AI Assistant! Please login or register to continue 😊",
-    isAi: true,
-    showAuthPrompt: !isAuthenticated
-  };
-
+  const welcomeMessage = getWelcomeMessage();
   const displayMessages = isAuthenticated ? messages : [welcomeMessage];
 
   return (
@@ -78,9 +108,12 @@ export const MainContainer: React.FC<MainContainerProps> = ({
       <div className="relative z-10 w-full h-full flex flex-col">
         <TopNavigation 
           isAuthenticated={isAuthenticated}
-          onPanelToggle={handlePanelToggle}
+          onPanelToggle={() => setIsPanelOpen(!isPanelOpen)}
           onLogout={onLogout}
-          onAuthClick={handleAuthClick}
+          onAuthClick={(isLogin) => {
+            setShowLogin(isLogin);
+            setShowAuthForm(true);
+          }}
         />
 
         <div className="flex-1 flex flex-col h-full relative overflow-hidden">
@@ -90,7 +123,7 @@ export const MainContainer: React.FC<MainContainerProps> = ({
             onBlockClick={handleBlockClick}
             quizState={quizState}
             onQuizAnswer={handleQuizAnswer}
-            onAuthPromptClick={() => handleAuthClick(false)}
+            onAuthPromptClick={() => setShowAuthForm(true)}
           />
 
           <AnimatePresence>
@@ -119,8 +152,10 @@ export const MainContainer: React.FC<MainContainerProps> = ({
         userProgress={userProgress} 
         onLogout={onLogout}
         isOpen={isPanelOpen}
-        onClose={handlePanelClose}
+        onClose={() => setIsPanelOpen(false)}
       />
     </motion.div>
   );
 };
+
+export default MainContainer;
