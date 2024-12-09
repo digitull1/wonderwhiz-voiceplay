@@ -19,19 +19,47 @@ export const TimeTracker = () => {
         }
 
         const today = new Date().toISOString().split('T')[0];
-        const { data, error } = await supabase
+        
+        // First try to get existing record
+        const { data: existingData, error: fetchError } = await supabase
           .from('learning_time')
           .select('minutes_spent')
           .eq('user_id', user.id)
           .eq('date', today)
-          .single();
+          .maybeSingle();
 
-        if (error) throw error;
+        if (fetchError && fetchError.code !== 'PGRST116') {
+          console.error('Error fetching time spent:', fetchError);
+          setIsLoading(false);
+          return;
+        }
+
+        // If no record exists, create one
+        if (!existingData) {
+          const { data: newData, error: insertError } = await supabase
+            .from('learning_time')
+            .insert([
+              {
+                user_id: user.id,
+                date: today,
+                minutes_spent: 0
+              }
+            ])
+            .select('minutes_spent')
+            .single();
+
+          if (insertError) {
+            console.error('Error creating learning time:', insertError);
+          } else {
+            setTimeSpent(newData?.minutes_spent || 0);
+          }
+        } else {
+          setTimeSpent(existingData.minutes_spent || 0);
+        }
         
-        setTimeSpent(data?.minutes_spent || 0);
         setIsLoading(false);
       } catch (error) {
-        console.error('Error fetching time spent:', error);
+        console.error('Error in fetchTimeSpent:', error);
         setIsLoading(false);
       }
     };
