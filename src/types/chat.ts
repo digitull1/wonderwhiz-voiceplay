@@ -17,6 +17,10 @@ export interface Message {
 export interface UserProfile {
   name: string;
   age: number;
+  language: string;
+  gender: string;
+  topics_of_interest?: string[];
+  preferred_language?: string;
 }
 
 export interface UserProgress {
