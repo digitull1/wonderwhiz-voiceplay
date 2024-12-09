@@ -1,5 +1,5 @@
 import React from "react";
-import { Menu, LogOut, LogIn, UserPlus } from "lucide-react";
+import { Menu, LogOut } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface TopNavigationProps {
@@ -16,51 +16,46 @@ export const TopNavigation: React.FC<TopNavigationProps> = ({
   onAuthClick
 }) => {
   return (
-    <div className="flex items-center justify-between p-4 bg-white/80 backdrop-blur-sm">
+    <div className="sticky top-0 z-50 w-full flex items-center justify-between p-4 bg-white/80 backdrop-blur-sm border-b border-gray-100">
       <h1 className="text-2xl font-bold bg-gradient-to-r from-primary via-secondary to-accent bg-clip-text text-transparent">
         WonderWhiz
       </h1>
-      <div className="flex items-center gap-4">
-        {isAuthenticated ? (
-          <>
-            <Button 
-              variant="ghost" 
-              size="icon"
-              onClick={onLogout}
-              className="text-primary"
-            >
-              <LogOut className="h-5 w-5" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={onPanelToggle}
-              className="text-primary"
-            >
-              <Menu className="h-5 w-5" />
-            </Button>
-          </>
-        ) : (
-          <>
-            <Button 
-              variant="ghost"
-              onClick={() => onAuthClick(false)}
-              className="text-primary flex items-center gap-2"
-            >
-              <UserPlus className="h-5 w-5" />
-              Sign Up
-            </Button>
-            <Button 
-              variant="ghost"
-              onClick={() => onAuthClick(true)}
-              className="text-primary flex items-center gap-2"
-            >
-              <LogIn className="h-5 w-5" />
-              Log In
-            </Button>
-          </>
-        )}
-      </div>
+      {isAuthenticated ? (
+        <div className="flex items-center gap-2">
+          <Button 
+            variant="ghost" 
+            size="icon"
+            onClick={onLogout}
+            className="text-primary hover:bg-primary/10"
+          >
+            <LogOut className="h-5 w-5" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onPanelToggle}
+            className="text-primary hover:bg-primary/10"
+          >
+            <Menu className="h-5 w-5" />
+          </Button>
+        </div>
+      ) : (
+        <div className="flex gap-2">
+          <Button 
+            variant="outline"
+            onClick={() => onAuthClick(true)}
+            className="bg-white hover:bg-gray-50"
+          >
+            Log In
+          </Button>
+          <Button 
+            onClick={() => onAuthClick(false)}
+            className="bg-primary hover:bg-primary-hover text-white"
+          >
+            Sign Up
+          </Button>
+        </div>
+      )}
     </div>
   );
 };

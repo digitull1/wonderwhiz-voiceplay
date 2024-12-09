@@ -50,6 +50,14 @@ export const MainContainer: React.FC<MainContainerProps> = ({
     setShowAuthForm(true);
   };
 
+  const handlePanelToggle = () => {
+    setIsPanelOpen(!isPanelOpen);
+  };
+
+  const handlePanelClose = () => {
+    setIsPanelOpen(false);
+  };
+
   const welcomeMessage = {
     text: "Hi! I'm WonderWhiz! Your friendly AI Assistant! Please login or register to continue 😊",
     isAi: true,
@@ -70,19 +78,12 @@ export const MainContainer: React.FC<MainContainerProps> = ({
       <div className="relative z-10 w-full h-full flex flex-col">
         <TopNavigation 
           isAuthenticated={isAuthenticated}
-          onPanelToggle={() => setIsPanelOpen(!isPanelOpen)}
+          onPanelToggle={handlePanelToggle}
           onLogout={onLogout}
           onAuthClick={handleAuthClick}
         />
 
-        <ChatHeader />
-
-        <motion.div 
-          className="flex-1 flex flex-col h-full relative overflow-hidden"
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ duration: 0.5 }}
-        >
+        <div className="flex-1 flex flex-col h-full relative overflow-hidden">
           <ChatContainer 
             messages={displayMessages}
             handleListen={handleListen}
@@ -111,13 +112,14 @@ export const MainContainer: React.FC<MainContainerProps> = ({
             onImageAnalyzed={handleImageAnalysis}
             placeholder="Ask me something magical..."
           />
-        </motion.div>
+        </div>
       </div>
 
       <CollapsiblePanel 
         userProgress={userProgress} 
         onLogout={onLogout}
         isOpen={isPanelOpen}
+        onClose={handlePanelClose}
       />
     </motion.div>
   );
