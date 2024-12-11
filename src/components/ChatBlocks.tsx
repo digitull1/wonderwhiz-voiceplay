@@ -37,8 +37,13 @@ export const ChatBlocks = ({ blocks, onBlockClick }: ChatBlocksProps) => {
   };
 
   const handleBlockClick = async (block: Block) => {
-    if (block.metadata.type === 'image') {
-      try {
+    if (!block.metadata?.type) {
+      onBlockClick(block);
+      return;
+    }
+
+    try {
+      if (block.metadata.type === 'image') {
         console.log('Generating image for prompt:', block.title);
         
         // Dispatch loading animation event
@@ -51,17 +56,8 @@ export const ChatBlocks = ({ blocks, onBlockClick }: ChatBlocksProps) => {
         });
         window.dispatchEvent(loadingEvent);
 
-        await handleImageGeneration(block.title, toast);
-      } catch (error) {
-        console.error('Error generating image:', error);
-        toast({
-          title: "Oops!",
-          description: "Couldn't create an image right now. Try again!",
-          variant: "destructive"
-        });
-      }
-    } else if (block.metadata.type === 'quiz') {
-      try {
+        await handleImageGeneration(block.metadata.topic || block.title, toast);
+      } else if (block.metadata.type === 'quiz') {
         console.log('Generating quiz for topic:', block.metadata.topic || block.title);
         
         // Get user's age
@@ -76,16 +72,16 @@ export const ChatBlocks = ({ blocks, onBlockClick }: ChatBlocksProps) => {
         console.log('User age for quiz generation:', age);
 
         await handleQuizGeneration(block.metadata.topic || block.title, age, toast);
-      } catch (error) {
-        console.error('Error generating quiz:', error);
-        toast({
-          title: "Oops!",
-          description: "Couldn't create a quiz right now. Try again!",
-          variant: "destructive"
-        });
+      } else {
+        onBlockClick(block);
       }
-    } else {
-      onBlockClick(block);
+    } catch (error) {
+      console.error('Error handling block click:', error);
+      toast({
+        title: "Oops!",
+        description: "Something went wrong. Please try again!",
+        variant: "destructive"
+      });
     }
   };
 

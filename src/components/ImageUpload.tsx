@@ -86,15 +86,19 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className={cn("relative cursor-pointer", className)}
+      className={cn(
+        "relative cursor-pointer",
+        "hover:scale-105 transition-transform duration-200",
+        className
+      )}
     >
       <Button
         variant="ghost"
-        className="w-full h-full p-0 hover:bg-transparent"
+        className="w-full h-full p-0 hover:bg-transparent relative"
         disabled={isLoading}
       >
         {isLoading ? (
-          <Loader2 className="h-5 w-5 animate-spin text-white" />
+          <Loader2 className="h-5 w-5 animate-spin text-primary" />
         ) : (
           children
         )}
@@ -102,7 +106,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
           type="file"
           accept="image/*"
           onChange={handleImageUpload}
-          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
           disabled={isLoading}
         />
       </Button>
