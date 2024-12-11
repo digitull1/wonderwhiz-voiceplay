@@ -7,13 +7,10 @@ import { useImageAnalysis } from "./useImageAnalysis";
 import { useAuth } from "./useAuth";
 import { getGroqResponse } from "@/utils/groq";
 import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 export const useChat = () => {
-  const [messages, setMessages] = useState<any[]>([{
-    text: "Hi! I'm WonderWhiz! Your friendly AI Assistant! Please login or register to continue 😊",
-    isAi: true,
-    showAuthPrompt: true
-  }]);
+  const [messages, setMessages] = useState<any[]>([]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [currentTopic, setCurrentTopic] = useState("");
@@ -28,18 +25,48 @@ export const useChat = () => {
   const { handleImageAnalysis: analyzeImage } = useImageAnalysis();
   const { toast } = useToast();
 
-  // Add event listener for new messages
+  // Initialize chat based on auth state
   useEffect(() => {
-    const handleNewMessage = (event: CustomEvent) => {
-      console.log('New message event received:', event.detail);
-      setMessages(prev => [...prev, event.detail]);
+    const initializeChat = async () => {
+      if (isAuthenticated) {
+        try {
+          const { data: { user } } = await supabase.auth.getUser();
+          if (!user) return;
+
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', user.id)
+            .single();
+
+          if (profile) {
+            const blocks = await generateDynamicBlocks("welcome", "general");
+            const welcomeMessage = {
+              text: `Welcome back${profile.name ? `, ${profile.name}` : ''}! 🌟 What would you like to learn about today?`,
+              isAi: true,
+              blocks
+            };
+            setMessages([welcomeMessage]);
+          }
+        } catch (error) {
+          console.error('Error initializing chat:', error);
+          toast({
+            title: "Error",
+            description: "Could not load your chat. Please try refreshing the page.",
+            variant: "destructive"
+          });
+        }
+      } else {
+        setMessages([{
+          text: "Hi! I'm WonderWhiz! Your friendly AI Assistant! Please login or register to continue 😊",
+          isAi: true,
+          showAuthPrompt: true
+        }]);
+      }
     };
 
-    window.addEventListener('wonderwhiz:newMessage', handleNewMessage as EventListener);
-    return () => {
-      window.removeEventListener('wonderwhiz:newMessage', handleNewMessage as EventListener);
-    };
-  }, []);
+    initializeChat();
+  }, [isAuthenticated]);
 
   const handleListen = useCallback((text: string) => {
     const utterance = new SpeechSynthesisUtterance(text);

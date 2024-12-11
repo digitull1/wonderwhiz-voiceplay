@@ -67,6 +67,16 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
     return () => clearTimeout(timeoutId);
   }, [messages, quizState?.currentQuestion]);
 
+  if (!messages || messages.length === 0) {
+    return (
+      <div className="flex-1 flex items-center justify-center">
+        <div className="text-center text-gray-500">
+          Loading your chat...
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div 
       ref={containerRef}
