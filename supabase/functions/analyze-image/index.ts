@@ -6,18 +6,32 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
+  console.log('Received request to analyze-image function');
+
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
 
   try {
     const { image, prompt } = await req.json()
-    console.log('Analyzing image with prompt:', prompt)
+    console.log('Processing image analysis with prompt:', prompt);
 
+    if (!image) {
+      console.error('No image data provided');
+      throw new Error('No image data provided');
+    }
+
+    const groqApiKey = Deno.env.get('GROQ_API_KEY');
+    if (!groqApiKey) {
+      console.error('GROQ_API_KEY not configured');
+      throw new Error('GROQ_API_KEY not configured');
+    }
+
+    console.log('Making request to Groq API for image analysis');
     const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${Deno.env.get('GROQ_API_KEY')}`,
+        'Authorization': `Bearer ${groqApiKey}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
@@ -50,17 +64,24 @@ serve(async (req) => {
     }
 
     const data = await response.json()
-    console.log('Groq API Response:', data)
+    console.log('Successfully received response from Groq API');
 
     return new Response(
       JSON.stringify(data),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   } catch (error) {
-    console.error('Error:', error)
+    console.error('Error in analyze-image function:', error);
     return new Response(
-      JSON.stringify({ error: 'Failed to analyze image', details: error.message }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+      JSON.stringify({ 
+        error: 'Failed to analyze image', 
+        details: error.message,
+        timestamp: new Date().toISOString()
+      }),
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }, 
+        status: 500 
+      }
     )
   }
 })
