@@ -95,18 +95,10 @@ serve(async (req) => {
   console.log(`Received ${req.method} request to generate-blocks`);
   
   if (req.method === 'OPTIONS') {
-    console.log('Handling CORS preflight request');
-    return new Response(null, { 
-      headers: corsHeaders,
-      status: 204
-    });
+    return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    if (req.method !== 'POST') {
-      throw new Error(`Method ${req.method} not allowed`);
-    }
-
     const { query, context, age_group = "8-11", language = "en" } = await req.json();
     console.log("Generating blocks for:", { query, context, age_group, language });
 
@@ -116,13 +108,16 @@ serve(async (req) => {
 
     const ageSpecificInstructions = generateAgeSpecificInstructions(age_group, language);
     const prompt = `
-      Based on "${query}" and topic "${context}", generate 5 engaging, educational blocks.
+      Based on "${query}" and topic "${context}", generate 3 engaging, educational blocks.
       ${ageSpecificInstructions}
       
       Format as JSON with blocks array containing title and metadata.
       Each block must be under 70 characters and include an emoji.
       
       Generate the content in ${language === 'en' ? 'English' : 'Vietnamese'}.
+      
+      I will append 2 additional blocks for image and quiz after your response.
+      Only generate 3 informational blocks.
 
       Example format:
       {
@@ -173,7 +168,6 @@ serve(async (req) => {
         throw new Error('Invalid response format from Groq API');
       }
 
-      // Parse the response content
       let parsedContent;
       try {
         parsedContent = typeof data.choices[0].message.content === 'string' 
@@ -184,13 +178,42 @@ serve(async (req) => {
         throw new Error('Failed to parse Groq response');
       }
 
-      // Validate the parsed content
       if (!parsedContent?.blocks || !Array.isArray(parsedContent.blocks)) {
         console.error('Invalid blocks format:', parsedContent);
         throw new Error('Invalid blocks format in response');
       }
 
-      return data;
+      // Add image and quiz blocks
+      const imageBlock = {
+        title: `🎨 Create amazing ${context} artwork!`,
+        metadata: {
+          topic: context,
+          type: "image"
+        }
+      };
+
+      const quizBlock = {
+        title: `🎯 Test your ${context} knowledge!`,
+        metadata: {
+          topic: context,
+          type: "quiz"
+        }
+      };
+
+      // Ensure we only have 3 content blocks before adding image and quiz
+      parsedContent.blocks = parsedContent.blocks.slice(0, 3);
+      parsedContent.blocks.push(imageBlock, quizBlock);
+
+      return {
+        ...data,
+        choices: [{
+          ...data.choices[0],
+          message: {
+            ...data.choices[0].message,
+            content: JSON.stringify(parsedContent)
+          }
+        }]
+      };
     };
 
     const data = await retryWithBackoff(makeRequest);
@@ -206,7 +229,6 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in generate-blocks function:', error);
     
-    // Return a more detailed error response
     return new Response(
       JSON.stringify({ 
         error: error.message || 'Failed to generate blocks',
