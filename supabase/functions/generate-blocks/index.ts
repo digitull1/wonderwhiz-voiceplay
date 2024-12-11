@@ -8,14 +8,12 @@ const corsHeaders = {
   'Access-Control-Max-Age': '86400',
 }
 
-// Improved wait function with logging
 const wait = async (ms: number) => {
   console.log(`Waiting ${ms}ms before retry...`);
   await new Promise(resolve => setTimeout(resolve, ms));
   console.log('Wait complete, proceeding with retry');
 };
 
-// Enhanced retry logic with proper error handling
 async function retryWithBackoff<T>(operation: () => Promise<T>, retries = 3, baseDelay = 1000): Promise<T> {
   let lastError;
   
@@ -26,7 +24,6 @@ async function retryWithBackoff<T>(operation: () => Promise<T>, retries = 3, bas
       lastError = error;
       console.error(`Attempt ${i + 1} failed:`, error);
       
-      // Extract wait time from rate limit error message
       if (error.message?.includes('Rate limit reached')) {
         const waitTimeMatch = error.message.match(/try again in (\d+\.?\d*)s/);
         if (waitTimeMatch) {
@@ -36,7 +33,6 @@ async function retryWithBackoff<T>(operation: () => Promise<T>, retries = 3, bas
         }
       }
       
-      // Exponential backoff for other errors
       await wait(baseDelay * Math.pow(2, i));
     }
   }
@@ -95,7 +91,6 @@ function generateAgeSpecificInstructions(ageGroup: string, language: string = 'e
   }
 }
 
-// Update the serve function to include language support
 serve(async (req) => {
   console.log(`Received ${req.method} request to generate-blocks`);
   
@@ -128,6 +123,19 @@ serve(async (req) => {
       Each block must be under 70 characters and include an emoji.
       
       Generate the content in ${language === 'en' ? 'English' : 'Vietnamese'}.
+
+      Example format:
+      {
+        "blocks": [
+          {
+            "title": "🌟 Fun fact about space",
+            "metadata": {
+              "topic": "space",
+              "type": "fact"
+            }
+          }
+        ]
+      }
     `;
 
     const makeRequest = async () => {
@@ -159,7 +167,29 @@ serve(async (req) => {
       }
 
       const data = await response.json();
-      console.log('Received response from Groq API');
+      console.log('Received response from Groq API:', data);
+
+      if (!data?.choices?.[0]?.message?.content) {
+        throw new Error('Invalid response format from Groq API');
+      }
+
+      // Parse the response content
+      let parsedContent;
+      try {
+        parsedContent = typeof data.choices[0].message.content === 'string' 
+          ? JSON.parse(data.choices[0].message.content) 
+          : data.choices[0].message.content;
+      } catch (error) {
+        console.error('Error parsing Groq response:', error);
+        throw new Error('Failed to parse Groq response');
+      }
+
+      // Validate the parsed content
+      if (!parsedContent?.blocks || !Array.isArray(parsedContent.blocks)) {
+        console.error('Invalid blocks format:', parsedContent);
+        throw new Error('Invalid blocks format in response');
+      }
+
       return data;
     };
 
@@ -175,10 +205,12 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Error in generate-blocks function:', error);
+    
+    // Return a more detailed error response
     return new Response(
       JSON.stringify({ 
-        error: 'Failed to generate blocks', 
-        details: error.message,
+        error: error.message || 'Failed to generate blocks',
+        details: error.stack,
         timestamp: new Date().toISOString()
       }),
       { 
