@@ -5,6 +5,7 @@ const getFallbackBlocks = (topic: string = "general"): Block[] => {
   return [
     {
       title: "🌟 Let's explore something amazing!",
+      description: "Discover fascinating facts and knowledge about interesting topics!",
       metadata: {
         topic: topic,
         type: "fact"
@@ -12,6 +13,7 @@ const getFallbackBlocks = (topic: string = "general"): Block[] => {
     },
     {
       title: "🎨 Create some fun artwork!",
+      description: "Let's make something creative and colorful together!",
       metadata: {
         topic: topic,
         type: "image"
@@ -19,6 +21,7 @@ const getFallbackBlocks = (topic: string = "general"): Block[] => {
     },
     {
       title: "🎯 Test your knowledge!",
+      description: "Challenge yourself with fun questions and learn something new!",
       metadata: {
         topic: topic,
         type: "quiz"
@@ -72,6 +75,7 @@ export const generateInitialBlocks = async (age: number): Promise<Block[]> => {
       .filter(block => block?.title && block?.metadata?.topic)
       .map(block => ({
         title: block.title.substring(0, 75),
+        description: block.description || "Click to explore more!",
         metadata: {
           topic: block.metadata.topic,
           type: block.metadata.type || "fact"

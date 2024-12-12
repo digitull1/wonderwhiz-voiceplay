@@ -7,6 +7,7 @@ import { EnhancedBlockCard } from "./blocks/EnhancedBlockCard";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
 import { handleImageBlock, handleQuizBlock } from "@/utils/blockHandlers";
+import { cn } from "@/lib/utils";
 
 interface ChatBlocksProps {
   blocks: Block[];
