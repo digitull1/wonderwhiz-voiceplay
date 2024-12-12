@@ -53,7 +53,7 @@ serve(async (req) => {
       Based on "${query}" and topic "${context}", generate EXACTLY 3 engaging, educational blocks.
       ${ageSpecificInstructions}
       
-      Format as JSON with blocks array containing title and metadata.
+      Format as a valid JSON object with a 'blocks' array containing objects with 'title' and 'metadata'.
       Each block must be under 70 characters and include an emoji.
       
       Example format:
@@ -68,6 +68,8 @@ serve(async (req) => {
           }
         ]
       }
+      
+      Ensure the response is ONLY the JSON object, no additional text.
     `;
 
     console.log('Making request to Groq API with prompt:', prompt);
@@ -83,7 +85,7 @@ serve(async (req) => {
         messages: [
           {
             role: "system",
-            content: `You are WonderWhiz, generating exciting educational content for kids aged ${age_group}.`
+            content: `You are WonderWhiz, generating exciting educational content for kids aged ${age_group}. Always respond with valid JSON only.`
           },
           { role: "user", content: prompt }
         ],
@@ -111,21 +113,35 @@ serve(async (req) => {
       const content = data.choices[0].message.content;
       console.log('Raw content from Groq:', content);
       
-      // Clean and validate the content
-      const cleanContent = content.trim();
+      // Remove any potential markdown code block markers and clean whitespace
+      const cleanContent = content
+        .replace(/```json\s*|\s*```/g, '')
+        .replace(/[\u200B-\u200D\uFEFF]/g, '')
+        .trim();
+      
       console.log('Cleaned content:', cleanContent);
 
       try {
         // First attempt: direct parsing
         parsedContent = JSON.parse(cleanContent);
-      } catch (parseError) {
+      } catch (firstError) {
         console.log('Direct parsing failed, attempting to extract JSON');
         // Second attempt: try to find JSON object in the string
         const jsonMatch = cleanContent.match(/\{[\s\S]*\}/);
         if (!jsonMatch) {
           throw new Error('No valid JSON found in response');
         }
-        parsedContent = JSON.parse(jsonMatch[0]);
+        
+        // Clean up any potential trailing/leading text
+        const extractedJson = jsonMatch[0].trim();
+        console.log('Extracted JSON:', extractedJson);
+        
+        try {
+          parsedContent = JSON.parse(extractedJson);
+        } catch (secondError) {
+          console.error('Failed to parse extracted JSON:', secondError);
+          throw new Error(`Invalid JSON structure: ${secondError.message}`);
+        }
       }
 
       console.log('Successfully parsed content:', parsedContent);
