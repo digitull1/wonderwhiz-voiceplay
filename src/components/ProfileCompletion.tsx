@@ -33,12 +33,11 @@ export const ProfileCompletion: React.FC<ProfileCompletionProps> = ({
 
       <Progress
         value={completionPercentage}
-        className="h-2 bg-white/10"
-        indicatorClassName={cn(
-          "bg-gradient-to-r",
-          completionPercentage < 50 ? "from-primary/50 to-primary" :
-          completionPercentage < 100 ? "from-secondary/50 to-secondary" :
-          "from-green-500/50 to-green-500"
+        className={cn(
+          "h-2 bg-white/10",
+          completionPercentage < 50 ? "bg-gradient-to-r from-primary/50 to-primary" :
+          completionPercentage < 100 ? "bg-gradient-to-r from-secondary/50 to-secondary" :
+          "bg-gradient-to-r from-green-500/50 to-green-500"
         )}
       />
 
