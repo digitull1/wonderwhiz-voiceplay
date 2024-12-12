@@ -11,6 +11,7 @@ interface Topic {
 interface TopicSelectionProps {
   selectedTopics: string[];
   onTopicToggle: (topicId: string) => void;
+  disabled?: boolean;
 }
 
 const topics: Topic[] = [
@@ -28,6 +29,7 @@ const topics: Topic[] = [
 export const TopicSelection: React.FC<TopicSelectionProps> = ({
   selectedTopics,
   onTopicToggle,
+  disabled = false,
 }) => {
   return (
     <div className="space-y-2">
@@ -43,6 +45,7 @@ export const TopicSelection: React.FC<TopicSelectionProps> = ({
               "transition-all duration-200 ease-in-out"
             )}
             onClick={() => onTopicToggle(topic.id)}
+            disabled={disabled}
           >
             <span>{topic.emoji}</span>
             <span className="text-sm">{topic.name}</span>

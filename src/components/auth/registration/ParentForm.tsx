@@ -2,6 +2,7 @@ import React from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
 
 interface ParentFormProps {
   email: string;
@@ -9,6 +10,7 @@ interface ParentFormProps {
   onEmailChange: (value: string) => void;
   onPasswordChange: (value: string) => void;
   onNext: () => void;
+  isLoading: boolean;
 }
 
 export const ParentForm: React.FC<ParentFormProps> = ({
@@ -17,6 +19,7 @@ export const ParentForm: React.FC<ParentFormProps> = ({
   onEmailChange,
   onPasswordChange,
   onNext,
+  isLoading,
 }) => {
   return (
     <div className="space-y-4">
@@ -31,6 +34,7 @@ export const ParentForm: React.FC<ParentFormProps> = ({
           onChange={(e) => onEmailChange(e.target.value)}
           placeholder="parent@example.com"
           required
+          disabled={isLoading}
         />
       </div>
 
@@ -43,6 +47,7 @@ export const ParentForm: React.FC<ParentFormProps> = ({
           onChange={(e) => onPasswordChange(e.target.value)}
           placeholder="Choose a secure password"
           required
+          disabled={isLoading}
         />
       </div>
 
@@ -50,8 +55,16 @@ export const ParentForm: React.FC<ParentFormProps> = ({
         type="button" 
         className="w-full"
         onClick={onNext}
+        disabled={isLoading}
       >
-        Next
+        {isLoading ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Please wait...
+          </>
+        ) : (
+          "Next"
+        )}
       </Button>
     </div>
   );
