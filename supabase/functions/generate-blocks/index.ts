@@ -1,14 +1,14 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import "https://deno.land/x/xhr@0.1.0/mod.ts"
-import { corsHeaders, handleCors } from "../_shared/cors.ts"
+import { corsHeaders } from "../_shared/cors.ts"
 import { callGroq } from "../_shared/groq.ts"
-import { parseGroqResponse, validateBlocksStructure } from "../_shared/jsonParser.ts"
 import { generateAgeSpecificInstructions, buildPrompt } from "./prompts.ts"
 
 serve(async (req) => {
   // Handle CORS preflight
-  const corsResponse = handleCors(req);
-  if (corsResponse) return corsResponse;
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { headers: corsHeaders });
+  }
 
   try {
     if (!req.body) {
@@ -33,47 +33,60 @@ serve(async (req) => {
         content: `You are WonderWhiz, generating exciting educational content for kids aged ${age_group}. Always respond with valid JSON only.`
       },
       { role: "user", content: prompt }
-    ]);
+    ], 0.7, 500, 5);
 
     if (!data?.choices?.[0]?.message?.content) {
-      console.error('Invalid response format from Groq API');
+      console.error('Invalid response format from Groq API:', data);
       throw new Error('Invalid response format from Groq API');
     }
 
+    const content = data.choices[0].message.content;
+    console.log('Raw content from Groq:', content);
+
     let parsedContent;
     try {
-      parsedContent = parseGroqResponse(data.choices[0].message.content);
-      parsedContent = validateBlocksStructure(parsedContent);
-      console.log('Successfully parsed content:', parsedContent);
+      // First try: direct parsing
+      parsedContent = typeof content === 'string' ? JSON.parse(content) : content;
+      
+      // Validate structure
+      if (!parsedContent?.blocks || !Array.isArray(parsedContent.blocks)) {
+        throw new Error('Invalid blocks format in response');
+      }
+
+      // Ensure each block has required fields
+      parsedContent.blocks = parsedContent.blocks.slice(0, 3).map(block => ({
+        ...block,
+        title: block.title?.substring(0, 75) || "Interesting fact!",
+        metadata: {
+          ...block.metadata,
+          topic: block.metadata?.topic || context || "general"
+        }
+      }));
+
+      // Add image and quiz blocks
+      parsedContent.blocks.push(
+        {
+          title: `🎨 Create amazing ${context} artwork!`,
+          metadata: {
+            topic: context,
+            type: "image"
+          }
+        },
+        {
+          title: `🎯 Test your ${context} knowledge!`,
+          metadata: {
+            topic: context,
+            type: "quiz"
+          }
+        }
+      );
+
+      console.log('Final blocks structure:', parsedContent);
+
     } catch (error) {
-      console.error('Error parsing Groq response:', error);
-      throw new Error(`Failed to parse Groq response: ${error.message}`);
+      console.error('Error parsing or processing content:', error);
+      throw new Error(`Failed to process Groq response: ${error.message}`);
     }
-
-    // Ensure we only have 3 content blocks
-    parsedContent.blocks = parsedContent.blocks.slice(0, 3);
-
-    // Add image and quiz blocks with the specific topic
-    const imageBlock = {
-      title: `🎨 Create amazing ${context} artwork!`,
-      metadata: {
-        topic: context,
-        type: "image"
-      }
-    };
-
-    const quizBlock = {
-      title: `🎯 Test your ${context} knowledge!`,
-      metadata: {
-        topic: context,
-        type: "quiz"
-      }
-    };
-
-    // Add the image and quiz blocks
-    parsedContent.blocks.push(imageBlock, quizBlock);
-
-    console.log('Final blocks structure:', parsedContent);
 
     return new Response(
       JSON.stringify(parsedContent),
@@ -82,6 +95,7 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Error in generate-blocks function:', error);
+    
     return new Response(
       JSON.stringify({ 
         error: error.message || 'Failed to generate blocks',

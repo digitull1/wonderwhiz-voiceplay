@@ -6,7 +6,7 @@ interface GroqMessage {
 const wait = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
 const parseRateLimitError = (error: any) => {
-  const match = error.message.match(/try again in (\d+\.?\d*)s/);
+  const match = error.message?.match(/try again in (\d+\.?\d*)s/);
   return match ? parseFloat(match[1]) * 1000 : 1000;
 };
 
@@ -37,12 +37,21 @@ export const callGroq = async (messages: GroqMessage[], temperature = 0.7, maxTo
         }),
       });
 
+      const responseText = await response.text();
+      console.log(`[Groq API] Raw response: ${responseText}`);
+
       if (!response.ok) {
-        const errorData = await response.json();
+        let errorData;
+        try {
+          errorData = JSON.parse(responseText);
+        } catch (e) {
+          errorData = { message: responseText };
+        }
+        
         console.error('[Groq API] Error response:', errorData);
         
         if (isRateLimitError(errorData)) {
-          const waitTime = parseRateLimitError(errorData.error);
+          const waitTime = parseRateLimitError(errorData.error || errorData);
           console.log(`[Groq API] Rate limit hit, waiting ${waitTime}ms before retry`);
           await wait(waitTime);
           attempt++;
@@ -50,11 +59,18 @@ export const callGroq = async (messages: GroqMessage[], temperature = 0.7, maxTo
           continue;
         }
         
-        throw new Error(errorData.error?.message || "Failed to get response from Groq");
+        throw new Error(errorData.error?.message || errorData.message || "Failed to get response from Groq");
       }
 
-      const data = await response.json();
-      console.log('[Groq API] Successfully received response');
+      let data;
+      try {
+        data = JSON.parse(responseText);
+      } catch (e) {
+        console.error('[Groq API] Failed to parse JSON response:', e);
+        throw new Error(`Invalid JSON response: ${responseText}`);
+      }
+
+      console.log('[Groq API] Successfully received and parsed response');
       return data;
       
     } catch (error) {
@@ -63,10 +79,10 @@ export const callGroq = async (messages: GroqMessage[], temperature = 0.7, maxTo
       
       if (attempt === retries - 1) {
         console.error('[Groq API] All retry attempts failed. Last error:', lastError);
-        throw new Error(`Groq API failed after ${retries} attempts: ${lastError?.message || 'Unknown error'}`);
+        throw new Error(`Failed after ${retries} attempts. Last error: ${lastError?.message || 'Unknown error'}`);
       }
       
-      // Exponential backoff with jitter for other errors
+      // Exponential backoff with jitter
       const baseDelay = Math.min(1000 * Math.pow(2, attempt), 10000);
       const jitter = Math.random() * 1000;
       const backoffTime = baseDelay + jitter;
