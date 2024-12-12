@@ -53,13 +53,12 @@ serve(async (req) => {
         throw new Error('Invalid blocks format in response');
       }
 
-      // Ensure each block has required fields
+      // Ensure each block has required fields and limit to 3 blocks
       parsedContent.blocks = parsedContent.blocks.slice(0, 3).map(block => ({
-        ...block,
         title: block.title?.substring(0, 75) || "Interesting fact!",
         metadata: {
-          ...block.metadata,
-          topic: block.metadata?.topic || context || "general"
+          topic: block.metadata?.topic || context || "general",
+          type: block.metadata?.type || "fact"
         }
       }));
 
