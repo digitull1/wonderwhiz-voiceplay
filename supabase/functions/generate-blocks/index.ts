@@ -84,7 +84,7 @@ serve(async (req) => {
     }
 
     const data = await response.json();
-    console.log('Received response from Groq API');
+    console.log('Received response from Groq API:', data);
 
     if (!data?.choices?.[0]?.message?.content) {
       console.error('Invalid response format from Groq API');
@@ -93,12 +93,19 @@ serve(async (req) => {
 
     let parsedContent;
     try {
-      parsedContent = typeof data.choices[0].message.content === 'string' 
-        ? JSON.parse(data.choices[0].message.content) 
-        : data.choices[0].message.content;
+      const content = data.choices[0].message.content;
+      console.log('Raw content from Groq:', content);
+      
+      // Handle both string and object responses
+      parsedContent = typeof content === 'string' 
+        ? JSON.parse(content.trim()) 
+        : content;
+        
+      console.log('Parsed content:', parsedContent);
     } catch (error) {
       console.error('Error parsing Groq response:', error);
-      throw new Error('Failed to parse Groq response');
+      console.log('Failed content:', data.choices[0].message.content);
+      throw new Error(`Failed to parse Groq response: ${error.message}`);
     }
 
     if (!parsedContent?.blocks || !Array.isArray(parsedContent.blocks)) {
@@ -132,17 +139,13 @@ serve(async (req) => {
     console.log('Final blocks structure:', parsedContent);
 
     return new Response(
-      JSON.stringify({
-        ...data,
-        choices: [{
-          ...data.choices[0],
-          message: {
-            ...data.choices[0].message,
-            content: JSON.stringify(parsedContent)
-          }
-        }]
-      }), 
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      JSON.stringify(data), 
+      { 
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json' 
+        } 
+      }
     );
 
   } catch (error) {
@@ -153,7 +156,10 @@ serve(async (req) => {
         details: error.stack,
         timestamp: new Date().toISOString()
       }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+      { 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }, 
+        status: 500 
+      }
     );
   }
 });
