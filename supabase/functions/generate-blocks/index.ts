@@ -100,14 +100,20 @@ serve(async (req) => {
       const content = data.choices[0].message.content;
       console.log('Raw content from Groq:', content);
       
-      parsedContent = typeof content === 'string' 
-        ? JSON.parse(content.trim()) 
-        : content;
-        
+      // Clean the content string before parsing
+      const cleanContent = content.trim().replace(/\n/g, '');
+      console.log('Cleaned content:', cleanContent);
+
+      // Try to find valid JSON in the response
+      const jsonMatch = cleanContent.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) {
+        throw new Error('No valid JSON found in response');
+      }
+
+      parsedContent = JSON.parse(jsonMatch[0]);
       console.log('Parsed content:', parsedContent);
     } catch (error) {
       console.error('Error parsing Groq response:', error);
-      console.log('Failed content:', data.choices[0].message.content);
       throw new Error(`Failed to parse Groq response: ${error.message}`);
     }
 
