@@ -24,7 +24,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
   isAi = false, 
   message, 
   onListen,
-  blocks,
+  blocks = [],
   onBlockClick,
   onQuizGenerated,
   onPanelOpen,
@@ -45,8 +45,8 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
       setIsTyping(true);
       setShowBlocks(false);
       
-      setIsTyping(false);
       setTimeout(() => {
+        setIsTyping(false);
         setShowBlocks(true);
         setShowReward(true);
         setTimeout(() => setShowReward(false), 2000);
@@ -60,6 +60,15 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
       setShowBlocks(true);
     }, 500);
   };
+
+  // Debug logs
+  console.log('ChatMessage rendered with:', {
+    isAi,
+    hasBlocks: blocks?.length > 0,
+    blocksCount: blocks?.length,
+    showBlocks,
+    isTyping
+  });
 
   return (
     <MessageContainer isAi={isAi} showReward={showReward}>

@@ -13,7 +13,7 @@ interface ChatBlocksProps {
   onBlockClick: (block: Block) => void;
 }
 
-export const ChatBlocks = ({ blocks, onBlockClick }: ChatBlocksProps) => {
+export const ChatBlocks = ({ blocks = [], onBlockClick }: ChatBlocksProps) => {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [currentScrollIndex, setCurrentScrollIndex] = useState(0);
   const isMobile = useIsMobile();
@@ -21,20 +21,17 @@ export const ChatBlocks = ({ blocks, onBlockClick }: ChatBlocksProps) => {
 
   useEffect(() => {
     // Debug logs for blocks
-    console.log('ChatBlocks received blocks:', blocks);
-    if (!blocks || blocks.length === 0) {
-      console.warn('No blocks provided to ChatBlocks component');
-    } else {
-      console.log('Number of blocks:', blocks.length);
-      blocks.forEach((block, index) => {
-        console.log(`Block ${index}:`, {
-          title: block.title,
-          metadata: block.metadata,
-          type: block.metadata?.type
-        });
-      });
-    }
+    console.log('ChatBlocks received blocks:', {
+      blocksLength: blocks?.length,
+      blocks: blocks
+    });
   }, [blocks]);
+
+  // If no blocks or empty array, return null
+  if (!blocks?.length) {
+    console.log('No blocks to display');
+    return null;
+  }
 
   const handleScroll = (direction: 'left' | 'right') => {
     if (!scrollContainerRef.current) return;
@@ -60,7 +57,6 @@ export const ChatBlocks = ({ blocks, onBlockClick }: ChatBlocksProps) => {
 
     try {
       if (block.metadata.type === 'image') {
-        // Dispatch loading animation event
         const loadingEvent = new CustomEvent('wonderwhiz:newMessage', {
           detail: {
             text: "✨ Creating something magical for you! Watch the sparkles...",
@@ -72,7 +68,6 @@ export const ChatBlocks = ({ blocks, onBlockClick }: ChatBlocksProps) => {
 
         await handleImageBlock(block);
       } else if (block.metadata.type === 'quiz') {
-        // Get user's age
         const { data: userData } = await supabase.auth.getUser();
         const { data: profileData } = await supabase
           .from('profiles')
@@ -92,40 +87,10 @@ export const ChatBlocks = ({ blocks, onBlockClick }: ChatBlocksProps) => {
     }
   };
 
-  useEffect(() => {
-    const handleScrollEvent = () => {
-      if (!scrollContainerRef.current) return;
-      const blockWidth = scrollContainerRef.current.offsetWidth / visibleBlocksCount;
-      const newIndex = Math.floor(scrollContainerRef.current.scrollLeft / blockWidth);
-      setCurrentScrollIndex(Math.max(0, Math.min(newIndex, blocks.length - visibleBlocksCount)));
-    };
-
-    const container = scrollContainerRef.current;
-    if (container) {
-      container.addEventListener('scroll', handleScrollEvent);
-      return () => container.removeEventListener('scroll', handleScrollEvent);
-    }
-  }, [blocks.length, visibleBlocksCount]);
-
-  // Debug render log
-  console.log('ChatBlocks rendering with:', {
-    numberOfBlocks: blocks.length,
-    currentScrollIndex,
-    visibleBlocksCount,
-    isMobile
-  });
-
-  if (!blocks || blocks.length === 0) {
-    console.warn('Rendering ChatBlocks with no blocks');
-    return null;
-  }
-
-  const showNavigation = blocks.length > visibleBlocksCount && !isMobile;
-
   return (
     <div className="relative w-full px-1">
       <AnimatePresence>
-        {showNavigation && (
+        {blocks.length > visibleBlocksCount && !isMobile && (
           <>
             <BlockNavigationButton 
               direction="left" 
@@ -155,9 +120,10 @@ export const ChatBlocks = ({ blocks, onBlockClick }: ChatBlocksProps) => {
           {blocks.map((block, index) => (
             <div 
               key={`${block.title}-${index}`}
-              className={`flex-none snap-center px-1 ${
-                isMobile ? 'w-full' : 'w-1/3'
-              }`}
+              className={cn(
+                "flex-none snap-center px-1",
+                isMobile ? "w-full" : "w-1/3"
+              )}
             >
               <EnhancedBlockCard
                 block={block}
