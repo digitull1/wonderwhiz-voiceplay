@@ -3,17 +3,23 @@ import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Block } from "@/types/chat";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { ImageBlock } from "./ImageBlock";
+import { QuizBlock } from "./QuizBlock";
 
 interface EnhancedBlockCardProps {
   block: Block;
   index: number;
   onClick: () => void;
+  onImageGenerated?: (imageUrl: string) => void;
+  onQuizGenerated?: (quiz: any) => void;
 }
 
 export const EnhancedBlockCard = ({ 
   block, 
   index, 
-  onClick 
+  onClick,
+  onImageGenerated,
+  onQuizGenerated
 }: EnhancedBlockCardProps) => {
   const isMobile = useIsMobile();
   
@@ -25,6 +31,14 @@ export const EnhancedBlockCard = ({
     ];
     return gradients[index % gradients.length];
   };
+
+  if (block.metadata.type === 'image') {
+    return <ImageBlock block={block} onImageGenerated={onImageGenerated} />;
+  }
+
+  if (block.metadata.type === 'quiz') {
+    return <QuizBlock block={block} onQuizGenerated={onQuizGenerated} />;
+  }
 
   return (
     <motion.button
