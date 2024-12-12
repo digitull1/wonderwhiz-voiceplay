@@ -3,7 +3,9 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts"
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Max-Age': '86400',
 }
 
 const generateAgeSpecificInstructions = (ageGroup: string) => {
@@ -20,10 +22,12 @@ const generateAgeSpecificInstructions = (ageGroup: string) => {
 };
 
 serve(async (req) => {
-  console.log('Received request to generate-blocks function');
-
+  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, {
+      status: 204,
+      headers: corsHeaders
+    });
   }
 
   try {
@@ -56,7 +60,7 @@ serve(async (req) => {
       }
     `;
 
-    console.log('Making request to Groq API');
+    console.log('Making request to Groq API with prompt:', prompt);
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -96,7 +100,6 @@ serve(async (req) => {
       const content = data.choices[0].message.content;
       console.log('Raw content from Groq:', content);
       
-      // Handle both string and object responses
       parsedContent = typeof content === 'string' 
         ? JSON.parse(content.trim()) 
         : content;
@@ -139,7 +142,7 @@ serve(async (req) => {
     console.log('Final blocks structure:', parsedContent);
 
     return new Response(
-      JSON.stringify(data), 
+      JSON.stringify(parsedContent),
       { 
         headers: { 
           ...corsHeaders, 
