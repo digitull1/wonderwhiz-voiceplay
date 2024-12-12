@@ -4,7 +4,7 @@ import confetti from "canvas-confetti";
 import { cn } from "@/lib/utils";
 
 interface RewardAnimationProps {
-  type: "points" | "achievement" | "streak";
+  type: "points" | "achievement" | "streak" | "quiz" | "image";
   points?: number;
   message?: string;
 }
@@ -21,6 +21,23 @@ export const RewardAnimation: React.FC<RewardAnimationProps> = ({
       origin: { y: 0.6 }
     });
   }, [type]);
+
+  const getDefaultMessage = () => {
+    switch (type) {
+      case "points":
+        return "Points earned!";
+      case "achievement":
+        return "Achievement unlocked!";
+      case "streak":
+        return "Daily streak!";
+      case "quiz":
+        return "Correct answer!";
+      case "image":
+        return "Image created!";
+      default:
+        return "Great job!";
+    }
+  };
 
   return (
     <motion.div
@@ -59,9 +76,7 @@ export const RewardAnimation: React.FC<RewardAnimationProps> = ({
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
         >
-          {message || (type === "points" ? "Points earned!" : 
-            type === "achievement" ? "Achievement unlocked!" : 
-            "Daily streak!")}
+          {message || getDefaultMessage()}
         </motion.div>
       </motion.div>
     </motion.div>
