@@ -1,40 +1,14 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import "https://deno.land/x/xhr@0.1.0/mod.ts"
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Max-Age': '86400',
-}
-
-const generateAgeSpecificInstructions = (ageGroup: string) => {
-  console.log('Generating age-specific instructions for:', ageGroup);
-  const [minAge, maxAge] = ageGroup.split('-').map(Number);
-  
-  if (minAge <= 7) {
-    return "Create simple, fun blocks with basic concepts and lots of emojis!";
-  } else if (minAge <= 11) {
-    return "Create engaging blocks with interesting facts and relatable examples!";
-  } else {
-    return "Create informative blocks with real-world applications and deeper concepts!";
-  }
-};
+import { corsHeaders, handleCors } from "../_shared/cors.ts"
+import { callGroq } from "../_shared/groq.ts"
+import { parseGroqResponse, validateBlocksStructure } from "../_shared/jsonParser.ts"
+import { generateAgeSpecificInstructions, buildPrompt } from "./prompts.ts"
 
 serve(async (req) => {
-  console.log('Received request:', {
-    method: req.method,
-    headers: Object.fromEntries(req.headers.entries()),
-  });
-
   // Handle CORS preflight
-  if (req.method === 'OPTIONS') {
-    console.log('Handling CORS preflight request');
-    return new Response(null, {
-      status: 204,
-      headers: corsHeaders
-    });
-  }
+  const corsResponse = handleCors(req);
+  if (corsResponse) return corsResponse;
 
   try {
     if (!req.body) {
@@ -49,59 +23,17 @@ serve(async (req) => {
     }
 
     const ageSpecificInstructions = generateAgeSpecificInstructions(age_group);
-    const prompt = `
-      Based on "${query}" and topic "${context}", generate EXACTLY 3 engaging, educational blocks.
-      ${ageSpecificInstructions}
-      
-      Format as a valid JSON object with a 'blocks' array containing objects with 'title' and 'metadata'.
-      Each block must be under 70 characters and include an emoji.
-      
-      Example format:
-      {
-        "blocks": [
-          {
-            "title": "🌟 Fun fact about space",
-            "metadata": {
-              "topic": "space",
-              "type": "fact"
-            }
-          }
-        ]
-      }
-      
-      Ensure the response is ONLY the JSON object, no additional text.
-    `;
-
+    const prompt = buildPrompt(query, context, ageSpecificInstructions);
+    
     console.log('Making request to Groq API with prompt:', prompt);
     
-    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Authorization": `Bearer ${Deno.env.get('GROQ_API_KEY')}`,
-        "Content-Type": "application/json",
+    const data = await callGroq([
+      {
+        role: "system",
+        content: `You are WonderWhiz, generating exciting educational content for kids aged ${age_group}. Always respond with valid JSON only.`
       },
-      body: JSON.stringify({
-        model: "mixtral-8x7b-32768",
-        messages: [
-          {
-            role: "system",
-            content: `You are WonderWhiz, generating exciting educational content for kids aged ${age_group}. Always respond with valid JSON only.`
-          },
-          { role: "user", content: prompt }
-        ],
-        temperature: 0.7,
-        max_tokens: 500,
-      }),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json();
-      console.error('Groq API error:', errorData);
-      throw new Error(errorData.error?.message || "Failed to get response from Groq");
-    }
-
-    const data = await response.json();
-    console.log('Received response from Groq API:', data);
+      { role: "user", content: prompt }
+    ]);
 
     if (!data?.choices?.[0]?.message?.content) {
       console.error('Invalid response format from Groq API');
@@ -110,45 +42,9 @@ serve(async (req) => {
 
     let parsedContent;
     try {
-      const content = data.choices[0].message.content;
-      console.log('Raw content from Groq:', content);
-      
-      // Remove any potential markdown code block markers and clean whitespace
-      const cleanContent = content
-        .replace(/```json\s*|\s*```/g, '')
-        .replace(/[\u200B-\u200D\uFEFF]/g, '')
-        .trim();
-      
-      console.log('Cleaned content:', cleanContent);
-
-      try {
-        // First attempt: direct parsing
-        parsedContent = JSON.parse(cleanContent);
-      } catch (firstError) {
-        console.log('Direct parsing failed, attempting to extract JSON');
-        // Second attempt: try to find JSON object in the string
-        const jsonMatch = cleanContent.match(/\{[\s\S]*\}/);
-        if (!jsonMatch) {
-          throw new Error('No valid JSON found in response');
-        }
-        
-        // Clean up any potential trailing/leading text
-        const extractedJson = jsonMatch[0].trim();
-        console.log('Extracted JSON:', extractedJson);
-        
-        try {
-          parsedContent = JSON.parse(extractedJson);
-        } catch (secondError) {
-          console.error('Failed to parse extracted JSON:', secondError);
-          throw new Error(`Invalid JSON structure: ${secondError.message}`);
-        }
-      }
-
+      parsedContent = parseGroqResponse(data.choices[0].message.content);
+      parsedContent = validateBlocksStructure(parsedContent);
       console.log('Successfully parsed content:', parsedContent);
-
-      if (!parsedContent?.blocks || !Array.isArray(parsedContent.blocks)) {
-        throw new Error('Invalid blocks format in response');
-      }
     } catch (error) {
       console.error('Error parsing Groq response:', error);
       throw new Error(`Failed to parse Groq response: ${error.message}`);
@@ -181,12 +77,7 @@ serve(async (req) => {
 
     return new Response(
       JSON.stringify(parsedContent),
-      { 
-        headers: { 
-          ...corsHeaders, 
-          'Content-Type': 'application/json' 
-        } 
-      }
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
