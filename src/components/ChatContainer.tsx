@@ -67,6 +67,16 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
     return () => clearTimeout(timeoutId);
   }, [messages, quizState?.currentQuestion]);
 
+  useEffect(() => {
+    // Debug logs to track messages and blocks
+    console.log('Messages in ChatContainer:', messages);
+    messages.forEach((msg, index) => {
+      if (msg.blocks) {
+        console.log(`Message ${index} blocks:`, msg.blocks);
+      }
+    });
+  }, [messages]);
+
   if (!messages || messages.length === 0) {
     return (
       <div className="flex-1 flex items-center justify-center">
@@ -86,34 +96,44 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
         isMobile ? "px-2" : "px-4"
       )}
     >
-      {messages.map((message, index) => (
-        <React.Fragment key={index}>
-          <ChatMessage
-            message={message.text}
-            isAi={message.isAi}
-            onListen={() => handleListen(message.text)}
-            blocks={message.blocks}
-            onBlockClick={onBlockClick}
-            imageUrl={message.imageUrl}
-            quizState={message.quizState}
-            onQuizAnswer={onQuizAnswer}
-            onQuizGenerated={onQuizGenerated}
-            messageIndex={index}
-            onPanelOpen={onPanelOpen}
-            onImageAnalyzed={onImageAnalyzed}
-          />
-          {message.showAuthPrompt && (
-            <div className="flex justify-center gap-2 my-2">
-              <Button 
-                onClick={onAuthPromptClick}
-                className="bg-primary hover:bg-primary/90 text-white"
-              >
-                Sign Up / Log In
-              </Button>
-            </div>
-          )}
-        </React.Fragment>
-      ))}
+      {messages.map((message, index) => {
+        // Debug log for each message render
+        console.log(`Rendering message ${index}:`, {
+          text: message.text,
+          isAi: message.isAi,
+          hasBlocks: !!message.blocks,
+          blockCount: message.blocks?.length
+        });
+        
+        return (
+          <React.Fragment key={index}>
+            <ChatMessage
+              message={message.text}
+              isAi={message.isAi}
+              onListen={() => handleListen(message.text)}
+              blocks={message.blocks}
+              onBlockClick={onBlockClick}
+              imageUrl={message.imageUrl}
+              quizState={message.quizState}
+              onQuizAnswer={onQuizAnswer}
+              onQuizGenerated={onQuizGenerated}
+              messageIndex={index}
+              onPanelOpen={onPanelOpen}
+              onImageAnalyzed={onImageAnalyzed}
+            />
+            {message.showAuthPrompt && (
+              <div className="flex justify-center gap-2 my-2">
+                <Button 
+                  onClick={onAuthPromptClick}
+                  className="bg-primary hover:bg-primary/90 text-white"
+                >
+                  Sign Up / Log In
+                </Button>
+              </div>
+            )}
+          </React.Fragment>
+        );
+      })}
       <div ref={messagesEndRef} className="h-4" />
     </div>
   );

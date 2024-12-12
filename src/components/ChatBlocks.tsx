@@ -19,6 +19,23 @@ export const ChatBlocks = ({ blocks, onBlockClick }: ChatBlocksProps) => {
   const isMobile = useIsMobile();
   const visibleBlocksCount = isMobile ? 1 : 3;
 
+  useEffect(() => {
+    // Debug logs for blocks
+    console.log('ChatBlocks received blocks:', blocks);
+    if (!blocks || blocks.length === 0) {
+      console.warn('No blocks provided to ChatBlocks component');
+    } else {
+      console.log('Number of blocks:', blocks.length);
+      blocks.forEach((block, index) => {
+        console.log(`Block ${index}:`, {
+          title: block.title,
+          metadata: block.metadata,
+          type: block.metadata?.type
+        });
+      });
+    }
+  }, [blocks]);
+
   const handleScroll = (direction: 'left' | 'right') => {
     if (!scrollContainerRef.current) return;
     const blockWidth = scrollContainerRef.current.offsetWidth / visibleBlocksCount;
@@ -89,6 +106,19 @@ export const ChatBlocks = ({ blocks, onBlockClick }: ChatBlocksProps) => {
       return () => container.removeEventListener('scroll', handleScrollEvent);
     }
   }, [blocks.length, visibleBlocksCount]);
+
+  // Debug render log
+  console.log('ChatBlocks rendering with:', {
+    numberOfBlocks: blocks.length,
+    currentScrollIndex,
+    visibleBlocksCount,
+    isMobile
+  });
+
+  if (!blocks || blocks.length === 0) {
+    console.warn('Rendering ChatBlocks with no blocks');
+    return null;
+  }
 
   const showNavigation = blocks.length > visibleBlocksCount && !isMobile;
 
