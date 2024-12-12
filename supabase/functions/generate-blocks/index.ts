@@ -22,8 +22,14 @@ const generateAgeSpecificInstructions = (ageGroup: string) => {
 };
 
 serve(async (req) => {
+  console.log('Received request:', {
+    method: req.method,
+    headers: Object.fromEntries(req.headers.entries()),
+  });
+
   // Handle CORS preflight
   if (req.method === 'OPTIONS') {
+    console.log('Handling CORS preflight request');
     return new Response(null, {
       status: 204,
       headers: corsHeaders
@@ -31,8 +37,12 @@ serve(async (req) => {
   }
 
   try {
+    if (!req.body) {
+      throw new Error('Request body is required');
+    }
+
     const { query, context, age_group = "8-11" } = await req.json();
-    console.log('Generating blocks for:', { query, context, age_group });
+    console.log('Processing request with params:', { query, context, age_group });
 
     if (!query) {
       throw new Error('Query parameter is required');
@@ -61,6 +71,7 @@ serve(async (req) => {
     `;
 
     console.log('Making request to Groq API with prompt:', prompt);
+    
     const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -100,26 +111,31 @@ serve(async (req) => {
       const content = data.choices[0].message.content;
       console.log('Raw content from Groq:', content);
       
-      // Clean the content string before parsing
-      const cleanContent = content.trim().replace(/\n/g, '');
+      // Clean and validate the content
+      const cleanContent = content.trim();
       console.log('Cleaned content:', cleanContent);
 
-      // Try to find valid JSON in the response
-      const jsonMatch = cleanContent.match(/\{[\s\S]*\}/);
-      if (!jsonMatch) {
-        throw new Error('No valid JSON found in response');
+      try {
+        // First attempt: direct parsing
+        parsedContent = JSON.parse(cleanContent);
+      } catch (parseError) {
+        console.log('Direct parsing failed, attempting to extract JSON');
+        // Second attempt: try to find JSON object in the string
+        const jsonMatch = cleanContent.match(/\{[\s\S]*\}/);
+        if (!jsonMatch) {
+          throw new Error('No valid JSON found in response');
+        }
+        parsedContent = JSON.parse(jsonMatch[0]);
       }
 
-      parsedContent = JSON.parse(jsonMatch[0]);
-      console.log('Parsed content:', parsedContent);
+      console.log('Successfully parsed content:', parsedContent);
+
+      if (!parsedContent?.blocks || !Array.isArray(parsedContent.blocks)) {
+        throw new Error('Invalid blocks format in response');
+      }
     } catch (error) {
       console.error('Error parsing Groq response:', error);
       throw new Error(`Failed to parse Groq response: ${error.message}`);
-    }
-
-    if (!parsedContent?.blocks || !Array.isArray(parsedContent.blocks)) {
-      console.error('Invalid blocks format:', parsedContent);
-      throw new Error('Invalid blocks format in response');
     }
 
     // Ensure we only have 3 content blocks
