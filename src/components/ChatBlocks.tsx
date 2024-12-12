@@ -6,9 +6,7 @@ import { ScrollProgressDots } from "./blocks/ScrollProgressDots";
 import { EnhancedBlockCard } from "./blocks/EnhancedBlockCard";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "./ui/use-toast";
-import { handleQuizGeneration } from "./quiz/QuizGenerator";
-import { handleImageGeneration } from "./image/ImageGenerator";
+import { handleImageBlock, handleQuizBlock } from "@/utils/blockHandlers";
 
 interface ChatBlocksProps {
   blocks: Block[];
@@ -20,7 +18,6 @@ export const ChatBlocks = ({ blocks, onBlockClick }: ChatBlocksProps) => {
   const [currentScrollIndex, setCurrentScrollIndex] = useState(0);
   const isMobile = useIsMobile();
   const visibleBlocksCount = isMobile ? 1 : 3;
-  const { toast } = useToast();
 
   const handleScroll = (direction: 'left' | 'right') => {
     if (!scrollContainerRef.current) return;
@@ -37,6 +34,8 @@ export const ChatBlocks = ({ blocks, onBlockClick }: ChatBlocksProps) => {
   };
 
   const handleBlockClick = async (block: Block) => {
+    console.log('Block clicked:', block);
+
     if (!block.metadata?.type) {
       onBlockClick(block);
       return;
@@ -44,8 +43,6 @@ export const ChatBlocks = ({ blocks, onBlockClick }: ChatBlocksProps) => {
 
     try {
       if (block.metadata.type === 'image') {
-        console.log('Generating image for prompt:', block.title);
-        
         // Dispatch loading animation event
         const loadingEvent = new CustomEvent('wonderwhiz:newMessage', {
           detail: {
@@ -56,10 +53,8 @@ export const ChatBlocks = ({ blocks, onBlockClick }: ChatBlocksProps) => {
         });
         window.dispatchEvent(loadingEvent);
 
-        await handleImageGeneration(block.metadata.topic || block.title, toast);
+        await handleImageBlock(block);
       } else if (block.metadata.type === 'quiz') {
-        console.log('Generating quiz for topic:', block.metadata.topic || block.title);
-        
         // Get user's age
         const { data: userData } = await supabase.auth.getUser();
         const { data: profileData } = await supabase
@@ -71,17 +66,12 @@ export const ChatBlocks = ({ blocks, onBlockClick }: ChatBlocksProps) => {
         const age = profileData?.age || 8;
         console.log('User age for quiz generation:', age);
 
-        await handleQuizGeneration(block.metadata.topic || block.title, age, toast);
+        await handleQuizBlock(block, age);
       } else {
         onBlockClick(block);
       }
     } catch (error) {
       console.error('Error handling block click:', error);
-      toast({
-        title: "Oops!",
-        description: "Something went wrong. Please try again!",
-        variant: "destructive"
-      });
     }
   };
 

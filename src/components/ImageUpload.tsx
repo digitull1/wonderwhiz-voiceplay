@@ -37,6 +37,16 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
     console.log('Starting image upload and analysis...');
 
     try {
+      // Show loading message in chat
+      const loadingEvent = new CustomEvent('wonderwhiz:newMessage', {
+        detail: {
+          text: "✨ Analyzing your image... Give me a moment to understand what I see!",
+          isAi: true,
+          isLoading: true
+        }
+      });
+      window.dispatchEvent(loadingEvent);
+
       const reader = new FileReader();
       reader.onload = async (e) => {
         const base64Image = e.target?.result as string;
@@ -94,7 +104,11 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
     >
       <Button
         variant="ghost"
-        className="w-full h-full p-0 hover:bg-transparent relative"
+        className={cn(
+          "w-full h-full p-0 relative",
+          "hover:bg-white/10 active:scale-95",
+          "transition-all duration-300"
+        )}
         disabled={isLoading}
       >
         {isLoading ? (
