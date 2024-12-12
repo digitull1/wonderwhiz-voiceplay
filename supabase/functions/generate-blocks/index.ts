@@ -3,6 +3,7 @@ import "https://deno.land/x/xhr@0.1.0/mod.ts"
 import { corsHeaders } from "../_shared/cors.ts"
 import { callGroq } from "../_shared/groq.ts"
 import { generateAgeSpecificInstructions, buildPrompt } from "./prompts.ts"
+import { parseGroqResponse, validateBlocksStructure } from "../_shared/jsonParser.ts"
 
 serve(async (req) => {
   // Handle CORS preflight
@@ -30,7 +31,7 @@ serve(async (req) => {
     const data = await callGroq([
       {
         role: "system",
-        content: `You are WonderWhiz, generating exciting educational content for kids aged ${age_group}. Always respond with valid JSON only.`
+        content: `You are WonderWhiz, generating exciting educational content for kids aged ${age_group}. Always respond with valid JSON containing an array of blocks.`
       },
       { role: "user", content: prompt }
     ], 0.7, 500, 5);
@@ -45,14 +46,10 @@ serve(async (req) => {
 
     let parsedContent;
     try {
-      // First try: direct parsing
-      parsedContent = typeof content === 'string' ? JSON.parse(content) : content;
+      // Parse and validate the response
+      parsedContent = parseGroqResponse(content);
+      parsedContent = validateBlocksStructure(parsedContent);
       
-      // Validate structure
-      if (!parsedContent?.blocks || !Array.isArray(parsedContent.blocks)) {
-        throw new Error('Invalid blocks format in response');
-      }
-
       // Ensure each block has required fields and limit to 3 blocks
       parsedContent.blocks = parsedContent.blocks.slice(0, 3).map(block => ({
         title: block.title?.substring(0, 75) || "Interesting fact!",
@@ -95,15 +92,38 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in generate-blocks function:', error);
     
+    // Return a fallback response with basic blocks
+    const fallbackResponse = {
+      blocks: [
+        {
+          title: "Let's learn something new!",
+          metadata: {
+            topic: "general",
+            type: "fact"
+          }
+        },
+        {
+          title: "🎨 Create some artwork!",
+          metadata: {
+            topic: "general",
+            type: "image"
+          }
+        },
+        {
+          title: "🎯 Test your knowledge!",
+          metadata: {
+            topic: "general",
+            type: "quiz"
+          }
+        }
+      ]
+    };
+    
     return new Response(
-      JSON.stringify({ 
-        error: error.message || 'Failed to generate blocks',
-        details: error.stack,
-        timestamp: new Date().toISOString()
-      }),
+      JSON.stringify(fallbackResponse),
       { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }, 
-        status: 500 
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200 // Return 200 with fallback content instead of 500
       }
     );
   }
