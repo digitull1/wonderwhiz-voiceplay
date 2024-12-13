@@ -409,9 +409,9 @@ export type Database = {
           updated_at: string
         }
         Insert: {
-          age: number
+          age?: number
           created_at?: string
-          gender: string
+          gender?: string
           id: string
           language?: string
           multimedia_enabled?: boolean | null
