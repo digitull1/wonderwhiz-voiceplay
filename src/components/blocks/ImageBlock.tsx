@@ -17,8 +17,12 @@ export const ImageBlock = ({ block, onImageGenerated }: ImageBlockProps) => {
   const handleImageGeneration = async () => {
     setIsLoading(true);
     try {
+      // Create a child-friendly prompt based on the block title
+      const safePrompt = `Create a child-friendly, educational, and colorful illustration of: ${block.title}. 
+        Make it engaging and suitable for children.`;
+
       const { data, error } = await supabase.functions.invoke('generate-image', {
-        body: { prompt: block.title }
+        body: { prompt: safePrompt }
       });
 
       if (error) throw error;
@@ -26,8 +30,8 @@ export const ImageBlock = ({ block, onImageGenerated }: ImageBlockProps) => {
       if (data?.image) {
         onImageGenerated?.(data.image);
         toast({
-          title: "Image created! ✨",
-          description: "Here's what I imagined!",
+          title: "✨ Image created!",
+          description: "Here's what I imagined for you!",
           className: "bg-primary text-white"
         });
       }
@@ -46,10 +50,10 @@ export const ImageBlock = ({ block, onImageGenerated }: ImageBlockProps) => {
   return (
     <motion.button
       onClick={handleImageGeneration}
-      className="w-full p-4 bg-gradient-to-br from-purple-500/20 to-pink-500/20 
+      className="w-full p-6 bg-gradient-to-br from-purple-500/20 to-pink-500/20 
                  rounded-lg border border-white/10 backdrop-blur-sm
                  hover:scale-105 transition-all duration-300
-                 flex items-center justify-center gap-3"
+                 flex flex-col items-center justify-center gap-3"
       whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
       disabled={isLoading}
@@ -58,8 +62,13 @@ export const ImageBlock = ({ block, onImageGenerated }: ImageBlockProps) => {
         <LoadingSparkles />
       ) : (
         <>
-          <span className="text-2xl">🎨</span>
-          <span className="text-white/90">Generate Image</span>
+          <span className="text-3xl mb-2">🎨</span>
+          <h3 className="text-lg font-semibold text-white text-center">
+            Create a picture about:
+          </h3>
+          <p className="text-white/90 text-center">
+            {block.title.replace('🎨', '').trim()}
+          </p>
         </>
       )}
     </motion.button>

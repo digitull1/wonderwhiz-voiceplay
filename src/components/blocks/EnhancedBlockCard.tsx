@@ -10,35 +10,64 @@ interface EnhancedBlockCardProps {
   block: Block;
   index: number;
   onClick: () => void;
-  onImageGenerated?: (imageUrl: string) => void;
-  onQuizGenerated?: (quiz: any) => void;
 }
 
 export const EnhancedBlockCard = ({ 
   block, 
   index, 
-  onClick,
-  onImageGenerated,
-  onQuizGenerated
+  onClick
 }: EnhancedBlockCardProps) => {
   const isMobile = useIsMobile();
   
   const getBlockGradient = () => {
     const gradients = [
-      "from-block-purple to-block-blue",
-      "from-block-blue to-block-orange",
-      "from-block-orange to-block-purple"
+      "from-purple-500/20 to-pink-500/20",
+      "from-blue-500/20 to-purple-500/20",
+      "from-green-500/20 to-blue-500/20"
     ];
     return gradients[index % gradients.length];
   };
 
-  if (block.metadata.type === 'image') {
-    return <ImageBlock block={block} onImageGenerated={onImageGenerated} />;
-  }
-
-  if (block.metadata.type === 'quiz') {
-    return <QuizBlock block={block} onQuizGenerated={onQuizGenerated} />;
-  }
+  const renderBlockContent = () => {
+    switch (block.metadata?.type) {
+      case 'image':
+        return (
+          <div className="space-y-2 text-center">
+            <span className="text-2xl">🎨</span>
+            <p className="text-sm font-medium">
+              Create an amazing picture about:
+              <span className="block mt-1 text-white/90 font-semibold">
+                {block.title.replace('🎨', '').trim()}
+              </span>
+            </p>
+          </div>
+        );
+      case 'quiz':
+        return (
+          <div className="space-y-2 text-center">
+            <span className="text-2xl">🎯</span>
+            <p className="text-sm font-medium">
+              Test your knowledge about:
+              <span className="block mt-1 text-white/90 font-semibold">
+                {block.title.replace('🎯', '').trim()}
+              </span>
+            </p>
+          </div>
+        );
+      default:
+        return (
+          <div className="space-y-2">
+            <h3 className="text-block-title font-semibold leading-snug 
+              tracking-tight break-words text-left max-w-full">
+              {block.title}
+            </h3>
+            {block.description && (
+              <p className="text-sm text-white/80">{block.description}</p>
+            )}
+          </div>
+        );
+    }
+  };
 
   return (
     <motion.button
@@ -50,7 +79,7 @@ export const EnhancedBlockCard = ({
       whileTap={{ scale: 0.98 }}
       onClick={onClick}
       className={cn(
-        "group flex flex-col justify-between w-full",
+        "group flex flex-col justify-center items-center w-full",
         "min-h-[120px] p-4 sm:p-5",
         "rounded-xl transition-all duration-300",
         "relative overflow-hidden text-white",
@@ -60,11 +89,8 @@ export const EnhancedBlockCard = ({
         isMobile && "text-left"
       )}
     >
-      <div className="flex flex-col gap-2 relative z-10">
-        <h3 className="text-block-title font-semibold leading-snug 
-          tracking-tight break-words text-left max-w-full">
-          {block.title}
-        </h3>
+      <div className="relative z-10">
+        {renderBlockContent()}
       </div>
 
       <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent 
