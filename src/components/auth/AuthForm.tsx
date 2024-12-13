@@ -1,17 +1,19 @@
 import { useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Loader2 } from "lucide-react";
 import confetti from "canvas-confetti";
 
 interface AuthFormProps {
   onComplete?: () => void;
+  isLogin?: boolean;
 }
 
-export const AuthForm = ({ onComplete }: AuthFormProps) => {
+export const AuthForm = ({ onComplete, isLogin = false }: AuthFormProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const [formData, setFormData] = useState({
@@ -35,30 +37,41 @@ export const AuthForm = ({ onComplete }: AuthFormProps) => {
     });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    console.log("Starting registration/login process...");
-
+  const handleLogin = async () => {
     try {
-      // First try to sign in
-      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+      console.log('Attempting login with:', formData.email);
+      const { data, error } = await supabase.auth.signInWithPassword({
         email: formData.email,
         password: formData.password,
       });
 
-      if (signInData?.user) {
-        console.log('User exists, signed in successfully');
+      if (error) {
+        console.error('Login error:', error);
+        throw error;
+      }
+
+      if (data?.user) {
+        console.log('Login successful:', data.user.id);
         toast({
           title: "Welcome back! 👋",
           description: "Successfully signed in to your account.",
         });
         onComplete?.();
-        return;
       }
+    } catch (error: any) {
+      console.error('Login error:', error);
+      toast({
+        title: "Login failed",
+        description: error.message || "Please check your credentials and try again.",
+        variant: "destructive",
+      });
+    }
+  };
 
-      // If sign in fails, try to sign up
-      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+  const handleRegister = async () => {
+    try {
+      console.log('Starting registration with:', formData.email);
+      const { data, error } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
         options: {
@@ -69,31 +82,36 @@ export const AuthForm = ({ onComplete }: AuthFormProps) => {
         }
       });
 
-      if (signUpError) {
-        if (signUpError.message.includes('User already registered')) {
-          toast({
-            title: "Account exists",
-            description: "Please try signing in instead.",
-            variant: "destructive"
-          });
-        } else {
-          throw signUpError;
-        }
-        return;
+      if (error) {
+        console.error('Registration error:', error);
+        throw error;
       }
 
-      if (signUpData.user) {
-        console.log("User created successfully:", signUpData.user.id);
+      if (data.user) {
+        console.log("User created successfully:", data.user.id);
         triggerCelebration(formData.name);
         onComplete?.();
       }
     } catch (error: any) {
-      console.error("Auth error:", error);
+      console.error('Registration error:', error);
       toast({
         title: "Registration failed",
         description: error.message || "Something went wrong. Please try again.",
         variant: "destructive",
       });
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    
+    try {
+      if (isLogin) {
+        await handleLogin();
+      } else {
+        await handleRegister();
+      }
     } finally {
       setIsLoading(false);
     }
@@ -114,23 +132,48 @@ export const AuthForm = ({ onComplete }: AuthFormProps) => {
       >
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="text-center mb-6">
-            <h2 className="text-2xl font-bold text-gray-800">Welcome to WonderWhiz! 🌟</h2>
-            <p className="text-gray-600 mt-2">Let's create your magical learning account</p>
+            <h2 className="text-2xl font-bold text-gray-800">
+              {isLogin ? "Welcome Back! ✨" : "Join WonderWhiz! 🌟"}
+            </h2>
+            <p className="text-gray-600 mt-2">
+              {isLogin 
+                ? "Continue your magical learning journey" 
+                : "Let's create your magical learning account"}
+            </p>
           </div>
 
           <div className="space-y-4">
-            <div>
-              <Label htmlFor="name">Child's Name</Label>
-              <Input
-                id="name"
-                type="text"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                required
-                placeholder="Your name"
-                className="mt-1"
-              />
-            </div>
+            {!isLogin && (
+              <>
+                <div>
+                  <Label htmlFor="name">Child's Name</Label>
+                  <Input
+                    id="name"
+                    type="text"
+                    value={formData.name}
+                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                    required={!isLogin}
+                    placeholder="Your name"
+                    className="mt-1"
+                  />
+                </div>
+                
+                <div>
+                  <Label htmlFor="age">Age</Label>
+                  <Input
+                    id="age"
+                    type="number"
+                    min="4"
+                    max="12"
+                    value={formData.age}
+                    onChange={(e) => setFormData({ ...formData, age: e.target.value })}
+                    required={!isLogin}
+                    placeholder="Your age (4-12)"
+                    className="mt-1"
+                  />
+                </div>
+              </>
+            )}
             
             <div>
               <Label htmlFor="email">Parent's Email</Label>
@@ -158,21 +201,6 @@ export const AuthForm = ({ onComplete }: AuthFormProps) => {
                 minLength={6}
               />
             </div>
-            
-            <div>
-              <Label htmlFor="age">Age</Label>
-              <Input
-                id="age"
-                type="number"
-                min="4"
-                max="12"
-                value={formData.age}
-                onChange={(e) => setFormData({ ...formData, age: e.target.value })}
-                required
-                placeholder="Your age (4-12)"
-                className="mt-1"
-              />
-            </div>
           </div>
           
           <Button 
@@ -180,7 +208,14 @@ export const AuthForm = ({ onComplete }: AuthFormProps) => {
             className="w-full bg-primary hover:bg-primary-hover text-white"
             disabled={isLoading}
           >
-            {isLoading ? "Creating your magical account..." : "Start Your Adventure!"}
+            {isLoading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                {isLogin ? "Signing in..." : "Creating your magical account..."}
+              </>
+            ) : (
+              isLogin ? "Sign In" : "Start Your Adventure!"
+            )}
           </Button>
         </form>
       </motion.div>
