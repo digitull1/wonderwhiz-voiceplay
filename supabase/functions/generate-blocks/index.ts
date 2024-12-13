@@ -4,11 +4,32 @@ import { corsHeaders } from "../_shared/cors.ts"
 import { callGroq } from "../_shared/groq.ts"
 import { generateAgeSpecificInstructions, buildPrompt } from "./prompts.ts"
 import { parseGroqResponse, validateBlocksStructure } from "../_shared/jsonParser.ts"
+import { GoogleGenerativeAI } from "https://esm.sh/@google/generative-ai@0.1.3"
 
 console.log('Loading generate-blocks function...');
 
+const generateWithGemini = async (prompt: string) => {
+  console.log('Attempting to generate blocks with Gemini...');
+  
+  const apiKey = Deno.env.get('GEMINI_API_KEY');
+  if (!apiKey) {
+    throw new Error('GEMINI_API_KEY not configured');
+  }
+
+  const genAI = new GoogleGenerativeAI(apiKey);
+  const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+
+  const result = await model.generateContent(prompt);
+  console.log('Gemini response:', result);
+
+  if (!result?.response) {
+    throw new Error('Empty response from Gemini API');
+  }
+
+  return result.response.text();
+};
+
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     console.log('Handling CORS preflight request');
     return new Response(null, { 
@@ -37,31 +58,35 @@ serve(async (req) => {
     const ageSpecificInstructions = generateAgeSpecificInstructions(age_group);
     const prompt = buildPrompt(query, context, ageSpecificInstructions);
     
-    console.log('Making request to Groq API...');
-    
-    const data = await callGroq([
-      {
-        role: "system",
-        content: `You are WonderWhiz, generating exciting educational content for kids aged ${age_group}. Always respond with valid JSON containing an array of blocks.`
-      },
-      { role: "user", content: prompt }
-    ], 0.7, 500, 5);
+    let content;
+    try {
+      console.log('Attempting Groq API first...');
+      const data = await callGroq([
+        {
+          role: "system",
+          content: `You are WonderWhiz, generating exciting educational content for kids aged ${age_group}. Always respond with valid JSON containing an array of blocks.`
+        },
+        { role: "user", content: prompt }
+      ], 0.7, 500, 2);
 
-    if (!data?.choices?.[0]?.message?.content) {
-      console.error('Invalid response format from Groq API:', data);
-      throw new Error('Invalid response format from Groq API');
+      content = data.choices[0]?.message?.content;
+    } catch (groqError) {
+      console.error('Groq API failed, falling back to Gemini:', groqError);
+      content = await generateWithGemini(prompt);
     }
 
-    const content = data.choices[0].message.content;
-    console.log('Raw content from Groq:', content);
+    if (!content) {
+      console.error('No content received from either API');
+      throw new Error('Failed to generate content');
+    }
+
+    console.log('Raw content received:', content);
 
     let parsedContent;
     try {
-      // Parse and validate the response
       parsedContent = parseGroqResponse(content);
       parsedContent = validateBlocksStructure(parsedContent);
       
-      // Ensure each block has required fields and limit to 3 blocks
       parsedContent.blocks = parsedContent.blocks.slice(0, 3).map(block => ({
         title: block.title?.substring(0, 75) || "Interesting fact!",
         metadata: {
@@ -70,7 +95,6 @@ serve(async (req) => {
         }
       }));
 
-      // Add image and quiz blocks
       parsedContent.blocks.push(
         {
           title: `🎨 Create amazing ${context} artwork!`,
@@ -104,13 +128,12 @@ serve(async (req) => {
 
     } catch (error) {
       console.error('Error parsing or processing content:', error);
-      throw new Error(`Failed to process Groq response: ${error.message}`);
+      throw new Error(`Failed to process response: ${error.message}`);
     }
 
   } catch (error) {
     console.error('Error in generate-blocks function:', error);
     
-    // Return a fallback response with basic blocks
     const fallbackResponse = {
       blocks: [
         {
@@ -145,7 +168,7 @@ serve(async (req) => {
           'Content-Type': 'application/json',
           'Cache-Control': 'no-cache'
         },
-        status: 200 // Return 200 with fallback content instead of 500
+        status: 200
       }
     );
   }
