@@ -9,6 +9,7 @@ import { TopNavigation } from "./TopNavigation";
 import { UserProgress } from "@/types/chat";
 import { supabase } from "@/integrations/supabase/client";
 import { generateInitialBlocks } from "@/utils/profileUtils";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 interface MainContainerProps {
   messages: any[];
@@ -115,45 +116,47 @@ export const MainContainer: React.FC<MainContainerProps> = ({
       <div className="fixed inset-0 backdrop-blur-[100px]" />
       
       <div className="relative z-10 flex flex-col h-[100dvh] w-full">
-        <TooltipProvider>
-          <div className="flex-1 w-full h-full">
-            <MainContainer 
-              messages={displayMessages}
-              input={input}
-              setInput={setInput}
-              isLoading={isLoading}
-              currentTopic={currentTopic}
-              handleListen={handleListen}
-              handleBlockClick={handleBlockClick}
-              handleQuizAnswer={handleQuizAnswer}
-              quizState={quizState}
-              sendMessage={sendMessage}
-              handleImageAnalysis={handleImageAnalysis}
-              isAuthenticated={isAuthenticated}
-              userProgress={userProgress}
-              onLogout={onLogout}
-            />
-          </div>
-        </TooltipProvider>
-
-        <AnimatePresence>
-          {showAuthForm && (
-            <AuthOverlay 
-              showLogin={showLogin}
-              onClose={() => setShowAuthForm(false)}
-            />
-          )}
-        </AnimatePresence>
-
-        <ChatInput 
-          onSend={sendMessage}
-          isLoading={isLoading}
-          input={input}
-          setInput={setInput}
-          onImageAnalyzed={handleImageAnalysis}
-          placeholder="Ask me something magical..."
-          language={language}
+        <TopNavigation 
+          isAuthenticated={isAuthenticated}
+          onPanelToggle={() => setIsPanelOpen(!isPanelOpen)}
+          onLogout={onLogout}
+          onAuthClick={(isLogin) => {
+            setShowLogin(isLogin);
+            setShowAuthForm(true);
+          }}
         />
+
+        <div className="flex-1 flex flex-col h-full relative overflow-hidden">
+          <TooltipProvider>
+            <ChatContainer 
+              messages={displayMessages}
+              handleListen={handleListen}
+              onBlockClick={handleBlockClick}
+              quizState={quizState}
+              onQuizAnswer={handleQuizAnswer}
+              onAuthPromptClick={() => setShowAuthForm(true)}
+            />
+          </TooltipProvider>
+
+          <AnimatePresence>
+            {showAuthForm && (
+              <AuthOverlay 
+                showLogin={showLogin}
+                onClose={() => setShowAuthForm(false)}
+              />
+            )}
+          </AnimatePresence>
+
+          <ChatInput 
+            onSend={sendMessage}
+            isLoading={isLoading}
+            input={input}
+            setInput={setInput}
+            onImageAnalyzed={handleImageAnalysis}
+            placeholder="Ask me something magical..."
+            language={language}
+          />
+        </div>
       </div>
 
       <CollapsiblePanel 
