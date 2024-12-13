@@ -6,9 +6,15 @@ import { generateAgeSpecificInstructions, buildPrompt } from "./prompts.ts"
 import { parseGroqResponse, validateBlocksStructure } from "../_shared/jsonParser.ts"
 
 serve(async (req) => {
-  // Handle CORS preflight
+  // Always handle CORS preflight first
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { 
+      headers: {
+        ...corsHeaders,
+        'Access-Control-Max-Age': '86400',
+        'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      } 
+    });
   }
 
   try {
@@ -79,15 +85,21 @@ serve(async (req) => {
 
       console.log('Final blocks structure:', parsedContent);
 
+      return new Response(
+        JSON.stringify(parsedContent),
+        { 
+          headers: { 
+            ...corsHeaders, 
+            'Content-Type': 'application/json',
+            'Cache-Control': 'no-cache'
+          } 
+        }
+      );
+
     } catch (error) {
       console.error('Error parsing or processing content:', error);
       throw new Error(`Failed to process Groq response: ${error.message}`);
     }
-
-    return new Response(
-      JSON.stringify(parsedContent),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
 
   } catch (error) {
     console.error('Error in generate-blocks function:', error);
@@ -122,7 +134,11 @@ serve(async (req) => {
     return new Response(
       JSON.stringify(fallbackResponse),
       { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-cache'
+        },
         status: 200 // Return 200 with fallback content instead of 500
       }
     );
