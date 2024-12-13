@@ -26,6 +26,9 @@ export const useRegistrationForm = () => {
         return false;
       }
 
+      // Add a small delay to ensure database is ready
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
       // Proceed with signup
       const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email: formData.email,
