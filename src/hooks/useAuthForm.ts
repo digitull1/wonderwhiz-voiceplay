@@ -2,7 +2,6 @@ import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import confetti from "canvas-confetti";
-import { RegistrationData } from "@/types/auth";
 
 export const useAuthForm = (onComplete?: () => void) => {
   const [isLoading, setIsLoading] = useState(false);
@@ -74,7 +73,8 @@ export const useAuthForm = (onComplete?: () => void) => {
             age: parseInt(formData.age),
             gender: 'other', // Default value
             language: 'en'   // Default value
-          }
+          },
+          emailRedirectTo: window.location.origin,
         }
       });
 
@@ -123,6 +123,7 @@ export const useAuthForm = (onComplete?: () => void) => {
           origin: { y: 0.6 }
         });
 
+        onComplete?.();
         return true;
       }
     } catch (error: any) {
@@ -133,8 +134,6 @@ export const useAuthForm = (onComplete?: () => void) => {
         variant: "destructive"
       });
       return false;
-    } finally {
-      setIsLoading(false);
     }
   };
 
