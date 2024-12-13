@@ -4,6 +4,23 @@ import { GoogleGenerativeAI } from "https://esm.sh/@google/generative-ai@0.1.3"
 
 console.log('Loading generate-blocks function...');
 
+const retryWithBackoff = async (fn: () => Promise<any>, maxRetries = 3) => {
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      console.log(`Attempt ${i + 1} of ${maxRetries}`);
+      return await fn();
+    } catch (error) {
+      console.error(`Attempt ${i + 1} failed:`, error);
+      
+      if (i === maxRetries - 1) throw error;
+      
+      const delay = Math.min(1000 * Math.pow(2, i) + Math.random() * 1000, 10000);
+      console.log(`Retrying in ${delay}ms...`);
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+  }
+};
+
 const generateWithGemini = async (prompt: string, age_group: string) => {
   console.log('Generating content with Gemini...', { prompt, age_group });
   
@@ -55,14 +72,26 @@ const generateWithGemini = async (prompt: string, age_group: string) => {
 };
 
 serve(async (req) => {
+  // Add Cache-Control header to prevent caching
+  const headers = {
+    ...corsHeaders,
+    'Cache-Control': 'no-store, no-cache, must-revalidate',
+    'Content-Type': 'application/json'
+  };
+
+  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     console.log('Handling CORS preflight request');
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers });
   }
 
   try {
     console.log('Processing request...');
     
+    if (req.method !== 'POST') {
+      throw new Error(`Method ${req.method} not allowed`);
+    }
+
     if (!req.body) {
       throw new Error('Request body is required');
     }
@@ -76,7 +105,7 @@ serve(async (req) => {
 
     let content;
     try {
-      content = await generateWithGemini(query, age_group);
+      content = await retryWithBackoff(() => generateWithGemini(query, age_group));
       console.log('Generated content:', content);
     } catch (error) {
       console.error('Content generation failed:', error);
@@ -123,13 +152,7 @@ serve(async (req) => {
 
       return new Response(
         JSON.stringify(parsedContent),
-        { 
-          headers: { 
-            ...corsHeaders, 
-            'Content-Type': 'application/json',
-            'Cache-Control': 'no-cache'
-          }
-        }
+        { headers }
       );
 
     } catch (error) {
@@ -169,11 +192,8 @@ serve(async (req) => {
     return new Response(
       JSON.stringify(fallbackResponse),
       { 
-        headers: { 
-          ...corsHeaders, 
-          'Content-Type': 'application/json',
-          'Cache-Control': 'no-cache'
-        }
+        headers,
+        status: 200 // Return 200 even for fallback to prevent client retries
       }
     );
   }
