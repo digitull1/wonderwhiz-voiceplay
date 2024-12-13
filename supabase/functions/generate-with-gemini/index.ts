@@ -7,6 +7,7 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -23,7 +24,30 @@ serve(async (req) => {
     const { prompt, context } = await req.json();
     console.log('Received request:', { prompt, context });
 
-    const result = await model.generateContent(prompt);
+    // Add retry logic for rate limits
+    let attempts = 0;
+    const maxAttempts = 3;
+    let result;
+
+    while (attempts < maxAttempts) {
+      try {
+        result = await model.generateContent(prompt);
+        break;
+      } catch (error) {
+        attempts++;
+        if (error.message?.includes('rate') && attempts < maxAttempts) {
+          console.log(`Rate limit hit, attempt ${attempts}. Retrying...`);
+          await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempts) * 1000));
+          continue;
+        }
+        throw error;
+      }
+    }
+
+    if (!result) {
+      throw new Error('Failed to generate content after retries');
+    }
+
     const response = await result.response;
     const text = response.text();
 
@@ -32,7 +56,12 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         text,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        context: context || {},
+        metadata: {
+          attempts,
+          model: "gemini-pro"
+        }
       }),
       { 
         headers: { 
@@ -46,10 +75,14 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         error: error.message,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        metadata: {
+          type: error.name,
+          status: error.status || 500
+        }
       }),
       { 
-        status: 500,
+        status: error.status || 500,
         headers: { 
           ...corsHeaders,
           'Content-Type': 'application/json'
