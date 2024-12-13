@@ -6,8 +6,14 @@ export const handleImageBlock = async (block: Block) => {
   console.log('Handling image block:', block);
   
   try {
+    const prompt = block.metadata.prompt || block.title;
+    console.log('Generating image with prompt:', prompt);
+
     const { data, error } = await supabase.functions.invoke('generate-image', {
-      body: { prompt: block.metadata.topic || block.title }
+      body: { 
+        prompt,
+        age_group: "8-12" // Default age group if not specified
+      }
     });
 
     if (error) {
@@ -20,7 +26,7 @@ export const handleImageBlock = async (block: Block) => {
     if (data?.image) {
       const event = new CustomEvent('wonderwhiz:newMessage', {
         detail: {
-          text: "Here's what I imagined based on your request! What do you think? ✨",
+          text: `Here's what I imagined for "${block.title.replace('🎨', '').trim()}"! What do you think? ✨`,
           isAi: true,
           imageUrl: data.image
         }
@@ -47,13 +53,16 @@ export const handleQuizBlock = async (block: Block, age: number) => {
   console.log('Handling quiz block:', block);
   
   try {
+    const prompt = block.metadata.prompt || block.title;
+    console.log('Generating quiz with prompt:', prompt);
+
     const { data, error } = await supabase.functions.invoke('generate-quiz', {
-      body: JSON.stringify({
-        topic: block.metadata.topic || block.title,
+      body: { 
+        topic: prompt,
         age,
-        contextualPrompt: `Create ${age}-appropriate quiz questions about ${block.metadata.topic}. 
-        Make them fun and engaging!`
-      })
+        contextualPrompt: `Create ${age}-appropriate quiz questions about ${block.title.replace('🎯', '').trim()}. 
+        Make them fun, engaging, and educational!`
+      }
     });
 
     if (error) {
@@ -66,7 +75,7 @@ export const handleQuizBlock = async (block: Block, age: number) => {
     if (data?.questions) {
       const event = new CustomEvent('wonderwhiz:newMessage', {
         detail: {
-          text: `Let's test what you've learned about ${block.metadata.topic}! 🎯`,
+          text: `Let's test what you know about ${block.title.replace('🎯', '').trim()}! 🎯`,
           isAi: true,
           quizState: {
             isActive: true,

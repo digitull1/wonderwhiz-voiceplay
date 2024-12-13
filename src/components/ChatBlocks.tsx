@@ -8,6 +8,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
 import { handleImageBlock, handleQuizBlock } from "@/utils/blockHandlers";
 import { cn } from "@/lib/utils";
+import { useToast } from "./ui/use-toast";
 
 interface ChatBlocksProps {
   blocks: Block[];
@@ -19,16 +20,15 @@ export const ChatBlocks = ({ blocks = [], onBlockClick }: ChatBlocksProps) => {
   const [currentScrollIndex, setCurrentScrollIndex] = useState(0);
   const isMobile = useIsMobile();
   const visibleBlocksCount = isMobile ? 1 : 3;
+  const { toast } = useToast();
 
   useEffect(() => {
-    // Debug logs for blocks
     console.log('ChatBlocks received blocks:', {
       blocksLength: blocks?.length,
       blocks: blocks
     });
   }, [blocks]);
 
-  // If no blocks or empty array, return null
   if (!blocks?.length) {
     console.log('No blocks to display');
     return null;
@@ -57,34 +57,65 @@ export const ChatBlocks = ({ blocks = [], onBlockClick }: ChatBlocksProps) => {
     }
 
     try {
+      const { data: userData } = await supabase.auth.getUser();
+      if (!userData.user) {
+        toast({
+          title: "Please log in",
+          description: "You need to be logged in to use this feature!",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('age')
+        .eq('id', userData.user.id)
+        .single();
+
+      const age = profileData?.age || 8;
+      console.log('User age for content generation:', age);
+
+      // Show loading state
+      const loadingEvent = new CustomEvent('wonderwhiz:newMessage', {
+        detail: {
+          text: "✨ Creating something magical for you! Watch the sparkles...",
+          isAi: true,
+          isLoading: true
+        }
+      });
+      window.dispatchEvent(loadingEvent);
+
       if (block.metadata.type === 'image') {
-        const loadingEvent = new CustomEvent('wonderwhiz:newMessage', {
-          detail: {
-            text: "✨ Creating something magical for you! Watch the sparkles...",
-            isAi: true,
-            isLoading: true
+        const imagePrompt = `Create a child-friendly, educational illustration about ${block.title.replace('🎨', '').trim()}`;
+        console.log('Generating image with prompt:', imagePrompt);
+        await handleImageBlock({
+          ...block,
+          metadata: {
+            ...block.metadata,
+            prompt: imagePrompt
           }
         });
-        window.dispatchEvent(loadingEvent);
-
-        await handleImageBlock(block);
       } else if (block.metadata.type === 'quiz') {
-        const { data: userData } = await supabase.auth.getUser();
-        const { data: profileData } = await supabase
-          .from('profiles')
-          .select('age')
-          .eq('id', userData.user?.id)
-          .single();
-
-        const age = profileData?.age || 8;
-        console.log('User age for quiz generation:', age);
-
-        await handleQuizBlock(block, age);
+        const quizPrompt = `Create an engaging quiz about ${block.title.replace('🎯', '').trim()}`;
+        console.log('Generating quiz with prompt:', quizPrompt);
+        await handleQuizBlock({
+          ...block,
+          metadata: {
+            ...block.metadata,
+            prompt: quizPrompt
+          }
+        }, age);
       } else {
         onBlockClick(block);
       }
     } catch (error) {
       console.error('Error handling block click:', error);
+      toast({
+        title: "Oops!",
+        description: "Something went wrong. Please try again!",
+        variant: "destructive"
+      });
     }
   };
 
