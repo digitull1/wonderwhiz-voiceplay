@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAuthForm } from "./hooks/useAuthForm";
+import { useToast } from "@/components/ui/use-toast";
 
 interface AuthFormProps {
   onComplete?: () => void;
@@ -19,9 +20,52 @@ export const AuthForm = ({ onComplete, isLogin = false }: AuthFormProps) => {
     handleLogin,
     handleRegister,
   } = useAuthForm(onComplete);
+  
+  const { toast } = useToast();
+
+  const validateForm = () => {
+    if (!formData.email?.trim()) {
+      toast({
+        title: "Email Required",
+        description: "Please enter your email address",
+        variant: "destructive",
+      });
+      return false;
+    }
+    if (!formData.password?.trim()) {
+      toast({
+        title: "Password Required",
+        description: "Please enter your password",
+        variant: "destructive",
+      });
+      return false;
+    }
+    if (!isLogin && !formData.name?.trim()) {
+      toast({
+        title: "Name Required",
+        description: "Please enter your child's name",
+        variant: "destructive",
+      });
+      return false;
+    }
+    if (!isLogin && !formData.age?.trim()) {
+      toast({
+        title: "Age Required",
+        description: "Please enter your child's age",
+        variant: "destructive",
+      });
+      return false;
+    }
+    return true;
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (!validateForm()) {
+      return;
+    }
+
     setIsLoading(true);
     
     try {
@@ -75,6 +119,7 @@ export const AuthForm = ({ onComplete, isLogin = false }: AuthFormProps) => {
                     required={!isLogin}
                     placeholder="Your name"
                     className="mt-1"
+                    disabled={isLoading}
                   />
                 </div>
                 
@@ -90,6 +135,7 @@ export const AuthForm = ({ onComplete, isLogin = false }: AuthFormProps) => {
                     required={!isLogin}
                     placeholder="Your age (4-12)"
                     className="mt-1"
+                    disabled={isLoading}
                   />
                 </div>
               </>
@@ -105,6 +151,7 @@ export const AuthForm = ({ onComplete, isLogin = false }: AuthFormProps) => {
                 required
                 placeholder="parent@example.com"
                 className="mt-1"
+                disabled={isLoading}
               />
             </div>
             
@@ -119,6 +166,7 @@ export const AuthForm = ({ onComplete, isLogin = false }: AuthFormProps) => {
                 placeholder="Choose a secure password"
                 className="mt-1"
                 minLength={6}
+                disabled={isLoading}
               />
             </div>
           </div>
