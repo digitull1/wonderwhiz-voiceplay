@@ -88,21 +88,23 @@ export const ChatBlocks = ({ blocks = [], onBlockClick }: ChatBlocksProps) => {
 
       if (block.metadata.type === 'image') {
         const imagePrompt = `Create a child-friendly, educational illustration about ${block.title.replace('🎨', '').trim()}`;
-        console.log('Generating image with prompt:', imagePrompt);
         await handleImageBlock({
           ...block,
           metadata: {
             ...block.metadata,
+            topic: block.metadata.topic,
+            type: 'image',
             prompt: imagePrompt
           }
         });
       } else if (block.metadata.type === 'quiz') {
         const quizPrompt = `Create an engaging quiz about ${block.title.replace('🎯', '').trim()}`;
-        console.log('Generating quiz with prompt:', quizPrompt);
         await handleQuizBlock({
           ...block,
           metadata: {
             ...block.metadata,
+            topic: block.metadata.topic,
+            type: 'quiz',
             prompt: quizPrompt
           }
         }, age);
