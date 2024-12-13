@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Plus, Image, Video, Mic, Send } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface EnhancedMessageBarProps {
   onSend: (message: string) => void;
@@ -16,6 +17,9 @@ interface EnhancedMessageBarProps {
   onVoiceCall?: () => void;
   onVideoCall?: () => void;
   isLoading?: boolean;
+  value?: string;
+  onChange?: (value: string) => void;
+  placeholder?: string;
 }
 
 export const EnhancedMessageBar: React.FC<EnhancedMessageBarProps> = ({
@@ -23,13 +27,23 @@ export const EnhancedMessageBar: React.FC<EnhancedMessageBarProps> = ({
   onImageUpload,
   onVoiceCall,
   onVideoCall,
-  isLoading
+  isLoading,
+  value = "",
+  onChange,
+  placeholder = "Type a message..."
 }) => {
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState(value);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
+  useEffect(() => {
+    setMessage(value);
+  }, [value]);
+
   const handleTextareaChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setMessage(e.target.value);
+    const newValue = e.target.value;
+    setMessage(newValue);
+    onChange?.(newValue);
+    
     // Auto-resize textarea
     if (textareaRef.current) {
       textareaRef.current.style.height = "inherit";
@@ -41,6 +55,7 @@ export const EnhancedMessageBar: React.FC<EnhancedMessageBarProps> = ({
     if (message.trim()) {
       onSend(message.trim());
       setMessage("");
+      onChange?.("");
       if (textareaRef.current) {
         textareaRef.current.style.height = "inherit";
       }
@@ -55,13 +70,18 @@ export const EnhancedMessageBar: React.FC<EnhancedMessageBarProps> = ({
   };
 
   return (
-    <div className="flex items-end gap-2 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 p-4 border-t">
+    <motion.div 
+      className="flex items-end gap-2 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 p-4 border-t"
+      initial={{ y: 20, opacity: 0 }}
+      animate={{ y: 0, opacity: 1 }}
+      transition={{ duration: 0.3 }}
+    >
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button
             variant="ghost"
             size="icon"
-            className="h-9 w-9 shrink-0"
+            className="h-9 w-9 shrink-0 bg-primary/10 hover:bg-primary/20"
           >
             <Plus className="h-5 w-5" />
           </Button>
@@ -87,21 +107,30 @@ export const EnhancedMessageBar: React.FC<EnhancedMessageBarProps> = ({
         value={message}
         onChange={handleTextareaChange}
         onKeyDown={handleKeyDown}
-        placeholder="Type a message..."
+        placeholder={placeholder}
         className={cn(
           "min-h-[40px] w-full resize-none bg-background px-4 py-2 focus-visible:ring-0",
-          "rounded-md border transition-all duration-200"
+          "rounded-md border transition-all duration-200",
+          "max-h-[150px] overflow-y-auto"
         )}
         rows={1}
       />
 
-      <Button
-        onClick={handleSend}
-        disabled={!message.trim() || isLoading}
-        className="h-9 w-9 shrink-0"
-      >
-        <Send className="h-5 w-5" />
-      </Button>
-    </div>
+      <AnimatePresence>
+        <motion.div
+          initial={{ scale: 0.8, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          exit={{ scale: 0.8, opacity: 0 }}
+        >
+          <Button
+            onClick={handleSend}
+            disabled={!message.trim() || isLoading}
+            className="h-9 w-9 shrink-0 bg-primary hover:bg-primary/90"
+          >
+            <Send className="h-5 w-5 text-white" />
+          </Button>
+        </motion.div>
+      </AnimatePresence>
+    </motion.div>
   );
 };

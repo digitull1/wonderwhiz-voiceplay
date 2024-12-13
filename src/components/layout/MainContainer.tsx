@@ -136,12 +136,10 @@ export const MainContainer: React.FC<MainContainerProps> = ({
           </AnimatePresence>
 
           <ChatInput 
+            onSend={sendMessage}
+            isLoading={isLoading}
             input={input}
             setInput={setInput}
-            handleSend={() => sendMessage(input)}
-            handleVoiceInput={() => {}}
-            isLoading={isLoading}
-            currentTopic={currentTopic}
             onImageAnalyzed={handleImageAnalysis}
             placeholder="Ask me something magical..."
           />
