@@ -1,15 +1,11 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import "https://deno.land/x/xhr@0.1.0/mod.ts"
 import { corsHeaders } from "../_shared/cors.ts"
-import { callGroq } from "../_shared/groq.ts"
-import { generateAgeSpecificInstructions, buildPrompt } from "./prompts.ts"
-import { parseGroqResponse, validateBlocksStructure } from "../_shared/jsonParser.ts"
 import { GoogleGenerativeAI } from "https://esm.sh/@google/generative-ai@0.1.3"
 
 console.log('Loading generate-blocks function...');
 
-const generateWithGemini = async (prompt: string) => {
-  console.log('Attempting to generate blocks with Gemini...');
+const generateWithGemini = async (prompt: string, age_group: string) => {
+  console.log('Generating content with Gemini...', { prompt, age_group });
   
   const apiKey = Deno.env.get('GEMINI_API_KEY');
   if (!apiKey) {
@@ -19,26 +15,49 @@ const generateWithGemini = async (prompt: string) => {
   const genAI = new GoogleGenerativeAI(apiKey);
   const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
-  const result = await model.generateContent(prompt);
-  console.log('Gemini response:', result);
+  const structuredPrompt = `
+    You are WonderWhiz, an AI assistant for children aged ${age_group}.
+    Based on the topic "${prompt}", generate 3 engaging, educational blocks.
+    Format your response as a JSON object with this exact structure:
+    {
+      "blocks": [
+        {
+          "title": "🌟 [Your title here]",
+          "metadata": {
+            "topic": "[topic]",
+            "type": "fact"
+          }
+        }
+      ]
+    }
+    Each title must:
+    - Start with an emoji
+    - Be under 70 characters
+    - Be fun and educational
+    - Be appropriate for children aged ${age_group}
+    
+    Only return the JSON object, no other text.
+  `;
 
-  if (!result?.response) {
-    throw new Error('Empty response from Gemini API');
+  try {
+    const result = await model.generateContent(structuredPrompt);
+    console.log('Raw Gemini response:', result);
+
+    if (!result?.response?.text()) {
+      throw new Error('Empty response from Gemini API');
+    }
+
+    return result.response.text();
+  } catch (error) {
+    console.error('Error generating with Gemini:', error);
+    throw error;
   }
-
-  return result.response.text();
 };
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     console.log('Handling CORS preflight request');
-    return new Response(null, { 
-      headers: {
-        ...corsHeaders,
-        'Access-Control-Max-Age': '86400',
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
-      } 
-    });
+    return new Response(null, { headers: corsHeaders });
   }
 
   try {
@@ -55,38 +74,25 @@ serve(async (req) => {
       throw new Error('Query parameter is required');
     }
 
-    const ageSpecificInstructions = generateAgeSpecificInstructions(age_group);
-    const prompt = buildPrompt(query, context, ageSpecificInstructions);
-    
     let content;
     try {
-      console.log('Attempting Groq API first...');
-      const data = await callGroq([
-        {
-          role: "system",
-          content: `You are WonderWhiz, generating exciting educational content for kids aged ${age_group}. Always respond with valid JSON containing an array of blocks.`
-        },
-        { role: "user", content: prompt }
-      ], 0.7, 500, 2);
-
-      content = data.choices[0]?.message?.content;
-    } catch (groqError) {
-      console.error('Groq API failed, falling back to Gemini:', groqError);
-      content = await generateWithGemini(prompt);
+      content = await generateWithGemini(query, age_group);
+      console.log('Generated content:', content);
+    } catch (error) {
+      console.error('Content generation failed:', error);
+      throw error;
     }
-
-    if (!content) {
-      console.error('No content received from either API');
-      throw new Error('Failed to generate content');
-    }
-
-    console.log('Raw content received:', content);
 
     let parsedContent;
     try {
-      parsedContent = parseGroqResponse(content);
-      parsedContent = validateBlocksStructure(parsedContent);
+      parsedContent = JSON.parse(content);
       
+      // Ensure we have valid blocks structure
+      if (!parsedContent?.blocks || !Array.isArray(parsedContent.blocks)) {
+        throw new Error('Invalid blocks structure in response');
+      }
+
+      // Process and format blocks
       parsedContent.blocks = parsedContent.blocks.slice(0, 3).map(block => ({
         title: block.title?.substring(0, 75) || "Interesting fact!",
         metadata: {
@@ -95,6 +101,7 @@ serve(async (req) => {
         }
       }));
 
+      // Add image and quiz blocks
       parsedContent.blocks.push(
         {
           title: `🎨 Create amazing ${context} artwork!`,
@@ -121,8 +128,7 @@ serve(async (req) => {
             ...corsHeaders, 
             'Content-Type': 'application/json',
             'Cache-Control': 'no-cache'
-          },
-          status: 200
+          }
         }
       );
 
@@ -167,8 +173,7 @@ serve(async (req) => {
           ...corsHeaders, 
           'Content-Type': 'application/json',
           'Cache-Control': 'no-cache'
-        },
-        status: 200
+        }
       }
     );
   }
