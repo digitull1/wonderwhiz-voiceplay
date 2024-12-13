@@ -4,27 +4,30 @@ import { Block } from "@/types/chat";
 const getFallbackBlocks = (topic: string = "general"): Block[] => {
   return [
     {
-      title: "🌟 Let's explore something amazing!",
-      description: "Discover fascinating facts and knowledge about interesting topics!",
+      title: "🌟 Discover fascinating secrets about how animals communicate in the wild!",
+      description: "Learn amazing facts about animal communication",
       metadata: {
         topic: topic,
-        type: "fact"
+        type: "fact",
+        prompt: "Tell me fascinating facts about how different animals communicate in nature"
       }
     },
     {
-      title: "🎨 Create some fun artwork!",
-      description: "Let's make something creative and colorful together!",
+      title: "🎨 Create a magical underwater world full of colorful sea creatures!",
+      description: "Let's make something creative and colorful",
       metadata: {
         topic: topic,
-        type: "image"
+        type: "image",
+        prompt: "Create a vibrant, educational illustration of an underwater ecosystem with diverse marine life"
       }
     },
     {
-      title: "🎯 Test your knowledge!",
-      description: "Challenge yourself with fun questions and learn something new!",
+      title: "🎯 Challenge yourself with fun questions about Earth's amazing creatures!",
+      description: "Test your knowledge",
       metadata: {
         topic: topic,
-        type: "quiz"
+        type: "quiz",
+        prompt: "Generate engaging quiz questions about different animals and their unique abilities"
       }
     }
   ];
@@ -47,44 +50,52 @@ export const generateInitialBlocks = async (age: number): Promise<Block[]> => {
       return getFallbackBlocks();
     }
 
-    if (!data) {
-      console.error('No data received from generate-blocks');
-      return getFallbackBlocks();
-    }
-
-    console.log('Raw response from generate-blocks:', data);
-
     let parsedContent;
     try {
-      if (typeof data.choices?.[0]?.message?.content === 'string') {
-        parsedContent = JSON.parse(data.choices[0].message.content);
-      } else {
-        parsedContent = data.choices?.[0]?.message?.content;
+      parsedContent = typeof data === 'string' ? JSON.parse(data) : data;
+      
+      if (!parsedContent?.blocks || !Array.isArray(parsedContent.blocks)) {
+        throw new Error('Invalid blocks format in response');
       }
-    } catch (parseError) {
-      console.error('Error parsing blocks response:', parseError);
-      return getFallbackBlocks();
-    }
 
-    if (!parsedContent?.blocks || !Array.isArray(parsedContent.blocks)) {
-      console.error('Invalid blocks format received:', parsedContent);
-      return getFallbackBlocks();
-    }
+      const validatedBlocks = parsedContent.blocks
+        .filter(block => block?.title && block?.metadata?.topic)
+        .map(block => ({
+          title: block.title.substring(0, 70), // Ensure title is not too long
+          description: block.description || "Click to explore more!",
+          metadata: {
+            topic: block.metadata.topic,
+            type: block.metadata.type || "fact",
+            prompt: block.metadata.prompt || `Tell me about ${block.title}`
+          }
+        }));
 
-    const validatedBlocks = parsedContent.blocks
-      .filter(block => block?.title && block?.metadata?.topic)
-      .map(block => ({
-        title: block.title.substring(0, 75),
-        description: block.description || "Click to explore more!",
+      // Add image and quiz blocks with engaging prompts
+      validatedBlocks.push({
+        title: `🎨 Create an amazing illustration about ${parsedContent.blocks[0]?.metadata?.topic || 'nature'}!`,
+        description: "Let's make something creative",
         metadata: {
-          topic: block.metadata.topic,
-          type: block.metadata.type || "fact"
+          topic: parsedContent.blocks[0]?.metadata?.topic || 'nature',
+          type: "image",
+          prompt: `Create a detailed, educational illustration about ${parsedContent.blocks[0]?.metadata?.topic || 'nature'} that's engaging for children`
         }
-      }));
+      });
 
-    console.log('Validated blocks:', validatedBlocks);
-    
-    return validatedBlocks.length > 0 ? validatedBlocks : getFallbackBlocks();
+      validatedBlocks.push({
+        title: `🎯 Test your knowledge about ${parsedContent.blocks[0]?.metadata?.topic || 'science'}!`,
+        description: "Challenge yourself",
+        metadata: {
+          topic: parsedContent.blocks[0]?.metadata?.topic || 'science',
+          type: "quiz",
+          prompt: `Create an engaging quiz about ${parsedContent.blocks[0]?.metadata?.topic || 'science'} for children`
+        }
+      });
+
+      return validatedBlocks;
+    } catch (parseError) {
+      console.error('Error parsing blocks:', parseError);
+      return getFallbackBlocks();
+    }
   } catch (error) {
     console.error('Error generating blocks:', error);
     return getFallbackBlocks();
