@@ -61,8 +61,10 @@ export const AuthForm = ({ onComplete, isLogin = false }: AuthFormProps) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log('Form submitted with data:', formData);
     
     if (!validateForm()) {
+      console.log('Form validation failed');
       return;
     }
 
@@ -70,12 +72,19 @@ export const AuthForm = ({ onComplete, isLogin = false }: AuthFormProps) => {
     
     try {
       if (isLogin) {
+        console.log('Attempting login with:', formData.email);
         await handleLogin();
       } else {
+        console.log('Attempting registration with:', formData.email);
         await handleRegister();
       }
     } catch (error) {
       console.error('Form submission error:', error);
+      toast({
+        title: "Error",
+        description: "Something went wrong. Please try again.",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
