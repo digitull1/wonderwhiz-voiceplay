@@ -14,39 +14,55 @@ serve(async (req) => {
 
   try {
     const { prompt, age_group } = await req.json()
-    console.log('Generating image for prompt:', prompt, 'age group:', age_group)
+    console.log('Processing image generation request:', { prompt, age_group })
 
     if (!prompt) {
+      console.error('No prompt provided')
       throw new Error('No prompt provided')
     }
 
     // Initialize Hugging Face with access token
     const hf = new HfInference(Deno.env.get('HUGGING_FACE_ACCESS_TOKEN'))
     
-    // Ensure the prompt is safe for the age group
+    // Create a safe prompt for child-friendly content
     const safePrompt = `Create a child-friendly, educational illustration of: ${prompt}`
     console.log('Using safe prompt:', safePrompt)
 
-    // Generate image using Hugging Face's text-to-image model
+    // Generate image with explicit parameters
     const image = await hf.textToImage({
       inputs: safePrompt,
       model: "stabilityai/stable-diffusion-2-1",
       parameters: {
         negative_prompt: "unsafe, inappropriate, scary, violent, adult content",
-        num_inference_steps: 30,
+        num_inference_steps: 25,
         guidance_scale: 7.5,
       }
     })
 
-    // Convert image to base64
-    const arrayBuffer = await image.arrayBuffer()
-    const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)))
-    const dataUrl = `data:image/jpeg;base64,${base64}`
+    if (!image) {
+      console.error('No image generated')
+      throw new Error('Failed to generate image')
+    }
 
-    console.log('Image generated successfully')
+    // Convert image to base64 safely
+    let base64: string
+    try {
+      const buffer = await image.arrayBuffer()
+      const bytes = new Uint8Array(buffer)
+      base64 = btoa(String.fromCharCode.apply(null, bytes))
+    } catch (conversionError) {
+      console.error('Error converting image:', conversionError)
+      throw new Error('Failed to process generated image')
+    }
+
+    const dataUrl = `data:image/jpeg;base64,${base64}`
+    console.log('Image generated and converted successfully')
     
     return new Response(
-      JSON.stringify({ image: dataUrl }),
+      JSON.stringify({ 
+        image: dataUrl,
+        success: true 
+      }),
       { 
         headers: { 
           ...corsHeaders, 
@@ -55,12 +71,13 @@ serve(async (req) => {
       }
     )
   } catch (error) {
-    console.error('Error generating image:', error)
+    console.error('Error in generate-image function:', error)
     
     return new Response(
       JSON.stringify({ 
-        error: 'An unexpected error occurred', 
-        details: error.message 
+        error: 'Image generation failed', 
+        details: error.message,
+        success: false
       }),
       { 
         headers: { 
