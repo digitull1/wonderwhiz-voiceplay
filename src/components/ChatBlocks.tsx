@@ -86,7 +86,7 @@ export const ChatBlocks = ({ blocks = [], onBlockClick }: ChatBlocksProps) => {
       }));
 
       if (block.metadata.type === 'image') {
-        const imagePrompt = `Create a detailed, educational, and child-friendly illustration that shows ${block.title.replace('🎨', '').trim()}. Make it colorful, engaging, and suitable for a ${age}-year-old child. Include interesting details that spark curiosity and learning.`;
+        const imagePrompt = block.metadata.prompt || `Create a detailed, educational, and child-friendly illustration that shows ${block.title.replace('🎨', '').trim()}. Make it colorful, engaging, and suitable for a ${age}-year-old child. Include interesting details that spark curiosity and learning.`;
         console.log('Generating image with prompt:', imagePrompt);
         await handleImageBlock({
           ...block,
@@ -98,7 +98,7 @@ export const ChatBlocks = ({ blocks = [], onBlockClick }: ChatBlocksProps) => {
           }
         });
       } else if (block.metadata.type === 'quiz') {
-        const quizPrompt = `Create an engaging and educational quiz about ${block.title.replace('🎯', '').trim()} that's perfect for a ${age}-year-old child. Include interesting facts and make it fun to learn!`;
+        const quizPrompt = block.metadata.prompt || `Create an engaging and educational quiz about ${block.title.replace('🎯', '').trim()} that's perfect for a ${age}-year-old child. Include interesting facts and make it fun to learn!`;
         console.log('Generating quiz with prompt:', quizPrompt);
         await handleQuizBlock({
           ...block,

@@ -31,7 +31,8 @@ export const generateWithGemini = async (
           "title": "🌟 [Your title here]",
           "metadata": {
             "topic": "[specific subtopic]",
-            "type": "fact"
+            "type": "fact",
+            "prompt": "[detailed prompt for content generation]"
           }
         }
       ]
@@ -39,7 +40,7 @@ export const generateWithGemini = async (
 
     Each title must:
     - Start with an emoji
-    - Be under 70 characters
+    - Be exactly 70 characters long
     - Be directly related to ${prompt}
     - Be educational and engaging
     - Be appropriate for children aged ${age_group}
@@ -49,9 +50,39 @@ export const generateWithGemini = async (
 
   try {
     const result = await model.generateContent(structuredPrompt);
-    return result.response.text();
+    const text = result.response.text();
+    console.log('Gemini response:', text);
+    return text;
   } catch (error) {
     console.error('Error generating with Gemini:', error);
-    throw error;
+    // Return fallback content instead of throwing
+    return JSON.stringify({
+      blocks: [
+        {
+          title: "🌟 Discover Amazing Animal Facts: From Tiny Insects to Giant Whales in Our World!",
+          metadata: {
+            topic: "animals",
+            type: "fact",
+            prompt: "Tell me fascinating facts about different animals in our world"
+          }
+        },
+        {
+          title: "🔬 Explore the Magic of Science: Fun Experiments You Can Try at Home Today!",
+          metadata: {
+            topic: "science",
+            type: "fact",
+            prompt: "Share exciting science experiments that are safe and fun for children"
+          }
+        },
+        {
+          title: "🌍 Journey Around the World: Exploring Different Cultures and Amazing Places!",
+          metadata: {
+            topic: "geography",
+            type: "fact",
+            prompt: "Tell me about interesting places and cultures around the world"
+          }
+        }
+      ]
+    });
   }
 };

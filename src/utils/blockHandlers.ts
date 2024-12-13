@@ -50,7 +50,6 @@ export const handleImageBlock = async (block: Block) => {
   } catch (error) {
     console.error('Error in handleImageBlock:', error);
     
-    // Send a friendly error message
     const errorEvent = new CustomEvent('wonderwhiz:newMessage', {
       detail: {
         text: "Oops! My magic wand needs a little rest. Let's try creating something else amazing instead! ✨",
@@ -122,7 +121,6 @@ export const handleQuizBlock = async (block: Block, age: number) => {
   } catch (error) {
     console.error('Error in handleQuizBlock:', error);
     
-    // Send a friendly error message
     const errorEvent = new CustomEvent('wonderwhiz:newMessage', {
       detail: {
         text: "Oops! My quiz machine needs a little break. Let's try something else fun instead! 🌟",
