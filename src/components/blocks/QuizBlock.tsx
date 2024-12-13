@@ -17,17 +17,28 @@ export const QuizBlock = ({ block, onQuizGenerated }: QuizBlockProps) => {
   const handleQuizGeneration = async () => {
     setIsLoading(true);
     try {
+      console.log('Generating quiz for topic:', block.metadata.topic);
+      
       const { data, error } = await supabase.functions.invoke('generate-quiz', {
-        body: { topic: block.title }
+        body: { 
+          topic: block.metadata.topic || block.title,
+          contextualPrompt: `Create engaging quiz questions about ${block.metadata.topic}. 
+          Make them fun and educational!`
+        }
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error('Error generating quiz:', error);
+        throw error;
+      }
+
+      console.log('Quiz data received:', data);
 
       if (data?.questions) {
         onQuizGenerated?.(data.questions);
         toast({
           title: "Quiz time! 🎯",
-          description: "Let's test your knowledge!",
+          description: "Let's test what you've learned!",
           className: "bg-primary text-white"
         });
       }

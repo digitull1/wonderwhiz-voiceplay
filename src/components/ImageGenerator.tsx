@@ -19,11 +19,19 @@ export const ImageGenerator = ({ prompt, onResponse }: ImageGeneratorProps) => {
   const { generateDynamicBlocks } = useBlockGeneration(null);
 
   const generateImage = async () => {
+    if (!prompt?.trim()) {
+      toast({
+        title: "Oops!",
+        description: "I need some context to create an image. Try asking a question first!",
+        variant: "destructive"
+      });
+      return;
+    }
+
     setIsLoading(true);
+    console.log('Generating image for prompt:', prompt);
+
     try {
-      console.log('Generating image for prompt:', prompt);
-      
-      // Make the function call to generate image
       const { data: imageData, error: imageError } = await supabase.functions.invoke('generate-image', {
         body: { 
           prompt,
@@ -35,6 +43,8 @@ export const ImageGenerator = ({ prompt, onResponse }: ImageGeneratorProps) => {
         console.error('Error details:', imageError);
         throw imageError;
       }
+
+      console.log('Image generation response:', imageData);
 
       if (imageData?.image) {
         console.log('Image generated successfully:', imageData.image);
