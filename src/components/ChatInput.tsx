@@ -11,6 +11,7 @@ interface ChatInputProps {
   currentTopic?: string;
   onImageAnalyzed?: (response: string) => void;
   placeholder?: string;
+  language?: string;
 }
 
 export const ChatInput: React.FC<ChatInputProps> = ({ 
@@ -20,7 +21,8 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   setInput,
   handleVoiceInput,
   onImageAnalyzed,
-  placeholder = "Type a message..."
+  placeholder = "Type a message...",
+  language = "en"
 }) => {
   const { toast } = useToast();
 
@@ -45,6 +47,16 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     });
   };
 
+  const getPlaceholder = () => {
+    const placeholders = {
+      en: "Type a message...",
+      es: "Escribe un mensaje...",
+      fr: "Écrivez un message...",
+      de: "Schreiben Sie eine Nachricht...",
+    };
+    return placeholders[language as keyof typeof placeholders] || placeholders.en;
+  };
+
   return (
     <div className="fixed bottom-0 left-0 right-0 z-10">
       <EnhancedMessageBar
@@ -55,7 +67,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
         onVoiceCall={handleVoiceCall}
         onVideoCall={handleVideoCall}
         isLoading={isLoading}
-        placeholder={placeholder}
+        placeholder={getPlaceholder()}
       />
     </div>
   );

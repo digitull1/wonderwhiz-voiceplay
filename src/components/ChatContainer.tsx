@@ -68,7 +68,6 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
   }, [messages, quizState?.currentQuestion]);
 
   useEffect(() => {
-    // Debug logs to track messages and blocks
     console.log('Messages in ChatContainer:', messages);
     messages.forEach((msg, index) => {
       if (msg.blocks) {
@@ -97,7 +96,6 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
       )}
     >
       {messages.map((message, index) => {
-        // Debug log for each message render
         console.log(`Rendering message ${index}:`, {
           text: message.text,
           isAi: message.isAi,
