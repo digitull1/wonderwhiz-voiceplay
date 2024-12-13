@@ -46,7 +46,6 @@ async function retryWithBackoff(fn: () => Promise<any>, maxRetries = 3) {
 serve(async (req) => {
   console.log('Received request:', req.method, req.url);
 
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { 
       headers: corsHeaders

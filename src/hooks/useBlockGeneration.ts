@@ -46,7 +46,8 @@ export const useBlockGeneration = (userProfile: UserProfile | null) => {
           context: topic,
           previous_context: previousContext,
           age_group: userProfile ? `${userProfile.age}-${userProfile.age + 2}` : "8-12",
-          name: userProfile?.name
+          name: userProfile?.name,
+          language: userProfile?.language || 'en'
         };
         
         console.log("Request body:", JSON.stringify(requestBody, null, 2));
@@ -66,29 +67,15 @@ export const useBlockGeneration = (userProfile: UserProfile | null) => {
 
       const data = await retryWithBackoff(makeRequest);
 
-      // Handle both string and object responses from Gemini
       let parsedData;
       try {
-        if (typeof data === 'string') {
-          parsedData = JSON.parse(data);
-        } else if (data?.blocks) {
-          parsedData = data;
-        } else if (data?.choices?.[0]?.text) {
-          parsedData = JSON.parse(data.choices[0].text);
-        } else {
-          console.error('Invalid response format:', data);
-          throw new Error('Invalid response format');
-        }
+        parsedData = typeof data === 'string' ? JSON.parse(data) : data;
       } catch (parseError) {
         console.error('Error parsing response:', parseError);
-        console.log('Raw content:', data);
         throw new Error('Invalid response format from server');
       }
 
-      console.log("Parsed blocks data:", parsedData);
-      
       if (!parsedData?.blocks || !Array.isArray(parsedData.blocks)) {
-        console.error('Invalid blocks format:', parsedData);
         throw new Error('Invalid blocks format in response');
       }
 
@@ -106,11 +93,16 @@ export const useBlockGeneration = (userProfile: UserProfile | null) => {
 
     } catch (error) {
       console.error('Error generating blocks:', error);
+      toast({
+        title: "Couldn't generate content blocks",
+        description: "Using fallback content instead",
+        variant: "destructive"
+      });
       
-      // Return fallback blocks instead of empty array
+      // Return contextual fallback blocks
       return [
         {
-          title: "🌟 Let's explore something amazing!",
+          title: `🌟 Learn more about ${topic}!`,
           description: "Discover fascinating facts",
           metadata: {
             topic: topic,
@@ -118,7 +110,7 @@ export const useBlockGeneration = (userProfile: UserProfile | null) => {
           }
         },
         {
-          title: "🎨 Create some artwork!",
+          title: `🎨 Create ${topic} artwork!`,
           description: "Let's make something creative",
           metadata: {
             topic: topic,
@@ -126,7 +118,7 @@ export const useBlockGeneration = (userProfile: UserProfile | null) => {
           }
         },
         {
-          title: "🎯 Test your knowledge!",
+          title: `🎯 Test your ${topic} knowledge!`,
           description: "Challenge yourself",
           metadata: {
             topic: topic,
