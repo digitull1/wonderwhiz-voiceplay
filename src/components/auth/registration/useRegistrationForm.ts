@@ -34,8 +34,8 @@ export const useRegistrationForm = () => {
           data: {
             name: formData.name,
             age: parseInt(formData.age),
-            gender: 'other',
-            language: 'en'
+            gender: 'other', // Default value
+            language: 'en'   // Default value
           }
         }
       });
@@ -48,16 +48,6 @@ export const useRegistrationForm = () => {
       if (signUpData.user) {
         // Wait for trigger functions to complete
         await new Promise(resolve => setTimeout(resolve, 1000));
-
-        const { error: profileError } = await supabase
-          .from('profiles')
-          .update({
-            name: formData.name,
-            age: parseInt(formData.age),
-          })
-          .eq('id', signUpData.user.id);
-
-        if (profileError) throw profileError;
 
         // Trigger celebration
         confetti({
