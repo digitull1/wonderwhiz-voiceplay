@@ -13,77 +13,31 @@ export const useAuth = () => {
         const { data: { user } } = await supabase.auth.getUser();
         console.log('Auth check - User:', user);
         
-        if (!user) {
-          console.log('No user found, trying stored credentials...');
-          try {
-            // Try to sign in with stored credentials first
-            const storedEmail = localStorage.getItem('anonymousEmail');
-            const storedPassword = localStorage.getItem('anonymousPassword');
-            
-            if (storedEmail && storedPassword) {
-              const { data, error } = await supabase.auth.signInWithPassword({
-                email: storedEmail,
-                password: storedPassword
-              });
-              
-              if (!error && data.user) {
-                console.log('Signed in with stored anonymous account');
-                setIsAuthenticated(true);
-                return;
-              }
-            }
-            
-            // If no stored credentials or sign in failed, create new account
-            const email = `${crypto.randomUUID()}@anonymous.wonderwhiz.com`;
-            const password = crypto.randomUUID();
-            
-            const { data, error } = await supabase.auth.signUp({
-              email,
-              password,
-            });
-            
-            if (error) {
-              if (error.status === 429) {
-                console.log('Rate limit reached, using local storage only');
-                const tempId = localStorage.getItem('tempUserId') || crypto.randomUUID();
-                setTempUserId(tempId);
-                localStorage.setItem('tempUserId', tempId);
-                toast({
-                  title: "Notice",
-                  description: "Using temporary mode. Your progress will be saved locally.",
-                  variant: "default"
-                });
-                return;
-              }
-              throw error;
-            }
-            
-            // Store credentials for future sessions
-            localStorage.setItem('anonymousEmail', email);
-            localStorage.setItem('anonymousPassword', password);
-            console.log('Anonymous signup successful');
-            setIsAuthenticated(true);
-          } catch (signUpError) {
-            console.error('Error in anonymous auth:', signUpError);
-            // Fallback to temporary ID
-            const tempId = localStorage.getItem('tempUserId') || crypto.randomUUID();
-            setTempUserId(tempId);
-            localStorage.setItem('tempUserId', tempId);
-          }
-        } else {
+        if (user) {
           console.log('User already authenticated:', user);
           setIsAuthenticated(true);
+          return;
         }
-      } catch (error) {
-        console.error('Error in checkAuth:', error);
+
+        // If no user is found, just set up temporary ID
+        console.log('No authenticated user found');
         const tempId = localStorage.getItem('tempUserId') || crypto.randomUUID();
         setTempUserId(tempId);
         localStorage.setItem('tempUserId', tempId);
+        
+        // Show a gentle reminder to sign in
         toast({
-          title: "Authentication Notice",
-          description: "Some features might be limited. Don't worry, we'll keep trying to connect!",
+          title: "Welcome to WonderWhiz!",
+          description: "Sign in or register to save your progress and unlock all features.",
           variant: "default"
         });
+
+      } catch (error) {
+        console.error('Error in checkAuth:', error);
+        // Fallback to temporary ID
+        const tempId = localStorage.getItem('tempUserId') || crypto.randomUUID();
+        setTempUserId(tempId);
+        localStorage.setItem('tempUserId', tempId);
       }
     };
 
