@@ -1,12 +1,9 @@
-import { useState } from "react";
 import { motion } from "framer-motion";
-import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/hooks/use-toast";
+import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2 } from "lucide-react";
-import confetti from "canvas-confetti";
+import { useAuthForm } from "./hooks/useAuthForm";
 
 interface AuthFormProps {
   onComplete?: () => void;
@@ -14,93 +11,14 @@ interface AuthFormProps {
 }
 
 export const AuthForm = ({ onComplete, isLogin = false }: AuthFormProps) => {
-  const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
-  const [formData, setFormData] = useState({
-    email: "",
-    password: "",
-    name: "",
-    age: "",
-  });
-
-  const triggerCelebration = (name: string) => {
-    confetti({
-      particleCount: 100,
-      spread: 70,
-      origin: { y: 0.6 }
-    });
-
-    toast({
-      title: `🎉 Welcome to WonderWhiz, ${name}!`,
-      description: "You've earned 100 points to start your learning adventure! 🚀",
-      className: "bg-primary text-white"
-    });
-  };
-
-  const handleLogin = async () => {
-    try {
-      console.log('Attempting login with:', formData.email);
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email: formData.email,
-        password: formData.password,
-      });
-
-      if (error) {
-        console.error('Login error:', error);
-        throw error;
-      }
-
-      if (data?.user) {
-        console.log('Login successful:', data.user.id);
-        toast({
-          title: "Welcome back! 👋",
-          description: "Successfully signed in to your account.",
-        });
-        onComplete?.();
-      }
-    } catch (error: any) {
-      console.error('Login error:', error);
-      toast({
-        title: "Login failed",
-        description: error.message || "Please check your credentials and try again.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const handleRegister = async () => {
-    try {
-      console.log('Starting registration with:', formData.email);
-      const { data, error } = await supabase.auth.signUp({
-        email: formData.email,
-        password: formData.password,
-        options: {
-          data: {
-            name: formData.name,
-            age: parseInt(formData.age),
-          },
-        }
-      });
-
-      if (error) {
-        console.error('Registration error:', error);
-        throw error;
-      }
-
-      if (data.user) {
-        console.log("User created successfully:", data.user.id);
-        triggerCelebration(formData.name);
-        onComplete?.();
-      }
-    } catch (error: any) {
-      console.error('Registration error:', error);
-      toast({
-        title: "Registration failed",
-        description: error.message || "Something went wrong. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
+  const {
+    isLoading,
+    setIsLoading,
+    formData,
+    setFormData,
+    handleLogin,
+    handleRegister,
+  } = useAuthForm(onComplete);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -112,6 +30,8 @@ export const AuthForm = ({ onComplete, isLogin = false }: AuthFormProps) => {
       } else {
         await handleRegister();
       }
+    } catch (error) {
+      console.error('Form submission error:', error);
     } finally {
       setIsLoading(false);
     }
