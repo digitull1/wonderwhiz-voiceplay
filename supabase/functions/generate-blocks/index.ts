@@ -5,9 +5,12 @@ import { callGroq } from "../_shared/groq.ts"
 import { generateAgeSpecificInstructions, buildPrompt } from "./prompts.ts"
 import { parseGroqResponse, validateBlocksStructure } from "../_shared/jsonParser.ts"
 
+console.log('Loading generate-blocks function...');
+
 serve(async (req) => {
-  // Always handle CORS preflight first
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
+    console.log('Handling CORS preflight request');
     return new Response(null, { 
       headers: {
         ...corsHeaders,
@@ -18,12 +21,14 @@ serve(async (req) => {
   }
 
   try {
+    console.log('Processing request...');
+    
     if (!req.body) {
       throw new Error('Request body is required');
     }
 
     const { query, context, age_group = "8-11" } = await req.json();
-    console.log('Processing request with params:', { query, context, age_group });
+    console.log('Request parameters:', { query, context, age_group });
 
     if (!query) {
       throw new Error('Query parameter is required');
@@ -32,7 +37,7 @@ serve(async (req) => {
     const ageSpecificInstructions = generateAgeSpecificInstructions(age_group);
     const prompt = buildPrompt(query, context, ageSpecificInstructions);
     
-    console.log('Making request to Groq API with prompt:', prompt);
+    console.log('Making request to Groq API...');
     
     const data = await callGroq([
       {
@@ -92,7 +97,8 @@ serve(async (req) => {
             ...corsHeaders, 
             'Content-Type': 'application/json',
             'Cache-Control': 'no-cache'
-          } 
+          },
+          status: 200
         }
       );
 
