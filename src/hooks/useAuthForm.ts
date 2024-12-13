@@ -13,9 +13,25 @@ export const useAuthForm = (onComplete?: () => void) => {
     age: "",
   });
 
+  const validateFormData = (data: typeof formData) => {
+    if (!data.email || !data.password) {
+      throw new Error("Email and password are required");
+    }
+    
+    // Ensure age is a valid number between 4-12 if provided
+    if (data.age) {
+      const age = parseInt(data.age);
+      if (isNaN(age) || age < 4 || age > 12) {
+        throw new Error("Age must be between 4 and 12");
+      }
+    }
+  };
+
   const handleLogin = async () => {
     console.log('Attempting login with:', formData.email);
     try {
+      validateFormData(formData);
+
       const { data, error } = await supabase.auth.signInWithPassword({
         email: formData.email,
         password: formData.password,
@@ -45,79 +61,81 @@ export const useAuthForm = (onComplete?: () => void) => {
   const handleRegister = async () => {
     console.log('Starting registration with:', formData.email);
     try {
-      // Add a small delay to ensure database is ready
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      validateFormData(formData);
 
-      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
+      // Prepare user metadata with proper types
+      const metadata = {
+        name: formData.name || 'User',
+        age: formData.age ? parseInt(formData.age) : 8,
+        gender: 'other',
+        language: 'en'
+      };
+
+      console.log('Registering with metadata:', metadata);
+
+      const { data, error } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
         options: {
-          data: {
-            name: formData.name || 'User',
-            age: parseInt(formData.age) || 8,
-            gender: 'other',
-            language: 'en'
-          },
+          data: metadata,
           emailRedirectTo: window.location.origin,
         }
       });
 
-      if (signUpError) {
-        console.error('Signup error:', signUpError);
-        throw signUpError;
+      if (error) {
+        console.error('Registration error:', error);
+        throw error;
       }
 
-      if (signUpData.user) {
-        // Wait for trigger functions to complete
+      if (data.user) {
+        console.log("User created successfully:", data.user.id);
+        
+        // Add a delay to ensure database triggers complete
         await new Promise(resolve => setTimeout(resolve, 2000));
+        
+        // Verify profile creation
+        const { data: profile, error: profileError } = await supabase
+          .from('profiles')
+          .select('*')
+          .eq('id', data.user.id)
+          .single();
 
-        try {
-          const { data: welcomeData, error: welcomeError } = await supabase.functions.invoke('generate-with-gemini', {
-            body: {
-              prompt: `Generate a friendly, encouraging welcome message for a ${formData.age} year old child named ${formData.name} who just joined our educational platform. Keep it simple, fun, and include emojis.`,
-              context: {
-                age: formData.age,
-                name: formData.name
-              }
-            }
-          });
-
-          if (!welcomeError && welcomeData?.text) {
-            toast({
-              title: "Welcome to WonderWhiz! 🎉",
-              description: welcomeData.text,
-              className: "bg-primary text-white"
-            });
-          }
-        } catch (geminiError) {
-          console.error('Error generating welcome message:', geminiError);
-          toast({
-            title: "Welcome to WonderWhiz! 🎉",
-            description: "You've earned 100 points to start your learning adventure!",
-            className: "bg-primary text-white"
-          });
+        if (profileError) {
+          console.error('Error verifying profile:', profileError);
+        } else {
+          console.log('Profile created successfully:', profile);
         }
 
-        confetti({
-          particleCount: 100,
-          spread: 70,
-          origin: { y: 0.6 }
-        });
-
+        triggerCelebration(formData.name || 'User');
         onComplete?.();
         return true;
       }
+      return false;
     } catch (error: any) {
       console.error('Registration error:', error);
       toast({
-        title: "Registration Failed",
-        description: error.message || "Please try again later",
-        variant: "destructive"
+        title: "Registration failed",
+        description: error.message || "Something went wrong. Please try again.",
+        variant: "destructive",
       });
-      return false;
+      throw error;
     } finally {
       setIsLoading(false);
     }
+  };
+
+  const triggerCelebration = (name: string) => {
+    confetti({
+      particleCount: 100,
+      spread: 70,
+      origin: { y: 0.6 }
+    });
+
+    toast({
+      title: `🎉 Welcome to WonderWhiz, ${name}!`,
+      description: "You've earned 100 points to start your learning adventure! 🚀",
+      className: "bg-primary text-white"
+    });
   };
 
   return {
