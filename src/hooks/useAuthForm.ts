@@ -22,15 +22,7 @@ export const useAuthForm = (onComplete?: () => void) => {
         password: formData.password,
       });
 
-      if (error) {
-        console.error('Login error:', error);
-        toast({
-          title: "Login failed",
-          description: error.message || "Please check your credentials and try again.",
-          variant: "destructive",
-        });
-        throw error;
-      }
+      if (error) throw error;
 
       if (data?.user) {
         console.log('Login successful:', data.user.id);
@@ -54,56 +46,96 @@ export const useAuthForm = (onComplete?: () => void) => {
   const handleRegister = async () => {
     console.log('Starting registration with:', formData.email);
     try {
-      const { data, error } = await supabase.auth.signUp({
+      // First check if user exists
+      const { data: existingUser } = await supabase.auth.signInWithPassword({
+        email: formData.email,
+        password: formData.password,
+      });
+
+      if (existingUser.user) {
+        toast({
+          title: "Account Already Exists",
+          description: "Please sign in instead",
+          variant: "destructive"
+        });
+        return false;
+      }
+
+      // Add a small delay to ensure database is ready
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // Proceed with signup
+      const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
         options: {
           data: {
             name: formData.name,
             age: parseInt(formData.age),
-          },
-          emailRedirectTo: `${window.location.origin}/auth/callback`,
+            gender: 'other', // Default value
+            language: 'en'   // Default value
+          }
         }
       });
 
-      if (error) {
-        console.error('Registration error:', error);
-        toast({
-          title: "Registration failed",
-          description: error.message || "Something went wrong. Please try again.",
-          variant: "destructive",
-        });
-        throw error;
+      if (signUpError) {
+        console.error('Signup error:', signUpError);
+        throw signUpError;
       }
 
-      if (data.user) {
-        console.log("User created successfully:", data.user.id);
-        triggerCelebration(formData.name);
-        onComplete?.();
+      if (signUpData.user) {
+        // Wait for trigger functions to complete
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
+        // Generate welcome message using Gemini
+        try {
+          const { data: welcomeData, error: welcomeError } = await supabase.functions.invoke('generate-with-gemini', {
+            body: {
+              prompt: `Generate a friendly, encouraging welcome message for a ${formData.age} year old child named ${formData.name} who just joined our educational platform. Keep it simple, fun, and include emojis.`,
+              context: {
+                age: formData.age,
+                name: formData.name
+              }
+            }
+          });
+
+          if (!welcomeError && welcomeData?.text) {
+            toast({
+              title: "Welcome to WonderWhiz! 🎉",
+              description: welcomeData.text,
+              className: "bg-primary text-white"
+            });
+          }
+        } catch (geminiError) {
+          console.error('Error generating welcome message:', geminiError);
+          // Fallback to default welcome message
+          toast({
+            title: "Welcome to WonderWhiz! 🎉",
+            description: "You've earned 100 points to start your learning adventure!",
+            className: "bg-primary text-white"
+          });
+        }
+
+        // Trigger celebration
+        confetti({
+          particleCount: 100,
+          spread: 70,
+          origin: { y: 0.6 }
+        });
+
+        return true;
       }
     } catch (error: any) {
       console.error('Registration error:', error);
       toast({
-        title: "Registration failed",
-        description: error.message || "Something went wrong. Please try again.",
-        variant: "destructive",
+        title: "Registration Failed",
+        description: error.message || "Please try again later",
+        variant: "destructive"
       });
-      throw error;
+      return false;
+    } finally {
+      setIsLoading(false);
     }
-  };
-
-  const triggerCelebration = (name: string) => {
-    confetti({
-      particleCount: 100,
-      spread: 70,
-      origin: { y: 0.6 }
-    });
-
-    toast({
-      title: `🎉 Welcome to WonderWhiz, ${name}!`,
-      description: "You've earned 100 points to start your learning adventure! 🚀",
-      className: "bg-primary text-white"
-    });
   };
 
   return {
