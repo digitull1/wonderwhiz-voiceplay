@@ -111,6 +111,8 @@ export const RegistrationForm = () => {
           data: {
             name: formData.name,
             age: parseInt(formData.age),
+            gender: 'other', // Default value
+            language: 'en'   // Default value
           }
         }
       });
@@ -121,6 +123,9 @@ export const RegistrationForm = () => {
       }
 
       if (signUpData.user) {
+        // Wait a moment for the trigger functions to complete
+        await new Promise(resolve => setTimeout(resolve, 1000));
+
         const { error: profileError } = await supabase
           .from('profiles')
           .update({
