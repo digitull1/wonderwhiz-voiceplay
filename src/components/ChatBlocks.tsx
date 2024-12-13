@@ -86,29 +86,11 @@ export const ChatBlocks = ({ blocks = [], onBlockClick }: ChatBlocksProps) => {
       }));
 
       if (block.metadata.type === 'image') {
-        const imagePrompt = block.metadata.prompt || `Create a detailed, educational, and child-friendly illustration that shows ${block.title.replace('🎨', '').trim()}. Make it colorful, engaging, and suitable for a ${age}-year-old child. Include interesting details that spark curiosity and learning.`;
-        console.log('Generating image with prompt:', imagePrompt);
-        await handleImageBlock({
-          ...block,
-          metadata: {
-            ...block.metadata,
-            topic: block.metadata.topic,
-            type: 'image',
-            prompt: imagePrompt
-          }
-        });
+        console.log('Generating image with block:', block);
+        await handleImageBlock(block);
       } else if (block.metadata.type === 'quiz') {
-        const quizPrompt = block.metadata.prompt || `Create an engaging and educational quiz about ${block.title.replace('🎯', '').trim()} that's perfect for a ${age}-year-old child. Include interesting facts and make it fun to learn!`;
-        console.log('Generating quiz with prompt:', quizPrompt);
-        await handleQuizBlock({
-          ...block,
-          metadata: {
-            ...block.metadata,
-            topic: block.metadata.topic,
-            type: 'quiz',
-            prompt: quizPrompt
-          }
-        }, age);
+        console.log('Generating quiz with block:', block);
+        await handleQuizBlock(block, age);
       }
     } catch (error) {
       console.error('Error handling block click:', error);
