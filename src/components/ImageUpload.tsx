@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from './ui/button';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Upload } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useToast } from './ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
@@ -113,8 +113,8 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
       >
         {isLoading ? (
           <Loader2 className="h-5 w-5 animate-spin text-primary" />
-        ) : (
-          children
+        ) : children || (
+          <Upload className="h-5 w-5 text-primary" />
         )}
         <input
           type="file"

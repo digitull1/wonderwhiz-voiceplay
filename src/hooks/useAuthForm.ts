@@ -45,34 +45,18 @@ export const useAuthForm = (onComplete?: () => void) => {
   const handleRegister = async () => {
     console.log('Starting registration with:', formData.email);
     try {
-      // First check if user exists
-      const { data: existingUser } = await supabase.auth.signInWithPassword({
-        email: formData.email,
-        password: formData.password,
-      });
-
-      if (existingUser.user) {
-        toast({
-          title: "Account Already Exists",
-          description: "Please sign in instead",
-          variant: "destructive"
-        });
-        return false;
-      }
-
       // Add a small delay to ensure database is ready
       await new Promise(resolve => setTimeout(resolve, 1000));
 
-      // Proceed with signup
       const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
         options: {
           data: {
-            name: formData.name,
-            age: parseInt(formData.age),
-            gender: 'other', // Default value
-            language: 'en'   // Default value
+            name: formData.name || 'User',
+            age: parseInt(formData.age) || 8,
+            gender: 'other',
+            language: 'en'
           },
           emailRedirectTo: window.location.origin,
         }
@@ -87,7 +71,6 @@ export const useAuthForm = (onComplete?: () => void) => {
         // Wait for trigger functions to complete
         await new Promise(resolve => setTimeout(resolve, 2000));
 
-        // Generate welcome message using Gemini
         try {
           const { data: welcomeData, error: welcomeError } = await supabase.functions.invoke('generate-with-gemini', {
             body: {
@@ -108,7 +91,6 @@ export const useAuthForm = (onComplete?: () => void) => {
           }
         } catch (geminiError) {
           console.error('Error generating welcome message:', geminiError);
-          // Fallback to default welcome message
           toast({
             title: "Welcome to WonderWhiz! 🎉",
             description: "You've earned 100 points to start your learning adventure!",
@@ -116,7 +98,6 @@ export const useAuthForm = (onComplete?: () => void) => {
           });
         }
 
-        // Trigger celebration
         confetti({
           particleCount: 100,
           spread: 70,
@@ -134,6 +115,8 @@ export const useAuthForm = (onComplete?: () => void) => {
         variant: "destructive"
       });
       return false;
+    } finally {
+      setIsLoading(false);
     }
   };
 
