@@ -60,7 +60,26 @@ export const useAuth = () => {
       }
     };
 
+    // Initial auth check
     checkAuth();
+
+    // Set up auth state change listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('Auth state changed:', event, session);
+      if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
+        setIsAuthenticated(true);
+      } else if (event === 'SIGNED_OUT') {
+        setIsAuthenticated(false);
+        const tempId = crypto.randomUUID();
+        setTempUserId(tempId);
+        localStorage.setItem('tempUserId', tempId);
+      }
+    });
+
+    // Cleanup subscription
+    return () => {
+      subscription.unsubscribe();
+    };
   }, [toast]);
 
   return { 
