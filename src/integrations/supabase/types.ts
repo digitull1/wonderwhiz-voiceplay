@@ -113,6 +113,42 @@ export type Database = {
         }
         Relationships: []
       }
+      content_blocks: {
+        Row: {
+          age_range: unknown
+          content_type: string
+          created_at: string
+          description: string
+          id: string
+          language: string | null
+          metadata: Json | null
+          title: string
+          topic: string
+        }
+        Insert: {
+          age_range: unknown
+          content_type: string
+          created_at?: string
+          description: string
+          id?: string
+          language?: string | null
+          metadata?: Json | null
+          title: string
+          topic: string
+        }
+        Update: {
+          age_range?: unknown
+          content_type?: string
+          created_at?: string
+          description?: string
+          id?: string
+          language?: string | null
+          metadata?: Json | null
+          title?: string
+          topic?: string
+        }
+        Relationships: []
+      }
       content_translations: {
         Row: {
           content_key: string
@@ -366,6 +402,7 @@ export type Database = {
           gender: string
           id: string
           language: string
+          multimedia_enabled: boolean | null
           name: string | null
           preferred_language: string | null
           topics_of_interest: string[] | null
@@ -377,6 +414,7 @@ export type Database = {
           gender: string
           id: string
           language?: string
+          multimedia_enabled?: boolean | null
           name?: string | null
           preferred_language?: string | null
           topics_of_interest?: string[] | null
@@ -388,6 +426,7 @@ export type Database = {
           gender?: string
           id?: string
           language?: string
+          multimedia_enabled?: boolean | null
           name?: string | null
           preferred_language?: string | null
           topics_of_interest?: string[] | null
