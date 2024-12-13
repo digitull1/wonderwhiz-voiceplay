@@ -4,7 +4,7 @@ export interface Block {
   metadata: {
     topic: string;
     type?: 'fact' | 'image' | 'quiz';
-    prompt?: string;  // Added this property
+    prompt?: string;
   };
   color?: string;
 }

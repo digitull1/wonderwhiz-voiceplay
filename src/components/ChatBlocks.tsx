@@ -76,18 +76,18 @@ export const ChatBlocks = ({ blocks = [], onBlockClick }: ChatBlocksProps) => {
       const age = profileData?.age || 8;
       console.log('User age for content generation:', age);
 
-      // Show loading state
-      const loadingEvent = new CustomEvent('wonderwhiz:newMessage', {
+      // Show loading state in chat
+      window.dispatchEvent(new CustomEvent('wonderwhiz:newMessage', {
         detail: {
           text: "✨ Creating something magical for you! Watch the sparkles...",
           isAi: true,
           isLoading: true
         }
-      });
-      window.dispatchEvent(loadingEvent);
+      }));
 
       if (block.metadata.type === 'image') {
-        const imagePrompt = `Create a child-friendly, educational illustration about ${block.title.replace('🎨', '').trim()}`;
+        const imagePrompt = `Create a detailed, educational, and child-friendly illustration that shows ${block.title.replace('🎨', '').trim()}. Make it colorful, engaging, and suitable for a ${age}-year-old child. Include interesting details that spark curiosity and learning.`;
+        console.log('Generating image with prompt:', imagePrompt);
         await handleImageBlock({
           ...block,
           metadata: {
@@ -98,7 +98,8 @@ export const ChatBlocks = ({ blocks = [], onBlockClick }: ChatBlocksProps) => {
           }
         });
       } else if (block.metadata.type === 'quiz') {
-        const quizPrompt = `Create an engaging quiz about ${block.title.replace('🎯', '').trim()}`;
+        const quizPrompt = `Create an engaging and educational quiz about ${block.title.replace('🎯', '').trim()} that's perfect for a ${age}-year-old child. Include interesting facts and make it fun to learn!`;
+        console.log('Generating quiz with prompt:', quizPrompt);
         await handleQuizBlock({
           ...block,
           metadata: {
@@ -108,8 +109,6 @@ export const ChatBlocks = ({ blocks = [], onBlockClick }: ChatBlocksProps) => {
             prompt: quizPrompt
           }
         }, age);
-      } else {
-        onBlockClick(block);
       }
     } catch (error) {
       console.error('Error handling block click:', error);

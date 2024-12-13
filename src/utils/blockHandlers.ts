@@ -6,13 +6,13 @@ export const handleImageBlock = async (block: Block) => {
   console.log('Handling image block:', block);
   
   try {
-    const prompt = block.metadata.prompt || block.title;
+    const prompt = block.metadata.prompt || `Create a detailed, educational illustration about ${block.title}`;
     console.log('Generating image with prompt:', prompt);
 
     const { data, error } = await supabase.functions.invoke('generate-image', {
       body: { 
         prompt,
-        age_group: "8-12" // Default age group if not specified
+        age_group: "8-12"
       }
     });
 
@@ -24,9 +24,10 @@ export const handleImageBlock = async (block: Block) => {
     console.log('Image generation response:', data);
 
     if (data?.image) {
+      // Dispatch event to show the generated image in chat
       const event = new CustomEvent('wonderwhiz:newMessage', {
         detail: {
-          text: `Here's what I imagined for "${block.title.replace('🎨', '').trim()}"! What do you think? ✨`,
+          text: `I've created this magical illustration about "${block.title.replace('🎨', '').trim()}"! What do you think? Let's explore what we can learn from it! ✨`,
           isAi: true,
           imageUrl: data.image
         }
@@ -34,8 +35,8 @@ export const handleImageBlock = async (block: Block) => {
       window.dispatchEvent(event);
 
       toast({
-        title: "Image created! ✨",
-        description: "Here's what I imagined!",
+        title: "Magic created! ✨",
+        description: "I've made something special for you!",
         className: "bg-primary text-white"
       });
     }
@@ -43,7 +44,7 @@ export const handleImageBlock = async (block: Block) => {
     console.error('Error in handleImageBlock:', error);
     toast({
       title: "Oops!",
-      description: "Couldn't create an image right now. Try again!",
+      description: "I couldn't create an image right now. Let's try again!",
       variant: "destructive"
     });
   }
@@ -53,15 +54,15 @@ export const handleQuizBlock = async (block: Block, age: number) => {
   console.log('Handling quiz block:', block);
   
   try {
-    const prompt = block.metadata.prompt || block.title;
+    const prompt = block.metadata.prompt || `Create an engaging educational quiz about ${block.title}`;
     console.log('Generating quiz with prompt:', prompt);
 
     const { data, error } = await supabase.functions.invoke('generate-quiz', {
       body: { 
         topic: prompt,
         age,
-        contextualPrompt: `Create ${age}-appropriate quiz questions about ${block.title.replace('🎯', '').trim()}. 
-        Make them fun, engaging, and educational!`
+        contextualPrompt: `Create fun, engaging, and age-appropriate quiz questions about ${block.title.replace('🎯', '').trim()} 
+        that will help a ${age}-year-old learn while having fun!`
       }
     });
 
@@ -73,9 +74,10 @@ export const handleQuizBlock = async (block: Block, age: number) => {
     console.log('Quiz generation response:', data);
 
     if (data?.questions) {
+      // Dispatch event to show the quiz in chat
       const event = new CustomEvent('wonderwhiz:newMessage', {
         detail: {
-          text: `Let's test what you know about ${block.title.replace('🎯', '').trim()}! 🎯`,
+          text: `Let's have some fun testing what you know about ${block.title.replace('🎯', '').trim()}! Ready to become a quiz champion? 🌟`,
           isAi: true,
           quizState: {
             isActive: true,
@@ -89,7 +91,7 @@ export const handleQuizBlock = async (block: Block, age: number) => {
 
       toast({
         title: "Quiz time! 🎯",
-        description: "Let's test what you've learned!",
+        description: "Let's see how much you know!",
         className: "bg-primary text-white"
       });
     }
@@ -97,7 +99,7 @@ export const handleQuizBlock = async (block: Block, age: number) => {
     console.error('Error in handleQuizBlock:', error);
     toast({
       title: "Oops!",
-      description: "Couldn't create a quiz right now. Try again!",
+      description: "I couldn't create a quiz right now. Let's try again!",
       variant: "destructive"
     });
   }
