@@ -15,7 +15,6 @@ export const useBlockGeneration = (userProfile: UserProfile | null) => {
         
         if (i === maxRetries - 1) throw error;
         
-        // Exponential backoff with jitter
         const delay = Math.min(1000 * Math.pow(2, i) + Math.random() * 1000, 10000);
         console.log(`Retrying in ${delay}ms...`);
         await new Promise(resolve => setTimeout(resolve, delay));
@@ -67,56 +66,74 @@ export const useBlockGeneration = (userProfile: UserProfile | null) => {
 
       const data = await retryWithBackoff(makeRequest);
 
-      if (data?.choices?.[0]?.message?.content) {
-        let parsedData;
-        try {
-          parsedData = typeof data.choices[0].message.content === 'string' 
-            ? JSON.parse(data.choices[0].message.content) 
-            : data.choices[0].message.content;
-        } catch (parseError) {
-          console.error('Error parsing response:', parseError);
-          console.log('Raw content:', data.choices[0].message.content);
-          throw new Error('Invalid response format from server');
+      // Handle both string and object responses from Gemini
+      let parsedData;
+      try {
+        if (typeof data === 'string') {
+          parsedData = JSON.parse(data);
+        } else if (data?.blocks) {
+          parsedData = data;
+        } else if (data?.choices?.[0]?.text) {
+          parsedData = JSON.parse(data.choices[0].text);
+        } else {
+          console.error('Invalid response format:', data);
+          throw new Error('Invalid response format');
         }
-
-        console.log("Parsed blocks data:", parsedData);
-        
-        if (!Array.isArray(parsedData.blocks)) {
-          console.error('Invalid blocks format:', parsedData);
-          throw new Error('Invalid blocks format in response');
-        }
-
-        const formattedBlocks = parsedData.blocks.map((block: Block) => ({
-          ...block,
-          title: block.title?.substring(0, 75) || "",
-          metadata: {
-            ...block.metadata,
-            topic: block.metadata?.topic || topic
-          }
-        }));
-
-        console.log("Formatted blocks:", formattedBlocks);
-        return formattedBlocks;
+      } catch (parseError) {
+        console.error('Error parsing response:', parseError);
+        console.log('Raw content:', data);
+        throw new Error('Invalid response format from server');
       }
 
-      console.error('Invalid data format received:', data);
-      toast({
-        title: "Oops!",
-        description: "Had trouble generating content. Please try again!",
-        variant: "destructive"
-      });
+      console.log("Parsed blocks data:", parsedData);
       
-      return [];
+      if (!parsedData?.blocks || !Array.isArray(parsedData.blocks)) {
+        console.error('Invalid blocks format:', parsedData);
+        throw new Error('Invalid blocks format in response');
+      }
+
+      const formattedBlocks = parsedData.blocks.map((block: Block) => ({
+        ...block,
+        title: block.title?.substring(0, 75) || "",
+        metadata: {
+          ...block.metadata,
+          topic: block.metadata?.topic || topic
+        }
+      }));
+
+      console.log("Formatted blocks:", formattedBlocks);
+      return formattedBlocks;
+
     } catch (error) {
       console.error('Error generating blocks:', error);
       
-      toast({
-        title: "Connection Error",
-        description: "Having trouble connecting. Please check your internet and try again.",
-        variant: "destructive"
-      });
-      
-      return [];
+      // Return fallback blocks instead of empty array
+      return [
+        {
+          title: "🌟 Let's explore something amazing!",
+          description: "Discover fascinating facts",
+          metadata: {
+            topic: topic,
+            type: "fact"
+          }
+        },
+        {
+          title: "🎨 Create some artwork!",
+          description: "Let's make something creative",
+          metadata: {
+            topic: topic,
+            type: "image"
+          }
+        },
+        {
+          title: "🎯 Test your knowledge!",
+          description: "Challenge yourself",
+          metadata: {
+            topic: topic,
+            type: "quiz"
+          }
+        }
+      ];
     }
   };
 

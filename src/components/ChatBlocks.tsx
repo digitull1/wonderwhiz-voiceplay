@@ -119,19 +119,22 @@ export const ChatBlocks = ({ blocks = [], onBlockClick }: ChatBlocksProps) => {
       >
         <AnimatePresence>
           {blocks.map((block, index) => (
-            <div 
+            <motion.div 
               key={`${block.title}-${index}`}
               className={cn(
                 "flex-none snap-center px-1",
                 isMobile ? "w-full" : "w-1/3"
               )}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: index * 0.1 }}
             >
               <EnhancedBlockCard
                 block={block}
                 index={index}
                 onClick={() => handleBlockClick(block)}
               />
-            </div>
+            </motion.div>
           ))}
         </AnimatePresence>
       </div>
