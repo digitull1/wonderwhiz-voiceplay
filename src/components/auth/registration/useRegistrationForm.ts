@@ -10,6 +10,8 @@ export const useRegistrationForm = () => {
 
   const handleRegistration = async (formData: RegistrationFormData) => {
     setIsLoading(true);
+    console.log('Starting registration process...');
+
     try {
       // First check if user exists
       const { data: existingUser } = await supabase.auth.signInWithPassword({
@@ -50,19 +52,42 @@ export const useRegistrationForm = () => {
 
       if (signUpData.user) {
         // Wait for trigger functions to complete
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise(resolve => setTimeout(resolve, 2000));
+
+        // Generate welcome message using Gemini
+        try {
+          const { data: welcomeData, error: welcomeError } = await supabase.functions.invoke('generate-with-gemini', {
+            body: {
+              prompt: `Generate a friendly, encouraging welcome message for a ${formData.age} year old child named ${formData.name} who just joined our educational platform. Keep it simple, fun, and include emojis.`,
+              context: {
+                age: formData.age,
+                name: formData.name
+              }
+            }
+          });
+
+          if (!welcomeError && welcomeData?.text) {
+            toast({
+              title: "Welcome to WonderWhiz! 🎉",
+              description: welcomeData.text,
+              className: "bg-primary text-white"
+            });
+          }
+        } catch (geminiError) {
+          console.error('Error generating welcome message:', geminiError);
+          // Fallback to default welcome message
+          toast({
+            title: "Welcome to WonderWhiz! 🎉",
+            description: "You've earned 100 points to start your learning adventure!",
+            className: "bg-primary text-white"
+          });
+        }
 
         // Trigger celebration
         confetti({
           particleCount: 100,
           spread: 70,
           origin: { y: 0.6 }
-        });
-
-        toast({
-          title: "Welcome to WonderWhiz! 🎉",
-          description: "You've earned 100 points to start your learning adventure!",
-          className: "bg-primary text-white"
         });
 
         return true;
