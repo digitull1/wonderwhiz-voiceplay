@@ -25,16 +25,9 @@ export const handleImageBlock = async (block: Block) => {
       }
     });
 
-    if (error) {
-      console.error('Error generating image:', error);
-      throw error;
-    }
-
-    console.log('Image generation response:', data);
+    if (error) throw error;
 
     if (data?.image) {
-      console.log('Generated image URL:', data.image);
-      
       window.dispatchEvent(new CustomEvent('wonderwhiz:newMessage', {
         detail: {
           text: `I've created this magical illustration about "${block.title.replace('🎨', '').trim()}"! What fascinating things can you spot in this picture? Let's explore what we can learn from it! ✨`,
@@ -92,12 +85,7 @@ export const handleQuizBlock = async (block: Block, age: number) => {
       }
     });
 
-    if (error) {
-      console.error('Error generating quiz:', error);
-      throw error;
-    }
-
-    console.log('Quiz generation response:', data);
+    if (error) throw error;
 
     if (data?.questions) {
       window.dispatchEvent(new CustomEvent('wonderwhiz:newMessage', {

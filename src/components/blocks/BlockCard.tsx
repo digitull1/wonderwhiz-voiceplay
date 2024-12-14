@@ -1,87 +1,105 @@
-import React, { useState } from "react";
+import React from "react";
 import { motion } from "framer-motion";
 import { Block } from "@/types/chat";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
-import { RewardAnimation } from "../rewards/RewardAnimation";
+import { handleImageBlock, handleQuizBlock } from "@/utils/blockHandlers";
+import { useToast } from "@/components/ui/use-toast";
+import { supabase } from "@/integrations/supabase/client";
 
 interface BlockCardProps {
   block: Block;
   index: number;
   onClick: () => void;
-  color: string;
+  color?: string;
 }
 
-export const BlockCard = ({ block, index, onClick, color }: BlockCardProps) => {
-  const isMobile = useIsMobile();
-  const [showReward, setShowReward] = useState(false);
+export const BlockCard: React.FC<BlockCardProps> = ({
+  block,
+  index,
+  onClick,
+  color = "bg-gradient-to-br from-primary/20 to-secondary/20"
+}) => {
+  const { toast } = useToast();
+  const [isLoading, setIsLoading] = React.useState(false);
 
-  const handleClick = () => {
-    if (block.metadata.type === 'image') {
-      setShowReward(true);
-      setTimeout(() => setShowReward(false), 2000);
+  const handleClick = async () => {
+    setIsLoading(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
+        toast({
+          title: "Please log in",
+          description: "You need to be logged in to interact with blocks!",
+          variant: "destructive"
+        });
+        return;
+      }
+
+      const { data: profileData } = await supabase
+        .from('profiles')
+        .select('age')
+        .eq('id', user.id)
+        .single();
+
+      const age = profileData?.age || 8;
+
+      if (block.metadata?.type === 'image') {
+        await handleImageBlock(block);
+      } else if (block.metadata?.type === 'quiz') {
+        await handleQuizBlock(block, age);
+      } else {
+        onClick();
+      }
+    } catch (error) {
+      console.error('Error handling block click:', error);
+      toast({
+        title: "Oops!",
+        description: "Something went wrong. Please try again!",
+        variant: "destructive"
+      });
+    } finally {
+      setIsLoading(false);
     }
-    onClick();
   };
 
   return (
-    <>
-      {showReward && <RewardAnimation type="image" />}
-      
-      <motion.div
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      transition={{ duration: 0.3, delay: index * 0.1 }}
+      className="w-full"
+    >
+      <motion.button
+        onClick={handleClick}
+        disabled={isLoading}
         className={cn(
-          "snap-center w-full px-2 py-4",
-          isMobile ? "w-full" : "sm:w-[280px]"
+          "w-full p-6 rounded-xl border border-white/10",
+          "backdrop-blur-sm shadow-luxury hover:shadow-luxury-hover",
+          "transition-all duration-300 ease-in-out",
+          "flex flex-col items-start gap-2 text-left",
+          color,
+          isLoading && "animate-pulse"
         )}
-        initial={{ opacity: 0, x: 20 }}
-        animate={{ opacity: 1, x: 0 }}
-        transition={{ delay: index * 0.1 }}
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
       >
-        <motion.button
-          onClick={handleClick}
-          className={`block-hover flex flex-col items-center justify-center p-6 
-            rounded-xl w-full min-h-[160px] transition-all hover:shadow-block 
-            shadow-block relative overflow-hidden text-white snap-center 
-            group bg-gradient-to-br ${color}`}
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{
-            type: "spring",
-            stiffness: 260,
-            damping: 20,
-            delay: index * 0.1
-          }}
-        >
-          <div className="relative z-10 h-full w-full flex flex-col items-center 
-            justify-center text-center space-y-3">
-            <h3 className="text-block-title font-bold text-app-text-light 
-              break-words whitespace-pre-wrap px-2">
-              {block.title}
-            </h3>
+        <h3 className="text-lg font-semibold text-white">
+          {block.title}
+        </h3>
+        {block.description && (
+          <p className="text-sm text-white/80">
+            {block.description}
+          </p>
+        )}
+        {block.metadata?.type && (
+          <div className="mt-2 text-xs text-white/60">
+            {block.metadata.type === 'image' && '🎨 Click to generate an image'}
+            {block.metadata.type === 'quiz' && '🎯 Click to start a quiz'}
+            {block.metadata.type === 'fact' && '🌟 Click to learn more'}
           </div>
-          
-          <div className="absolute bottom-0 right-0 w-24 h-24 opacity-20 
-            bg-white rounded-tl-full transform translate-x-6 translate-y-6 
-            group-hover:scale-110 transition-transform duration-500" />
-          
-          <motion.div 
-            className="absolute top-2 right-2 opacity-70 group-hover:opacity-100"
-            animate={{ 
-              rotate: [0, 10, -10, 0],
-              scale: [1, 1.1, 1]
-            }}
-            transition={{ 
-              duration: 2, 
-              repeat: Infinity,
-              ease: "easeInOut"
-            }}
-          >
-            <span className="text-2xl">✨</span>
-          </motion.div>
-        </motion.button>
-      </motion.div>
-    </>
+        )}
+      </motion.button>
+    </motion.div>
   );
 };
