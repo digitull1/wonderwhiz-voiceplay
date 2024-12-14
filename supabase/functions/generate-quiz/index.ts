@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { GEMINI_PROMPTS } from "../_shared/prompts.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -29,11 +28,14 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: GEMINI_PROMPTS.SYSTEM_PROMPT
+            content: `You are an educational AI creating fun quizzes for children aged ${age}. 
+            Make questions engaging, age-appropriate, and include one fun or silly option in each question.`
           },
           {
             role: 'user',
-            content: GEMINI_PROMPTS.QUIZ_QUESTIONS(age, topic, 5)
+            content: `Create a multiple choice quiz about ${topic} with 5 questions. 
+            Each question should have 3 options (A, B, C) and mark the correct answer. 
+            Format as a JSON array with question, options, and correctAnswer fields.`
           }
         ],
         temperature: 0.7,
@@ -59,7 +61,10 @@ serve(async (req) => {
     console.log('Parsed quiz content:', quizContent);
 
     return new Response(
-      JSON.stringify(quizContent),
+      JSON.stringify({
+        questions: quizContent,
+        success: true
+      }),
       { 
         headers: { 
           ...corsHeaders, 
@@ -73,7 +78,8 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         error: 'Failed to generate quiz', 
-        details: error.message 
+        details: error.message,
+        success: false
       }),
       { 
         headers: { 
