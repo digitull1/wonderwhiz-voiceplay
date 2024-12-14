@@ -72,21 +72,30 @@ export const QuizContainer: React.FC<QuizContainerProps> = ({
         if (user) {
           const pointsToAdd = 10; // Base points for correct answer
           
-          const { error } = await supabase
+          // First, get current values
+          const { data: currentProgress } = await supabase
             .from('user_progress')
-            .update({ 
-              points: supabase.sql`points + ${pointsToAdd}`,
-              quiz_score: supabase.sql`quiz_score + 1`
-            })
-            .eq('user_id', user.id);
+            .select('points, quiz_score')
+            .eq('user_id', user.id)
+            .single();
 
-          if (error) throw error;
+          if (currentProgress) {
+            const { error } = await supabase
+              .from('user_progress')
+              .update({ 
+                points: currentProgress.points + pointsToAdd,
+                quiz_score: currentProgress.quiz_score + 1
+              })
+              .eq('user_id', user.id);
 
-          toast({
-            title: "Correct! 🎉",
-            description: `You earned ${pointsToAdd} points!`,
-            className: "bg-primary text-white"
-          });
+            if (error) throw error;
+
+            toast({
+              title: "Correct! 🎉",
+              description: `You earned ${pointsToAdd} points!`,
+              className: "bg-primary text-white"
+            });
+          }
         }
       } catch (error) {
         console.error('Error updating progress:', error);
