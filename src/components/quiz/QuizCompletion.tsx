@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import confetti from "canvas-confetti";
 
-interface QuizCompletionProps {
+export interface QuizCompletionProps {
   score: number;
   totalQuestions: number;
   onRestart: () => void;

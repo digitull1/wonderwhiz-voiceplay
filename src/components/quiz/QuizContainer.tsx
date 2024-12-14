@@ -70,14 +70,20 @@ export const QuizContainer: React.FC<QuizContainerProps> = ({
       try {
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
-          await supabase.rpc('update_user_progress', {
-            points_to_add: 10,
-            quiz_completed: true
-          });
+          // Update user progress using direct table update instead of RPC
+          const { error } = await supabase
+            .from('user_progress')
+            .update({ 
+              points: supabase.rpc('calculate_next_level_points', { current_level: 1 }),
+              quiz_score: supabase.sql`quiz_score + 1`
+            })
+            .eq('user_id', user.id);
+
+          if (error) throw error;
 
           toast({
             title: "Correct! 🎉",
-            description: "You earned 10 points!",
+            description: "You earned points!",
             className: "bg-primary text-white"
           });
         }

@@ -663,6 +663,13 @@ export type Database = {
         }
         Returns: string
       }
+      update_user_progress: {
+        Args: {
+          points_to_add: number
+          quiz_completed: boolean
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       gender_type: "boy" | "girl" | "other"

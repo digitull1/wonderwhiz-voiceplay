@@ -19,7 +19,7 @@ export const QuizCard = ({ questions, onAnswer }: QuizCardProps) => {
   const [showReward, setShowReward] = useState(false);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [quizComplete, setQuizComplete] = useState(false);
-  const [correctAnswers, setCorrectAnswers] = useState(0);
+  const [score, setScore] = useState(0);
 
   const questionsArray = Array.isArray(questions) ? questions : [questions];
   const currentTopic = questionsArray[0]?.topic || "this topic";
@@ -31,7 +31,7 @@ export const QuizCard = ({ questions, onAnswer }: QuizCardProps) => {
     const isCorrect = index === currentQuestion.correctAnswer;
     
     if (isCorrect) {
-      setCorrectAnswers(prev => prev + 1);
+      setScore(prev => prev + 1);
       setShowReward(true);
       confetti({
         particleCount: 150,
@@ -60,6 +60,19 @@ export const QuizCard = ({ questions, onAnswer }: QuizCardProps) => {
     }, 2000);
   };
 
+  const handleRestart = () => {
+    setCurrentQuestionIndex(0);
+    setScore(0);
+    setQuizComplete(false);
+    setSelectedAnswer(null);
+    setShowCorrect(false);
+  };
+
+  const handleExploreMore = () => {
+    // This can be implemented based on your navigation needs
+    console.log("Exploring more topics...");
+  };
+
   return (
     <>
       {showReward && <RewardAnimation type="quiz" />}
@@ -81,16 +94,17 @@ export const QuizCard = ({ questions, onAnswer }: QuizCardProps) => {
               question={questionsArray[currentQuestionIndex]}
               currentQuestionIndex={currentQuestionIndex}
               totalQuestions={questionsArray.length}
-              correctAnswers={correctAnswers}
+              correctAnswers={score}
               selectedAnswer={selectedAnswer}
               showCorrect={showCorrect}
               onAnswerClick={handleAnswerClick}
             />
           ) : (
             <QuizCompletion 
-              correctAnswers={correctAnswers} 
+              score={score}
               totalQuestions={questionsArray.length}
-              currentTopic={currentTopic}
+              onRestart={handleRestart}
+              onExploreMore={handleExploreMore}
             />
           )}
         </ScrollArea>
