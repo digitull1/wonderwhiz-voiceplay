@@ -2,6 +2,8 @@ import React from "react";
 import { motion } from "framer-motion";
 import { RegistrationForm } from "./forms/RegistrationForm";
 import { LoginForm } from "./forms/LoginForm";
+import { supabase } from "@/integrations/supabase/client";
+import { useEffect } from "react";
 
 interface AuthFormProps {
   onComplete?: () => void;
@@ -9,6 +11,19 @@ interface AuthFormProps {
 }
 
 export const AuthForm: React.FC<AuthFormProps> = ({ onComplete, isLogin = false }) => {
+  useEffect(() => {
+    // Check for existing session on mount
+    const checkSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        console.log('Existing session found:', session.user.id);
+        onComplete?.();
+      }
+    };
+    
+    checkSession();
+  }, [onComplete]);
+
   return (
     <motion.div
       className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50"
