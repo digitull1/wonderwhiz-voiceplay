@@ -11,7 +11,6 @@ export const useAuth = () => {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        // Get the current session
         const { data: { session } } = await supabase.auth.getSession();
         
         if (session?.user) {

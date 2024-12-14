@@ -1,7 +1,7 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { RegistrationForm } from "./forms/RegistrationForm";
 import { LoginForm } from "./forms/LoginForm";
+import { EnhancedRegistrationForm } from "./EnhancedRegistrationForm";
 import { supabase } from "@/integrations/supabase/client";
 import { useEffect } from "react";
 
@@ -37,21 +37,10 @@ export const AuthForm: React.FC<AuthFormProps> = ({ onComplete, isLogin = false 
         animate={{ scale: 1, y: 0 }}
         exit={{ scale: 0.9, y: 20 }}
       >
-        <div className="text-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-800">
-            {isLogin ? "Welcome Back! ✨" : "Join WonderWhiz! 🌟"}
-          </h2>
-          <p className="text-gray-600 mt-2">
-            {isLogin 
-              ? "Continue your magical learning journey" 
-              : "Let's create your magical learning account"}
-          </p>
-        </div>
-
         {isLogin ? (
           <LoginForm onComplete={onComplete} />
         ) : (
-          <RegistrationForm onComplete={onComplete} />
+          <EnhancedRegistrationForm onComplete={onComplete} />
         )}
       </motion.div>
     </motion.div>
