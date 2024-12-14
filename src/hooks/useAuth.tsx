@@ -17,6 +17,21 @@ export const useAuth = () => {
         if (session?.user) {
           console.log('User authenticated:', session.user.id);
           setIsAuthenticated(true);
+          
+          // Check if onboarding is completed
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('onboarding_completed')
+            .eq('id', session.user.id)
+            .single();
+            
+          if (!profile?.onboarding_completed) {
+            toast({
+              title: "Complete your profile!",
+              description: "Let's set up your magical learning journey!",
+              variant: "default"
+            });
+          }
         } else {
           console.log('No authenticated session found');
           // Set up temporary ID for anonymous users
@@ -50,11 +65,22 @@ export const useAuth = () => {
       
       if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
         setIsAuthenticated(true);
+        toast({
+          title: "Welcome back! 🌟",
+          description: "Ready to continue your learning adventure?",
+          className: "bg-primary text-white"
+        });
       } else if (event === 'SIGNED_OUT') {
         setIsAuthenticated(false);
         const tempId = crypto.randomUUID();
         setTempUserId(tempId);
         localStorage.setItem('tempUserId', tempId);
+        
+        toast({
+          title: "See you soon! 👋",
+          description: "Come back anytime to continue learning!",
+          variant: "default"
+        });
       }
     });
 
