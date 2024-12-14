@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { GoogleGenerativeAI } from "https://esm.sh/@google/generative-ai@0.1.3";
-import { GEMINI_PROMPTS, getSystemPrompt } from "../_shared/geminiPrompts.ts";
+import { GEMINI_PROMPTS, getSystemPrompt } from "../_shared/prompts.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
