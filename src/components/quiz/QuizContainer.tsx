@@ -75,8 +75,8 @@ export const QuizContainer: React.FC<QuizContainerProps> = ({
           const { error } = await supabase
             .from('user_progress')
             .update({ 
-              points: pointsToAdd,
-              quiz_score: supabase.raw('quiz_score + 1')
+              points: supabase.sql`points + ${pointsToAdd}`,
+              quiz_score: supabase.sql`quiz_score + 1`
             })
             .eq('user_id', user.id);
 
