@@ -3,7 +3,7 @@ import { motion } from "framer-motion";
 import { Block } from "@/types/chat";
 import { cn } from "@/lib/utils";
 import { handleImageBlock, handleQuizBlock } from "@/utils/blockHandlers";
-import { useToast } from "@/components/ui/use-toast";
+import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
 interface BlockCardProps {

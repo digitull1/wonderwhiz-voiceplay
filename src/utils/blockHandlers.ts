@@ -6,8 +6,11 @@ export const handleImageBlock = async (block: Block) => {
   console.log('Handling image block:', block);
   
   try {
-    const prompt = block.metadata.prompt || `Create a detailed, educational illustration about ${block.title}`;
-    console.log('Generating image with prompt:', prompt);
+    // Create an engaging, child-friendly prompt based on the block title
+    const safePrompt = `Create a bright, playful cartoon-style image about ${block.title.replace('🎨', '').trim()}. 
+      Make it colorful, engaging, and suitable for children with fun details and friendly characters.`;
+    
+    console.log('Generating image with prompt:', safePrompt);
 
     // Show loading state in chat
     window.dispatchEvent(new CustomEvent('wonderwhiz:newMessage', {
@@ -20,7 +23,7 @@ export const handleImageBlock = async (block: Block) => {
 
     const { data, error } = await supabase.functions.invoke('generate-image', {
       body: { 
-        prompt,
+        prompt: safePrompt,
         age_group: "8-12"
       }
     });
@@ -28,9 +31,11 @@ export const handleImageBlock = async (block: Block) => {
     if (error) throw error;
 
     if (data?.image) {
+      // Send the generated image to chat with an engaging message
       window.dispatchEvent(new CustomEvent('wonderwhiz:newMessage', {
         detail: {
-          text: `I've created this magical illustration about "${block.title.replace('🎨', '').trim()}"! What fascinating things can you spot in this picture? Let's explore what we can learn from it! ✨`,
+          text: `I've created this magical illustration about "${block.title.replace('🎨', '').trim()}"! 
+            What fascinating things can you spot in this picture? Let's explore what we can learn from it! ✨`,
           isAi: true,
           imageUrl: data.image
         }
@@ -64,7 +69,10 @@ export const handleQuizBlock = async (block: Block, age: number) => {
   console.log('Handling quiz block:', block);
   
   try {
-    const prompt = block.metadata.prompt || `Create an engaging educational quiz about ${block.title}`;
+    // Create an engaging quiz prompt based on the block title
+    const prompt = `Create a fun, educational quiz about ${block.title.replace('🎯', '').trim()} 
+      with 5 questions: 1 easy, 3 medium, and 1 creative question. Make it engaging and age-appropriate.`;
+    
     console.log('Generating quiz with prompt:', prompt);
 
     // Show loading state in chat
