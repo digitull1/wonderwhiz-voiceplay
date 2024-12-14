@@ -25,6 +25,8 @@ serve(async (req) => {
     console.log('Using safe prompt:', safePrompt);
 
     const hf = new HfInference(Deno.env.get('HUGGING_FACE_ACCESS_TOKEN'));
+    console.log('Initialized Hugging Face client');
+
     const image = await hf.textToImage({
       inputs: safePrompt,
       model: "stabilityai/stable-diffusion-2-1",
@@ -38,6 +40,8 @@ serve(async (req) => {
     if (!image) {
       throw new Error('No image generated');
     }
+
+    console.log('Image generated successfully');
 
     // Convert image to base64
     const buffer = await image.arrayBuffer();
