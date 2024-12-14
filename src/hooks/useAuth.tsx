@@ -50,7 +50,7 @@ export const useAuth = () => {
       
       if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
         setIsAuthenticated(true);
-      } else if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
+      } else if (event === 'SIGNED_OUT' || event === 'USER_UPDATED') {
         setIsAuthenticated(false);
         const tempId = crypto.randomUUID();
         setTempUserId(tempId);
