@@ -42,7 +42,7 @@ serve(async (req) => {
     // Convert image to base64
     const buffer = await image.arrayBuffer();
     const bytes = new Uint8Array(buffer);
-    const base64 = btoa(String.fromCharCode.apply(null, bytes));
+    const base64 = btoa(String.fromCharCode(...Array.from(bytes)));
     const dataUrl = `data:image/jpeg;base64,${base64}`;
     
     return new Response(
