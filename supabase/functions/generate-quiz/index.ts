@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { GEMINI_PROMPTS } from "../_shared/prompts.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -28,25 +29,11 @@ serve(async (req) => {
         messages: [
           {
             role: 'system',
-            content: `You are a helpful AI that generates educational quizzes for children aged ${age}. 
-                     Create 5 fun, engaging, and age-appropriate questions about ${topic}.
-                     Each question should have 4 options with only one correct answer.
-                     Make the questions progressively more challenging but keep them fun and interesting.`
+            content: GEMINI_PROMPTS.SYSTEM_PROMPT
           },
           {
             role: 'user',
-            content: `Generate 5 quiz questions about ${topic} suitable for ${age} year olds.
-                     Return them in this exact JSON format:
-                     {
-                       "questions": [
-                         {
-                           "question": "Your question here?",
-                           "options": ["Option A", "Option B", "Option C", "Option D"],
-                           "correctAnswer": 0,
-                           "topic": "${topic}"
-                         }
-                       ]
-                     }`
+            content: GEMINI_PROMPTS.QUIZ_QUESTIONS(age, topic, 5)
           }
         ],
         temperature: 0.7,
