@@ -22,12 +22,17 @@ serve(async (req) => {
       throw new Error('No prompt provided');
     }
 
+    const token = Deno.env.get('HUGGING_FACE_ACCESS_TOKEN');
+    if (!token) {
+      throw new Error('HUGGING_FACE_ACCESS_TOKEN is not configured');
+    }
+
     // Create a safe prompt for child-friendly content
     const safePrompt = `Create a child-friendly, educational illustration of: ${prompt}. 
       Make it colorful, engaging, and suitable for children aged ${age_group}.`;
     console.log('Using safe prompt:', safePrompt);
 
-    const hf = new HfInference(Deno.env.get('HUGGING_FACE_ACCESS_TOKEN'));
+    const hf = new HfInference(token);
 
     // Implement retry logic with exponential backoff
     let lastError;
