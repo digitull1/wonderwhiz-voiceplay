@@ -6,8 +6,7 @@ export const handleImageBlock = async (block: Block) => {
   console.log('Handling image block:', block);
   
   try {
-    // Create an engaging, child-friendly prompt based on the block title
-    const safePrompt = `Create a fun, cartoon-style image for kids about ${block.title.replace('🎨', '').trim()}. 
+    const safePrompt = `Create a fun, child-friendly, educational illustration about ${block.title.replace('🎨', '').trim()}. 
       Make it colorful, engaging, and suitable for children with playful details.
       Style it like a high-quality children's book illustration.`;
     
@@ -20,25 +19,31 @@ export const handleImageBlock = async (block: Block) => {
       }
     });
 
-    if (error) throw error;
-
-    if (data?.image) {
-      // Send the generated image to chat with an engaging message
-      window.dispatchEvent(new CustomEvent('wonderwhiz:newMessage', {
-        detail: {
-          text: `I've created this magical illustration about "${block.title.replace('🎨', '').trim()}"! 
-            What fascinating things can you spot in this picture? Let's explore what we can learn from it! ✨`,
-          isAi: true,
-          imageUrl: data.image
-        }
-      }));
-
-      toast({
-        title: "Magic created! ✨",
-        description: "I've made something special for you!",
-        className: "bg-primary text-white"
-      });
+    if (error) {
+      console.error('Error from generate-image function:', error);
+      throw error;
     }
+
+    if (!data?.image) {
+      throw new Error('No image data received from generation function');
+    }
+
+    console.log('Image generated successfully');
+
+    window.dispatchEvent(new CustomEvent('wonderwhiz:newMessage', {
+      detail: {
+        text: `I've created this special illustration about "${block.title.replace('🎨', '').trim()}"! 
+          What interesting things can you spot in this picture? Let's explore what we can learn from it! ✨`,
+        isAi: true,
+        imageUrl: data.image
+      }
+    }));
+
+    toast({
+      title: "Magic created! ✨",
+      description: "I've made something special for you!",
+      className: "bg-primary text-white"
+    });
   } catch (error) {
     console.error('Error in handleImageBlock:', error);
     
@@ -61,9 +66,8 @@ export const handleQuizBlock = async (block: Block, age: number) => {
   console.log('Handling quiz block:', block);
   
   try {
-    // Create an engaging quiz prompt based on the block title
     const prompt = `Create a fun, educational quiz about ${block.title.replace('🎯', '').trim()} 
-      with 5 questions: 1 easy, 3 medium, and 1 creative question. Make it engaging and age-appropriate.
+      with 5 questions. Make it engaging and age-appropriate.
       Include playful options and encouraging feedback for both correct and incorrect answers.`;
     
     console.log('Generating quiz with prompt:', prompt);
@@ -77,28 +81,35 @@ export const handleQuizBlock = async (block: Block, age: number) => {
       }
     });
 
-    if (error) throw error;
-
-    if (data?.questions) {
-      window.dispatchEvent(new CustomEvent('wonderwhiz:newMessage', {
-        detail: {
-          text: `Let's have some fun testing what you know about ${block.title.replace('🎯', '').trim()}! Are you ready to become a quiz champion? 🌟`,
-          isAi: true,
-          quizState: {
-            isActive: true,
-            currentQuestion: data.questions,
-            blocksExplored: 0,
-            currentTopic: block.metadata.topic
-          }
-        }
-      }));
-
-      toast({
-        title: "Quiz time! 🎯",
-        description: "Let's see how much you know!",
-        className: "bg-primary text-white"
-      });
+    if (error) {
+      console.error('Error from generate-quiz function:', error);
+      throw error;
     }
+
+    if (!data?.questions) {
+      throw new Error('No quiz data received from generation function');
+    }
+
+    console.log('Quiz generated successfully:', data.questions);
+
+    window.dispatchEvent(new CustomEvent('wonderwhiz:newMessage', {
+      detail: {
+        text: `Let's have some fun testing what you know about ${block.title.replace('🎯', '').trim()}! Are you ready to become a quiz champion? 🌟`,
+        isAi: true,
+        quizState: {
+          isActive: true,
+          currentQuestion: data.questions,
+          blocksExplored: 0,
+          currentTopic: block.metadata.topic
+        }
+      }
+    }));
+
+    toast({
+      title: "Quiz time! 🎯",
+      description: "Let's see how much you know!",
+      className: "bg-primary text-white"
+    });
   } catch (error) {
     console.error('Error in handleQuizBlock:', error);
     
