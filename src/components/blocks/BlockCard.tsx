@@ -53,8 +53,10 @@ export const BlockCard: React.FC<BlockCardProps> = ({
       }));
 
       if (block.metadata?.type === 'image') {
+        console.log('Generating image with block:', block);
         await handleImageBlock(block);
       } else if (block.metadata?.type === 'quiz') {
+        console.log('Generating quiz with block:', block);
         await handleQuizBlock(block, age);
       } else {
         onClick();

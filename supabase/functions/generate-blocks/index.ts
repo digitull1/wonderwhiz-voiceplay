@@ -24,21 +24,25 @@ serve(async (req) => {
     const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
     const prompt = `You are WonderWhiz, a fun and curious AI tutor for kids aged ${age_group}.
-    Generate 3 engaging content blocks about "${context}" based on "${query}".
+    Generate 5 engaging content blocks about "${context}" based on "${query}".
     For each block:
     - Title: Max 72 characters, must be a clickbait-style question or fascinating fact with emoji
     - Description: Short teaser that makes kids want to click
     - Type: Alternate between 'fact', 'image', and 'quiz'
     
-    Return as a JSON array with this structure for each block:
+    Return as a JSON object with this structure:
     {
-      "title": "engaging question/fact with emoji",
-      "description": "teaser text",
-      "metadata": {
-        "topic": "specific topic",
-        "type": "fact/image/quiz",
-        "prompt": "detailed prompt for content generation"
-      }
+      "blocks": [
+        {
+          "title": "engaging question/fact with emoji",
+          "description": "teaser text",
+          "metadata": {
+            "topic": "specific topic",
+            "type": "fact/image/quiz",
+            "prompt": "detailed prompt for content generation"
+          }
+        }
+      ]
     }`;
 
     const result = await model.generateContent(prompt);
@@ -52,7 +56,7 @@ serve(async (req) => {
       blocks = JSON.parse(text);
     } catch (error) {
       console.error('Error parsing Gemini response:', error);
-      // Fallback blocks if parsing fails
+      // Fallback blocks with proper structure
       blocks = {
         blocks: [
           {
@@ -65,12 +69,30 @@ serve(async (req) => {
             }
           },
           {
+            title: `🔬 Explore the hidden wonders of ${context}!`,
+            description: "Join me on an exciting journey of discovery!",
+            metadata: {
+              topic: context,
+              type: "fact",
+              prompt: `Share an exciting discovery about ${context} that children aged ${age_group} would love`
+            }
+          },
+          {
             title: `🎨 Create magical ${context} art with AI!`,
             description: "Let's make something creative and colorful together!",
             metadata: {
               topic: context,
               type: "image",
               prompt: `Create a fun, child-friendly illustration about ${context}`
+            }
+          },
+          {
+            title: `🌈 Uncover the rainbow connection in ${context}!`,
+            description: "Did you know there's something amazing waiting to be discovered?",
+            metadata: {
+              topic: context,
+              type: "fact",
+              prompt: `Share a colorful and engaging fact about ${context} for children aged ${age_group}`
             }
           },
           {
