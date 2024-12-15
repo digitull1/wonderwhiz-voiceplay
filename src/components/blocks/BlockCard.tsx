@@ -36,7 +36,7 @@ export const BlockCard: React.FC<BlockCardProps> = ({
         return;
       }
 
-      // Get user progress data including all necessary fields
+      // Get user progress data
       const { data: userProgress } = await supabase
         .from('user_progress')
         .select('topics_explored, points')
@@ -94,7 +94,7 @@ export const BlockCard: React.FC<BlockCardProps> = ({
         });
       }
 
-      // Track interaction in user_progress using a regular update
+      // Update user progress
       const { error: progressError } = await supabase
         .from('user_progress')
         .update({ 
