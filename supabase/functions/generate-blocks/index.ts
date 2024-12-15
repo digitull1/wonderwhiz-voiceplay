@@ -63,7 +63,7 @@ serve(async (req) => {
     const response = result.response;
     const text = response.text();
     
-    console.log('Received response from Gemini');
+    console.log('Received response from Gemini:', text);
 
     let blocks;
     try {
