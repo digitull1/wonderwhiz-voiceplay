@@ -4,17 +4,28 @@ import { HfInference } from 'https://esm.sh/@huggingface/inference@2.3.2';
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Max-Age': '86400',
 };
 
 const RETRY_DELAY = 10000; // 10 seconds
 const MAX_RETRIES = 3;
 
 serve(async (req) => {
+  console.log('Function called with method:', req.method);
+
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { 
+      status: 204,
+      headers: corsHeaders 
+    });
   }
 
   try {
+    if (req.method !== 'POST') {
+      throw new Error(`Method ${req.method} not allowed`);
+    }
+
     const { prompt, age_group = "8-12" } = await req.json();
     console.log('Processing image generation request:', { prompt, age_group });
 
@@ -24,6 +35,7 @@ serve(async (req) => {
 
     const token = Deno.env.get('HUGGING_FACE_ACCESS_TOKEN');
     if (!token) {
+      console.error('HUGGING_FACE_ACCESS_TOKEN not configured');
       throw new Error('HUGGING_FACE_ACCESS_TOKEN is not configured');
     }
 
