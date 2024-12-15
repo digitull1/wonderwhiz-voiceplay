@@ -4,20 +4,33 @@ import { GoogleGenerativeAI } from "https://esm.sh/@google/generative-ai@0.1.3";
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Access-Control-Max-Age': '86400',
 };
 
 serve(async (req) => {
+  console.log('Function called with method:', req.method);
+  
+  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, {
+      status: 204,
+      headers: corsHeaders
+    });
   }
 
   try {
+    if (req.method !== 'POST') {
+      throw new Error(`Method ${req.method} not allowed`);
+    }
+
     const { query, context = "general", age_group = "8-12" } = await req.json();
-    console.log('Generating blocks for:', { query, context, age_group });
+    console.log('Processing request with:', { query, context, age_group });
 
     const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
     if (!GEMINI_API_KEY) {
-      throw new Error('GEMINI_API_KEY not configured');
+      console.error('GEMINI_API_KEY not found');
+      throw new Error('API configuration error');
     }
 
     const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
@@ -45,22 +58,23 @@ serve(async (req) => {
       ]
     }`;
 
+    console.log('Sending prompt to Gemini');
     const result = await model.generateContent(prompt);
     const response = result.response;
     const text = response.text();
     
-    console.log('Generated content:', text);
+    console.log('Received response from Gemini');
 
     let blocks;
     try {
       blocks = JSON.parse(text);
+      console.log('Successfully parsed response');
     } catch (error) {
       console.error('Error parsing Gemini response:', error);
-      // Fallback blocks with proper structure
       blocks = {
         blocks: [
           {
-            title: `🌟 Discover amazing secrets about ${context}!`,
+            title: `🌟 What amazing secrets about ${context} will surprise you?`,
             description: "Click to uncover fascinating facts that will blow your mind!",
             metadata: {
               topic: context,
@@ -69,7 +83,7 @@ serve(async (req) => {
             }
           },
           {
-            title: `🔬 Explore the hidden wonders of ${context}!`,
+            title: `🔬 Did you know this mind-blowing fact about ${context}?`,
             description: "Join me on an exciting journey of discovery!",
             metadata: {
               topic: context,
@@ -78,8 +92,8 @@ serve(async (req) => {
             }
           },
           {
-            title: `🎨 Create magical ${context} art with AI!`,
-            description: "Let's make something creative and colorful together!",
+            title: `🎨 Want to see ${context} come to life in a magical way?`,
+            description: "Let's create something amazing together!",
             metadata: {
               topic: context,
               type: "image",
@@ -87,8 +101,8 @@ serve(async (req) => {
             }
           },
           {
-            title: `🌈 Uncover the rainbow connection in ${context}!`,
-            description: "Did you know there's something amazing waiting to be discovered?",
+            title: `🌈 Can you solve the mystery of ${context}?`,
+            description: "An incredible secret is waiting to be discovered!",
             metadata: {
               topic: context,
               type: "fact",
@@ -96,8 +110,8 @@ serve(async (req) => {
             }
           },
           {
-            title: `🎯 Test your ${context} knowledge!`,
-            description: "Challenge yourself with fun questions!",
+            title: `🎯 Think you know everything about ${context}?`,
+            description: "Challenge yourself with these fun questions!",
             metadata: {
               topic: context,
               type: "quiz",
@@ -108,6 +122,7 @@ serve(async (req) => {
       };
     }
 
+    console.log('Sending response');
     return new Response(
       JSON.stringify(blocks),
       { 
