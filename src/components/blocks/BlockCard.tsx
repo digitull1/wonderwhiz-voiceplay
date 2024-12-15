@@ -87,12 +87,12 @@ export const BlockCard: React.FC<BlockCardProps> = ({
         });
       }
 
-      // Track interaction in user_progress
+      // Track interaction in user_progress using a regular update
       const { error: progressError } = await supabase
         .from('user_progress')
         .update({ 
-          topics_explored: supabase.sql`topics_explored + 1`,
-          points: supabase.sql`points + 10`
+          topics_explored: profileData?.topics_explored ? profileData.topics_explored + 1 : 1,
+          points: profileData?.points ? profileData.points + 10 : 10
         })
         .eq('user_id', user.id);
 
