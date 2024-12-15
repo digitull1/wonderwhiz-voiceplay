@@ -13,15 +13,6 @@ export const handleImageBlock = async (block: Block) => {
     
     console.log('Generating image with prompt:', safePrompt);
 
-    // Show loading state in chat
-    window.dispatchEvent(new CustomEvent('wonderwhiz:newMessage', {
-      detail: {
-        text: "✨ Creating something magical for you! Watch this space...",
-        isAi: true,
-        isLoading: true
-      }
-    }));
-
     const { data, error } = await supabase.functions.invoke('generate-image', {
       body: { 
         prompt: safePrompt,
@@ -76,15 +67,6 @@ export const handleQuizBlock = async (block: Block, age: number) => {
       Include playful options and encouraging feedback for both correct and incorrect answers.`;
     
     console.log('Generating quiz with prompt:', prompt);
-
-    // Show loading state in chat
-    window.dispatchEvent(new CustomEvent('wonderwhiz:newMessage', {
-      detail: {
-        text: "🎯 Creating some fun questions for you! Get ready...",
-        isAi: true,
-        isLoading: true
-      }
-    }));
 
     const { data, error } = await supabase.functions.invoke('generate-quiz', {
       body: { 
