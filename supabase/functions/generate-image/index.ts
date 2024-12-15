@@ -28,8 +28,11 @@ serve(async (req) => {
     }
 
     // Create a safe prompt for child-friendly content
-    const safePrompt = `Create a child-friendly, educational illustration of: ${prompt}. 
-      Make it colorful, engaging, and suitable for children aged ${age_group}.`;
+    const safePrompt = `Create a fun, cartoon-style image for kids that relates to: ${prompt}. 
+      Style: Friendly, colorful, and kid-appropriate. Make it engaging and suitable for children aged ${age_group}.
+      Include playful details and avoid anything scary or violent.
+      Make it look like a high-quality children's book illustration.`;
+    
     console.log('Using safe prompt:', safePrompt);
 
     const hf = new HfInference(token);
@@ -44,8 +47,8 @@ serve(async (req) => {
           inputs: safePrompt,
           model: "stabilityai/stable-diffusion-2-1",
           parameters: {
-            negative_prompt: "unsafe, inappropriate, scary, violent, adult content",
-            num_inference_steps: 25,
+            negative_prompt: "unsafe, inappropriate, scary, violent, adult content, realistic, photographic",
+            num_inference_steps: 30,
             guidance_scale: 7.5,
           }
         });
@@ -82,7 +85,7 @@ serve(async (req) => {
         // Check if it's a rate limit error
         if (error.message?.includes('Max requests')) {
           console.log(`Rate limit hit, waiting ${RETRY_DELAY}ms before retry...`);
-          await new Promise(resolve => setTimeout(resolve, RETRY_DELAY));
+          await new Promise(resolve => setTimeout(resolve, RETRY_DELAY * Math.pow(2, attempt)));
           continue;
         }
         

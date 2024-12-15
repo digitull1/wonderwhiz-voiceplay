@@ -7,8 +7,9 @@ export const handleImageBlock = async (block: Block) => {
   
   try {
     // Create an engaging, child-friendly prompt based on the block title
-    const safePrompt = `Create a bright, playful cartoon-style image about ${block.title.replace('🎨', '').trim()}. 
-      Make it colorful, engaging, and suitable for children with fun details and friendly characters.`;
+    const safePrompt = `Create a fun, cartoon-style image for kids about ${block.title.replace('🎨', '').trim()}. 
+      Make it colorful, engaging, and suitable for children with playful details.
+      Style it like a high-quality children's book illustration.`;
     
     console.log('Generating image with prompt:', safePrompt);
 
@@ -71,7 +72,8 @@ export const handleQuizBlock = async (block: Block, age: number) => {
   try {
     // Create an engaging quiz prompt based on the block title
     const prompt = `Create a fun, educational quiz about ${block.title.replace('🎯', '').trim()} 
-      with 5 questions: 1 easy, 3 medium, and 1 creative question. Make it engaging and age-appropriate.`;
+      with 5 questions: 1 easy, 3 medium, and 1 creative question. Make it engaging and age-appropriate.
+      Include playful options and encouraging feedback for both correct and incorrect answers.`;
     
     console.log('Generating quiz with prompt:', prompt);
 

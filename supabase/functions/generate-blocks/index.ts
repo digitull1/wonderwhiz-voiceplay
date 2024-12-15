@@ -1,45 +1,53 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { corsHeaders } from "../_shared/cors.ts";
-import { validateRequest, createFallbackBlocks } from "../_shared/blockUtils.ts";
 
 const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
     console.log('Processing generate-blocks request');
-    const { query, context = "general", age_group = "8-12" } = await validateRequest(req);
+    const { query, context = "general", age_group = "8-12" } = await req.json();
 
     if (!GEMINI_API_KEY) {
       console.error('GEMINI_API_KEY not found in environment');
       throw new Error('API key configuration missing');
     }
 
-    // Generate engaging blocks based on age group and context
+    // Parse age range for appropriate content
+    const [minAge] = age_group.split('-').map(Number);
+    console.log('Generating content for age:', minAge);
+
+    // Generate blocks based on the guidelines
     const blocks = [
       {
-        title: `🌟 Discover amazing facts about ${context}!`,
+        title: `🌟 Can ${context} really do that? Click to discover an amazing secret!`,
+        description: "Uncover fascinating facts that will blow your mind!",
         metadata: {
           topic: context,
-          type: "fact"
+          type: "fact",
+          prompt: `Tell me an amazing fact about ${context} that will surprise and delight children aged ${minAge}`
         }
       },
       {
-        title: `🎨 Create ${context} artwork!`,
+        title: `🎨 Create magical ${context} art with AI!`,
+        description: "Let's make something creative and colorful together!",
         metadata: {
           topic: context,
-          type: "image"
+          type: "image",
+          prompt: `Create a fun, child-friendly illustration about ${context}`
         }
       },
       {
-        title: `🎯 Test your ${context} knowledge!`,
+        title: `🎯 Think you know everything about ${context}? Test your knowledge!`,
+        description: "Challenge yourself with fun questions!",
         metadata: {
           topic: context,
-          type: "quiz"
+          type: "quiz",
+          prompt: `Generate engaging quiz questions about ${context} for children aged ${minAge}`
         }
       }
     ];
@@ -58,13 +66,14 @@ serve(async (req) => {
     console.error('Error in generate-blocks:', error);
     
     return new Response(
-      JSON.stringify(createFallbackBlocks("general")),
+      JSON.stringify({ 
+        error: 'Failed to generate blocks',
+        details: error.message,
+        success: false
+      }),
       { 
-        headers: {
-          ...corsHeaders,
-          'Content-Type': 'application/json'
-        },
-        status: 200 // Return 200 even for errors to handle them gracefully
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 500
       }
     );
   }
