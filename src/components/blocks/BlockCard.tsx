@@ -36,6 +36,13 @@ export const BlockCard: React.FC<BlockCardProps> = ({
         return;
       }
 
+      // Get user progress data including all necessary fields
+      const { data: userProgress } = await supabase
+        .from('user_progress')
+        .select('topics_explored, points')
+        .eq('user_id', user.id)
+        .single();
+
       const { data: profileData } = await supabase
         .from('profiles')
         .select('age')
@@ -91,8 +98,8 @@ export const BlockCard: React.FC<BlockCardProps> = ({
       const { error: progressError } = await supabase
         .from('user_progress')
         .update({ 
-          topics_explored: profileData?.topics_explored ? profileData.topics_explored + 1 : 1,
-          points: profileData?.points ? profileData.points + 10 : 10
+          topics_explored: (userProgress?.topics_explored || 0) + 1,
+          points: (userProgress?.points || 0) + 10
         })
         .eq('user_id', user.id);
 
