@@ -58,6 +58,29 @@ export const useBlockGeneration = (userProfile: UserProfile | null) => {
 
         if (error) {
           console.error('Error from generate-blocks:', error);
+          // Parse the error response body if it exists
+          let errorBody;
+          try {
+            errorBody = typeof error.message === 'string' && error.message.includes('{') 
+              ? JSON.parse(error.message)
+              : null;
+          } catch (e) {
+            console.error('Error parsing error body:', e);
+          }
+
+          // If we have fallback content in the error response, use it
+          if (errorBody?.body) {
+            try {
+              const parsedBody = JSON.parse(errorBody.body);
+              if (parsedBody.fallback) {
+                console.log('Using fallback content from error response');
+                return parsedBody.fallback;
+              }
+            } catch (e) {
+              console.error('Error parsing fallback content:', e);
+            }
+          }
+          
           throw error;
         }
 
@@ -93,10 +116,12 @@ export const useBlockGeneration = (userProfile: UserProfile | null) => {
 
     } catch (error) {
       console.error('Error generating blocks:', error);
+      
+      // Show a user-friendly toast message
       toast({
-        title: "Couldn't generate content blocks",
-        description: "Using fallback content instead",
-        variant: "destructive"
+        title: "Taking a quick break! 🌟",
+        description: "We're generating lots of fun content! Here are some cool topics to explore in the meantime.",
+        variant: "default"
       });
       
       // Return contextual fallback blocks
