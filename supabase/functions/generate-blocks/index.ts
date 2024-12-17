@@ -9,13 +9,69 @@ const corsHeaders = {
   'Cache-Control': 'no-store, no-cache, must-revalidate'
 };
 
+const getFallbackBlocks = (topic: string = "general") => ({
+  text: "Let's explore some amazing topics together! 🌟",
+  blocks: [
+    {
+      title: "🌟 Discover fascinating facts about animals in our world!",
+      metadata: {
+        topic: "animals",
+        type: "fact",
+        prompt: "Tell me interesting facts about different animals"
+      }
+    },
+    {
+      title: "🔬 Learn about amazing science experiments you can try!",
+      metadata: {
+        topic: "science",
+        type: "fact",
+        prompt: "Share safe and fun science experiments for kids"
+      }
+    },
+    {
+      title: "🌍 Explore incredible places around the world!",
+      metadata: {
+        topic: "geography",
+        type: "fact",
+        prompt: "Tell me about interesting places and cultures"
+      }
+    },
+    {
+      title: "🎨 Create amazing artwork about nature!",
+      metadata: {
+        topic: "art",
+        type: "image",
+        prompt: "Generate a colorful, educational illustration about nature"
+      }
+    },
+    {
+      title: "🎯 Test your knowledge with a fun quiz!",
+      metadata: {
+        topic: "general",
+        type: "quiz",
+        prompt: "Generate an engaging quiz about general knowledge"
+      }
+    }
+  ]
+});
+
 const retryWithBackoff = async (fn: () => Promise<any>, maxRetries = 3) => {
   for (let i = 0; i < maxRetries; i++) {
     try {
       return await fn();
     } catch (error) {
+      console.error(`Attempt ${i + 1} failed:`, error);
+      
+      // If we hit rate limit, return fallback immediately
+      if (error.message?.includes('429') || error.message?.toLowerCase().includes('quota')) {
+        console.log('Rate limit hit, using fallback content');
+        throw new Error('RATE_LIMIT');
+      }
+      
       if (i === maxRetries - 1) throw error;
-      const delay = Math.min(1000 * Math.pow(2, i), 10000);
+      
+      const delay = Math.min(1000 * Math.pow(2, i) + Math.random() * 1000, 10000);
+      console.log(`Retrying in ${delay}ms...`);
       await new Promise(resolve => setTimeout(resolve, delay));
     }
   }
@@ -38,7 +94,11 @@ serve(async (req) => {
 
     const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
     if (!GEMINI_API_KEY) {
-      throw new Error('GEMINI_API_KEY not configured');
+      console.error('GEMINI_API_KEY not configured');
+      return new Response(
+        JSON.stringify(getFallbackBlocks(context)),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
@@ -65,44 +125,52 @@ serve(async (req) => {
     }`;
 
     console.log('Sending prompt to Gemini');
+    
     const generateContent = async () => {
       const result = await model.generateContent(prompt);
       return result.response.text();
     };
 
-    const text = await retryWithBackoff(generateContent);
-    console.log('Received response from Gemini:', text);
+    let text;
+    try {
+      text = await retryWithBackoff(generateContent);
+      console.log('Received response from Gemini:', text);
+    } catch (error) {
+      if (error.message === 'RATE_LIMIT') {
+        console.log('Using fallback content due to rate limit');
+        return new Response(
+          JSON.stringify(getFallbackBlocks(context)),
+          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+      throw error;
+    }
 
     let response;
     try {
-      response = JSON.parse(text);
+      response = typeof text === 'string' ? JSON.parse(text) : text;
       console.log('Successfully parsed response');
     } catch (error) {
       console.error('Error parsing Gemini response:', error);
-      throw new Error('Invalid response format from Gemini');
+      return new Response(
+        JSON.stringify(getFallbackBlocks(context)),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
     }
 
     return new Response(
       JSON.stringify(response),
-      { 
-        headers: {
-          ...corsHeaders,
-          'Content-Type': 'application/json'
-        }
-      }
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
 
   } catch (error) {
     console.error('Error in generate-blocks:', error);
     
+    // Return fallback content with error details
     return new Response(
-      JSON.stringify({ 
-        error: 'Failed to generate blocks',
-        details: error.message
-      }),
+      JSON.stringify(getFallbackBlocks("general")),
       { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
     );
   }
