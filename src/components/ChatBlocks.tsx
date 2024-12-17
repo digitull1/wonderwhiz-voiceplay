@@ -6,7 +6,7 @@ import { ScrollProgressDots } from "./blocks/ScrollProgressDots";
 import { EnhancedBlockCard } from "./blocks/EnhancedBlockCard";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
-import { handleImageBlock, handleQuizBlock } from "@/utils/blockHandlers";
+import { handleImageBlock, handleQuizBlock, handleContentBlock } from "@/utils/blockHandlers";
 import { cn } from "@/lib/utils";
 import { useToast } from "./ui/use-toast";
 
@@ -87,6 +87,9 @@ export const ChatBlocks = ({ blocks = [], onBlockClick }: ChatBlocksProps) => {
         case 'quiz':
           await handleQuizBlock(block, age);
           break;
+        case 'fact':
+          await handleContentBlock(block, age);
+          break;
         default:
           onBlockClick(block);
       }
@@ -99,9 +102,6 @@ export const ChatBlocks = ({ blocks = [], onBlockClick }: ChatBlocksProps) => {
       });
     }
   };
-
-  // Ensure we only display 5 blocks
-  const displayBlocks = blocks.slice(0, 5);
 
   return (
     <div className="relative w-full px-1">
@@ -133,7 +133,7 @@ export const ChatBlocks = ({ blocks = [], onBlockClick }: ChatBlocksProps) => {
         }}
       >
         <AnimatePresence>
-          {displayBlocks.map((block, index) => (
+          {blocks.map((block, index) => (
             <motion.div 
               key={`${block.title}-${index}`}
               className={cn(

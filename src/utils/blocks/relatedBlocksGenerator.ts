@@ -39,21 +39,27 @@ export const generateRelatedBlocks = async (topic: string, age: number): Promise
 
     console.log('API response:', data);
 
-    // Generate exactly 5 blocks with specific types
+    // Initialize blocks array with 5 slots
     const blocks: Block[] = [];
 
-    // First 3 blocks from API response
+    // Add fact blocks from API response (up to 3)
     if (data?.blocks && Array.isArray(data.blocks)) {
-      blocks.push(...data.blocks.slice(0, 3).map(block => ({
+      const factBlocks = data.blocks.slice(0, 3).map(block => ({
         ...block,
         metadata: {
           ...block.metadata,
           type: 'fact' as const
         }
-      })));
+      }));
+      blocks.push(...factBlocks);
+    }
+
+    // Fill remaining fact blocks if needed
+    while (blocks.length < 3) {
+      blocks.push(getFallbackBlock(topic, blocks.length));
     }
     
-    // Add image block (4th block)
+    // Always add image block (4th block)
     blocks.push({
       title: `🎨 Create amazing art about ${topic}!`,
       description: "Let's make something creative",
@@ -64,7 +70,7 @@ export const generateRelatedBlocks = async (topic: string, age: number): Promise
       }
     });
 
-    // Add quiz block (5th block)
+    // Always add quiz block (5th block)
     blocks.push({
       title: `🎯 Test your ${topic} knowledge!`,
       description: "Are you ready for a challenge?",
@@ -75,13 +81,8 @@ export const generateRelatedBlocks = async (topic: string, age: number): Promise
       }
     });
 
-    // Ensure we always return exactly 5 blocks
-    while (blocks.length < 5) {
-      blocks.push(getFallbackBlock(topic, blocks.length));
-    }
-
     console.log('Generated blocks:', blocks);
-    return blocks.slice(0, 5); // Ensure we only return 5 blocks
+    return blocks;
   } catch (error) {
     console.error('Error generating related blocks:', error);
     return getFallbackBlocks(topic);
