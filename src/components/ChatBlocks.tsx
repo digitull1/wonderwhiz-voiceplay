@@ -4,6 +4,7 @@ import { Block } from "@/types/chat";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "./ui/use-toast";
 import { LoadingSparkles } from "./LoadingSparkles";
+import { FEEDBACK_MESSAGES } from "@/utils/contentPrompts";
 
 interface ChatBlocksProps {
   blocks: Block[];
@@ -30,9 +31,6 @@ export const ChatBlocks = ({ blocks = [], onBlockClick }: ChatBlocksProps) => {
         return;
       }
 
-      // Determine block type based on index
-      const blockType = index <= 2 ? 'fact' : index === 3 ? 'image' : 'quiz';
-      
       // Show loading state
       window.dispatchEvent(new CustomEvent('wonderwhiz:newMessage', {
         detail: {
@@ -42,75 +40,94 @@ export const ChatBlocks = ({ blocks = [], onBlockClick }: ChatBlocksProps) => {
         }
       }));
 
-      // Call appropriate API based on block type
-      switch (blockType) {
-        case 'image':
-          const { data: imageData, error: imageError } = await supabase.functions.invoke('generate-image', {
-            body: { prompt: block.metadata?.prompt || block.title }
-          });
-          if (imageError) throw imageError;
-          
-          window.dispatchEvent(new CustomEvent('wonderwhiz:newMessage', {
-            detail: {
-              text: "Here's what I imagined! What do you think? ✨",
-              isAi: true,
-              imageUrl: imageData.image
-            }
-          }));
-          break;
-
-        case 'quiz':
-          const { data: quizData, error: quizError } = await supabase.functions.invoke('generate-quiz', {
-            body: { topic: block.metadata?.topic || block.title }
-          });
-          if (quizError) throw quizError;
-          
-          window.dispatchEvent(new CustomEvent('wonderwhiz:newMessage', {
-            detail: {
-              text: "Let's test your knowledge with a fun quiz! 🎯",
-              isAi: true,
-              quizState: {
-                isActive: true,
-                currentQuestion: quizData.questions[0],
-                blocksExplored: 0,
-                currentTopic: block.metadata?.topic || block.title
+      // Determine block type and handle accordingly
+      const blockType = index <= 2 ? 'fact' : index === 3 ? 'image' : 'quiz';
+      
+      try {
+        switch (blockType) {
+          case 'image':
+            const { data: imageData, error: imageError } = await supabase.functions.invoke('generate-image', {
+              body: { 
+                prompt: block.metadata?.prompt || block.title,
+                age_group: "8-12" // Default age group if not specified
               }
-            }
-          }));
-          break;
+            });
+            
+            if (imageError) throw imageError;
+            
+            window.dispatchEvent(new CustomEvent('wonderwhiz:newMessage', {
+              detail: {
+                text: "Here's what I imagined! What interesting things can you spot? 🎨",
+                isAi: true,
+                imageUrl: imageData.image
+              }
+            }));
+            break;
 
-        default:
-          const { data: contentData, error: contentError } = await supabase.functions.invoke('generate-blocks', {
-            body: {
-              query: block.metadata?.prompt || block.title,
-              context: block.metadata?.topic || 'general'
-            }
-          });
-          if (contentError) throw contentError;
-          
-          window.dispatchEvent(new CustomEvent('wonderwhiz:newMessage', {
-            detail: {
-              text: contentData.text || "Here's what I found about that! 🌟",
-              isAi: true,
-              blocks: contentData.blocks
-            }
-          }));
+          case 'quiz':
+            const { data: quizData, error: quizError } = await supabase.functions.invoke('generate-quiz', {
+              body: { 
+                topic: block.metadata?.topic || block.title,
+                age: 8 // Default age if not specified
+              }
+            });
+            
+            if (quizError) throw quizError;
+            
+            window.dispatchEvent(new CustomEvent('wonderwhiz:newMessage', {
+              detail: {
+                text: "Let's test your knowledge with a fun quiz! 🎯",
+                isAi: true,
+                quizState: {
+                  isActive: true,
+                  currentQuestion: quizData.questions[0],
+                  blocksExplored: 0,
+                  currentTopic: block.metadata?.topic || block.title
+                }
+              }
+            }));
+            break;
+
+          default: // fact blocks
+            const { data: contentData, error: contentError } = await supabase.functions.invoke('generate-blocks', {
+              body: {
+                query: block.metadata?.prompt || block.title,
+                context: block.metadata?.topic || 'general'
+              }
+            });
+            
+            if (contentError) throw contentError;
+            
+            window.dispatchEvent(new CustomEvent('wonderwhiz:newMessage', {
+              detail: {
+                text: contentData.text || "Here's what I found! Want to explore more? 🌟",
+                isAi: true,
+                blocks: contentData.blocks
+              }
+            }));
+        }
+      } catch (error) {
+        console.error('Error handling block interaction:', error);
+        window.dispatchEvent(new CustomEvent('wonderwhiz:newMessage', {
+          detail: {
+            text: FEEDBACK_MESSAGES.ERROR[blockType.toUpperCase() as keyof typeof FEEDBACK_MESSAGES.ERROR],
+            isAi: true
+          }
+        }));
       }
 
       onBlockClick(block);
     } catch (error) {
-      console.error('Error handling block click:', error);
+      console.error('Error in block click handler:', error);
       toast({
         title: "Oops!",
-        description: "Something went wrong. Please try again!",
+        description: "Something went wrong. Let's try again!",
         variant: "destructive"
       });
     } finally {
       setIsLoading(false);
     }
   };
-
-  if (!blocks?.length) return null;
 
   return (
     <div className="relative w-full px-4 py-2">
@@ -131,30 +148,40 @@ export const ChatBlocks = ({ blocks = [], onBlockClick }: ChatBlocksProps) => {
         }}
       >
         <AnimatePresence>
-          {blocks.map((block, index) => (
-            <motion.button
-              key={`${block.title}-${index}`}
-              onClick={() => handleBlockClick(block, index)}
-              className={`
-                flex-none snap-center px-6 py-3 rounded-full
-                bg-gradient-to-br from-white/90 to-white/80
-                shadow-luxury backdrop-blur-sm
-                border border-white/20
-                transition-all duration-300
-                hover:shadow-xl hover:-translate-y-1
-                text-sm font-medium text-gray-800
-                whitespace-nowrap
-                ${isLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
-              `}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ delay: index * 0.1 }}
-              disabled={isLoading}
-            >
-              {index <= 2 ? '🌟' : index === 3 ? '🎨' : '🎯'} {block.title}
-            </motion.button>
-          ))}
+          {blocks.map((block, index) => {
+            const gradients = [
+              'from-purple-500/20 to-pink-500/20',
+              'from-blue-500/20 to-purple-500/20',
+              'from-green-500/20 to-blue-500/20',
+              'from-orange-500/20 to-red-500/20',
+              'from-pink-500/20 to-purple-500/20'
+            ];
+            
+            return (
+              <motion.button
+                key={`${block.title}-${index}`}
+                onClick={() => handleBlockClick(block, index)}
+                className={`
+                  flex-none snap-center px-6 py-3 rounded-full
+                  bg-gradient-to-br ${gradients[index % gradients.length]}
+                  shadow-luxury backdrop-blur-sm
+                  border border-white/20
+                  transition-all duration-300
+                  hover:shadow-xl hover:-translate-y-1
+                  text-sm font-medium text-white
+                  whitespace-nowrap
+                  ${isLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+                `}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ delay: index * 0.1 }}
+                disabled={isLoading}
+              >
+                {index <= 2 ? '🌟' : index === 3 ? '🎨' : '🎯'} {block.title}
+              </motion.button>
+            );
+          })}
         </AnimatePresence>
       </div>
     </div>
