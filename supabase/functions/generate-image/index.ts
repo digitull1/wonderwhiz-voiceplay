@@ -14,6 +14,7 @@ const MAX_RETRIES = 3;
 serve(async (req) => {
   console.log('Function called with method:', req.method);
 
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { 
       status: 204,
