@@ -1,6 +1,6 @@
 import { Block } from "@/types/chat";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { handleError } from "./errorHandler";
 
 export const handleImageBlock = async (block: Block) => {

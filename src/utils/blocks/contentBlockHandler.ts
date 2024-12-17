@@ -1,6 +1,6 @@
 import { Block } from "@/types/chat";
 import { supabase } from "@/integrations/supabase/client";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { generateRelatedBlocks } from "./relatedBlocksGenerator";
 import { handleError } from "./errorHandler";
 
