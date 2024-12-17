@@ -8,7 +8,7 @@ const corsHeaders = {
   'Access-Control-Max-Age': '86400',
 };
 
-const RETRY_DELAY = 1000; // 1 second initial delay
+const INITIAL_RETRY_DELAY = 5000; // 5 seconds initial delay
 const MAX_RETRIES = 3;
 
 serve(async (req) => {
@@ -92,15 +92,36 @@ serve(async (req) => {
         console.error(`Attempt ${attempt + 1} failed:`, error);
         lastError = error;
         
-        if (attempt < MAX_RETRIES - 1) {
-          const delay = RETRY_DELAY * Math.pow(2, attempt);
-          console.log(`Waiting ${delay}ms before retry...`);
+        // Check if it's a rate limit error
+        if (error.message?.includes('Max requests')) {
+          const delay = INITIAL_RETRY_DELAY * Math.pow(2, attempt);
+          console.log(`Rate limit hit, waiting ${delay}ms before retry...`);
           await new Promise(resolve => setTimeout(resolve, delay));
+          continue;
         }
+        
+        // For other errors, break the retry loop
+        break;
       }
     }
 
-    throw lastError || new Error('Failed to generate image after all retries');
+    // If we get here, all retries failed
+    if (lastError?.message?.includes('Max requests')) {
+      return new Response(
+        JSON.stringify({ 
+          error: 'Rate limit exceeded', 
+          details: 'Please try again in a minute',
+          success: false,
+          retryAfter: 60 // Suggest retry after 60 seconds
+        }),
+        { 
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 429 // Too Many Requests
+        }
+      );
+    }
+
+    throw lastError || new Error('Failed to generate image after retries');
     
   } catch (error) {
     console.error('Error in generate-image function:', error);
