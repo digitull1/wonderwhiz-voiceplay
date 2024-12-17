@@ -1,23 +1,10 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { GoogleGenerativeAI } from "https://esm.sh/@google/generative-ai@0.1.3";
-import { GEMINI_PROMPTS, getSystemPrompt } from "../_shared/prompts.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
-
-interface GenerationRequest {
-  prompt: string;
-  context: {
-    age: number;
-    interests: string[];
-    name?: string;
-    lastTopic?: string;
-    promptType: keyof typeof GEMINI_PROMPTS;
-    [key: string]: any;
-  };
-}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -25,74 +12,59 @@ serve(async (req) => {
   }
 
   try {
+    const { prompt, context } = await req.json();
+    console.log('Generating content with prompt:', { prompt, context });
+
     const apiKey = Deno.env.get('GEMINI_API_KEY');
     if (!apiKey) {
-      throw new Error('GEMINI_API_KEY is not configured');
+      throw new Error('GEMINI_API_KEY not configured');
     }
 
     const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
-    const { prompt, context }: GenerationRequest = await req.json();
-    const { age, interests, promptType, ...otherContext } = context;
+    const systemPrompt = `You are WonderWhiz, a fun and educational AI assistant for children.
+    Your task is to generate engaging, age-appropriate content for a ${context.age}-year-old child.
+    Keep the language simple, fun, and educational.
+    Include emojis to make it more engaging.
+    Always end with a question to encourage curiosity.`;
 
-    // Get the system prompt with user context
-    const systemPrompt = getSystemPrompt(age, interests);
+    const result = await model.generateContent([
+      { text: systemPrompt },
+      { text: prompt }
+    ]);
 
-    // Get the specific prompt based on the promptType
-    let specificPrompt = "";
-    if (typeof GEMINI_PROMPTS[promptType] === "function") {
-      specificPrompt = GEMINI_PROMPTS[promptType](age, ...Object.values(otherContext));
-    } else {
-      specificPrompt = GEMINI_PROMPTS[promptType];
-    }
-
-    // Combine prompts
-    const fullPrompt = `${systemPrompt}\n\n${specificPrompt}\n\n${prompt}`;
-
-    console.log('Generating content with prompt:', fullPrompt);
-
-    const result = await model.generateContent(fullPrompt);
     const response = result.response;
     const text = response.text();
+    console.log('Generated content:', text);
 
     return new Response(
-      JSON.stringify({ 
-        text,
-        timestamp: new Date().toISOString(),
-        context: context,
-        metadata: {
-          model: "gemini-pro",
-          promptType,
-          systemPrompt: true
-        }
-      }),
-      { 
-        headers: { 
-          ...corsHeaders,
-          'Content-Type': 'application/json'
-        }
-      }
+      JSON.stringify({ text, success: true }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
+
   } catch (error) {
-    console.error('Error in generate-with-gemini:', error);
+    console.error('Error generating content:', error);
+    
+    // Check if it's a rate limit error
+    if (error.message?.includes('429') || error.message?.includes('quota')) {
+      const fallbackText = "I'm a bit tired right now, but I'd love to tell you more about this topic! What would you like to know? 🌟";
+      
+      return new Response(
+        JSON.stringify({ text: fallbackText, success: true }),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
     
     return new Response(
       JSON.stringify({ 
-        error: error.message,
-        timestamp: new Date().toISOString(),
-        metadata: {
-          type: error.name,
-          status: error.status || 500,
-          details: error.details || null
-        }
+        error: 'Failed to generate content',
+        details: error.message,
+        success: false
       }),
       { 
-        status: error.status || 500,
-        headers: { 
-          ...corsHeaders,
-          'Content-Type': 'application/json'
-        }
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 500
       }
     );
   }

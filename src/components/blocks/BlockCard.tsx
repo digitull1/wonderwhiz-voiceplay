@@ -2,10 +2,9 @@ import React from "react";
 import { motion } from "framer-motion";
 import { Block } from "@/types/chat";
 import { cn } from "@/lib/utils";
-import { handleImageBlock, handleQuizBlock } from "@/utils/blockHandlers";
+import { handleContentBlock, handleImageBlock, handleQuizBlock } from "@/utils/blockHandlers";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { getGroqResponse } from "@/utils/groq";
 
 interface BlockCardProps {
   block: Block;
@@ -36,13 +35,6 @@ export const BlockCard: React.FC<BlockCardProps> = ({
         return;
       }
 
-      // Get user progress data
-      const { data: userProgress } = await supabase
-        .from('user_progress')
-        .select('topics_explored, points')
-        .eq('user_id', user.id)
-        .single();
-
       const { data: profileData } = await supabase
         .from('profiles')
         .select('age')
@@ -61,63 +53,43 @@ export const BlockCard: React.FC<BlockCardProps> = ({
         }
       }));
 
-      if (block.metadata?.type === 'image') {
-        console.log('Handling image block:', block);
-        await handleImageBlock(block);
-      } else if (block.metadata?.type === 'quiz') {
-        console.log('Handling quiz block:', block);
-        await handleQuizBlock(block, age);
-      } else {
-        // Handle fact/content blocks
-        console.log('Handling fact block:', block);
-        const content = await getGroqResponse(block.metadata?.prompt || block.title, 100);
-        
-        window.dispatchEvent(new CustomEvent('wonderwhiz:newMessage', {
-          detail: {
-            text: content,
-            isAi: true,
-            blocks: [{
-              title: "🤔 Want to learn more?",
-              description: "Click to explore further!",
-              metadata: {
-                topic: block.metadata?.topic || "general",
-                type: "fact"
-              }
-            }]
-          }
-        }));
-
-        toast({
-          title: "✨ New fact discovered!",
-          description: "Let's learn something amazing!",
-          className: "bg-primary text-white"
-        });
+      // Handle different block types
+      switch (block.metadata?.type) {
+        case 'image':
+          await handleImageBlock(block);
+          break;
+        case 'quiz':
+          await handleQuizBlock(block, age);
+          break;
+        default:
+          await handleContentBlock(block, age);
       }
 
       // Update user progress
-      const { error: progressError } = await supabase
+      const { data: userProgress } = await supabase
         .from('user_progress')
-        .update({ 
-          topics_explored: (userProgress?.topics_explored || 0) + 1,
-          points: (userProgress?.points || 0) + 10
-        })
-        .eq('user_id', user.id);
+        .select('topics_explored, points')
+        .eq('user_id', user.id)
+        .single();
 
-      if (progressError) {
-        console.error('Error updating progress:', progressError);
+      if (userProgress) {
+        await supabase
+          .from('user_progress')
+          .update({ 
+            topics_explored: (userProgress.topics_explored || 0) + 1,
+            points: (userProgress.points || 0) + 10
+          })
+          .eq('user_id', user.id);
+
+        toast({
+          title: "Great exploring! 🚀",
+          description: "You've earned points for your curiosity!",
+          className: "bg-secondary text-white",
+        });
       }
 
     } catch (error) {
       console.error('Error handling block click:', error);
-      
-      // Send error message to chat
-      window.dispatchEvent(new CustomEvent('wonderwhiz:newMessage', {
-        detail: {
-          text: "Oops! Something went wrong while creating your content. Let's try something else! ✨",
-          isAi: true
-        }
-      }));
-
       toast({
         title: "Oops!",
         description: "Something went wrong. Please try again!",
