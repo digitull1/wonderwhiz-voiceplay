@@ -2,6 +2,7 @@ import { Block } from "@/types/chat";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "@/components/ui/use-toast";
 import { generateRelatedBlocks } from "./relatedBlocksGenerator";
+import { handleError } from "./errorHandler";
 
 export const handleContentBlock = async (block: Block, age: number) => {
   console.log('Handling content block:', block);
