@@ -8,7 +8,7 @@ const corsHeaders = {
   'Access-Control-Max-Age': '86400',
 };
 
-const RETRY_DELAY = 10000; // 10 seconds
+const RETRY_DELAY = 1000; // 1 second initial delay
 const MAX_RETRIES = 3;
 
 serve(async (req) => {
@@ -48,9 +48,8 @@ serve(async (req) => {
     console.log('Using safe prompt:', safePrompt);
 
     const hf = new HfInference(token);
+    let lastError = null;
 
-    // Implement retry logic with exponential backoff
-    let lastError;
     for (let attempt = 0; attempt < MAX_RETRIES; attempt++) {
       try {
         console.log(`Attempt ${attempt + 1} of ${MAX_RETRIES}`);
@@ -71,8 +70,7 @@ serve(async (req) => {
 
         // Convert image to base64
         const buffer = await image.arrayBuffer();
-        const bytes = new Uint8Array(buffer);
-        const base64 = btoa(String.fromCharCode(...Array.from(bytes)));
+        const base64 = btoa(String.fromCharCode(...new Uint8Array(buffer)));
         const dataUrl = `data:image/jpeg;base64,${base64}`;
         
         console.log('Image generated successfully');
@@ -94,20 +92,15 @@ serve(async (req) => {
         console.error(`Attempt ${attempt + 1} failed:`, error);
         lastError = error;
         
-        // Check if it's a rate limit error
-        if (error.message?.includes('Max requests')) {
-          console.log(`Rate limit hit, waiting ${RETRY_DELAY}ms before retry...`);
-          await new Promise(resolve => setTimeout(resolve, RETRY_DELAY * Math.pow(2, attempt)));
-          continue;
+        if (attempt < MAX_RETRIES - 1) {
+          const delay = RETRY_DELAY * Math.pow(2, attempt);
+          console.log(`Waiting ${delay}ms before retry...`);
+          await new Promise(resolve => setTimeout(resolve, delay));
         }
-        
-        // For other errors, break the retry loop
-        break;
       }
     }
 
-    // If we get here, all retries failed
-    throw lastError || new Error('Failed to generate image after retries');
+    throw lastError || new Error('Failed to generate image after all retries');
     
   } catch (error) {
     console.error('Error in generate-image function:', error);
