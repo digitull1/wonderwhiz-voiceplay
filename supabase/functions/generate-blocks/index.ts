@@ -62,7 +62,6 @@ const retryWithBackoff = async (fn: () => Promise<any>, maxRetries = 3) => {
     } catch (error) {
       console.error(`Attempt ${i + 1} failed:`, error);
       
-      // If we hit rate limit, return fallback immediately
       if (error.message?.includes('429') || error.message?.toLowerCase().includes('quota')) {
         console.log('Rate limit hit, using fallback content');
         throw new Error('RATE_LIMIT');
@@ -89,9 +88,37 @@ serve(async (req) => {
   }
 
   try {
-    const { query, context = "general" } = await req.json();
+    // Validate request method
+    if (req.method !== 'POST') {
+      console.error('Invalid method:', req.method);
+      return new Response(
+        JSON.stringify({ error: 'Method not allowed' }),
+        { 
+          status: 405,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
+    }
+
+    // Parse and validate request body
+    let body;
+    try {
+      body = await req.json();
+    } catch (error) {
+      console.error('Error parsing request body:', error);
+      return new Response(
+        JSON.stringify({ error: 'Invalid request body' }),
+        { 
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
+    }
+
+    const { query = "", context = "general" } = body;
     console.log('Processing request:', { query, context });
 
+    // Check for API key
     const GEMINI_API_KEY = Deno.env.get('GEMINI_API_KEY');
     if (!GEMINI_API_KEY) {
       console.error('GEMINI_API_KEY not configured');
@@ -101,7 +128,18 @@ serve(async (req) => {
       );
     }
 
-    const genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+    // Initialize Gemini
+    let genAI;
+    try {
+      genAI = new GoogleGenerativeAI(GEMINI_API_KEY);
+    } catch (error) {
+      console.error('Error initializing Gemini:', error);
+      return new Response(
+        JSON.stringify(getFallbackBlocks(context)),
+        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      );
+    }
+
     const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
     const prompt = `You are WonderWhiz, a fun and curious AI tutor for kids.
@@ -166,12 +204,9 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in generate-blocks:', error);
     
-    // Return fallback content with error details
     return new Response(
       JSON.stringify(getFallbackBlocks("general")),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-      }
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   }
 });
