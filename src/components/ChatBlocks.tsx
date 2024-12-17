@@ -1,14 +1,9 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Block } from "@/types/chat";
-import { BlockNavigationButton } from "./blocks/BlockNavigationButton";
-import { ScrollProgressDots } from "./blocks/ScrollProgressDots";
-import { EnhancedBlockCard } from "./blocks/EnhancedBlockCard";
-import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
-import { handleImageBlock, handleQuizBlock, handleContentBlock } from "@/utils/blockHandlers";
-import { cn } from "@/lib/utils";
 import { useToast } from "./ui/use-toast";
+import { LoadingSparkles } from "./LoadingSparkles";
 
 interface ChatBlocksProps {
   blocks: Block[];
@@ -16,42 +11,15 @@ interface ChatBlocksProps {
 }
 
 export const ChatBlocks = ({ blocks = [], onBlockClick }: ChatBlocksProps) => {
-  const scrollContainerRef = useRef<HTMLDivElement>(null);
-  const [currentScrollIndex, setCurrentScrollIndex] = useState(0);
-  const isMobile = useIsMobile();
-  const visibleBlocksCount = isMobile ? 1 : 3;
+  const containerRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
 
-  useEffect(() => {
-    console.log('ChatBlocks received blocks:', {
-      blocksLength: blocks?.length,
-      blocks: blocks
-    });
-  }, [blocks]);
-
-  if (!blocks?.length) {
-    console.log('No blocks to display');
-    return null;
-  }
-
-  const handleScroll = (direction: 'left' | 'right') => {
-    if (!scrollContainerRef.current) return;
-    const blockWidth = scrollContainerRef.current.offsetWidth / visibleBlocksCount;
-    const scrollAmount = direction === 'left' ? -blockWidth : blockWidth;
-    
-    scrollContainerRef.current.scrollTo({
-      left: scrollContainerRef.current.scrollLeft + scrollAmount,
-      behavior: 'smooth'
-    });
-
-    const newIndex = Math.floor((scrollContainerRef.current.scrollLeft + scrollAmount) / blockWidth);
-    setCurrentScrollIndex(Math.max(0, Math.min(newIndex, blocks.length - visibleBlocksCount)));
-  };
-
-  const handleBlockClick = async (block: Block) => {
-    console.log('Block clicked:', block);
-
+  const handleBlockClick = async (block: Block, index: number) => {
+    setIsLoading(true);
     try {
+      console.log('Block clicked:', { block, index });
+
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         toast({
@@ -62,15 +30,9 @@ export const ChatBlocks = ({ blocks = [], onBlockClick }: ChatBlocksProps) => {
         return;
       }
 
-      const { data: profileData } = await supabase
-        .from('profiles')
-        .select('age')
-        .eq('id', user.id)
-        .single();
-
-      const age = profileData?.age || 8;
-      console.log('User age for content generation:', age);
-
+      // Determine block type based on index
+      const blockType = index <= 2 ? 'fact' : index === 3 ? 'image' : 'quiz';
+      
       // Show loading state
       window.dispatchEvent(new CustomEvent('wonderwhiz:newMessage', {
         detail: {
@@ -80,19 +42,62 @@ export const ChatBlocks = ({ blocks = [], onBlockClick }: ChatBlocksProps) => {
         }
       }));
 
-      switch (block.metadata?.type) {
+      // Call appropriate API based on block type
+      switch (blockType) {
         case 'image':
-          await handleImageBlock(block);
+          const { data: imageData, error: imageError } = await supabase.functions.invoke('generate-image', {
+            body: { prompt: block.metadata?.prompt || block.title }
+          });
+          if (imageError) throw imageError;
+          
+          window.dispatchEvent(new CustomEvent('wonderwhiz:newMessage', {
+            detail: {
+              text: "Here's what I imagined! What do you think? ✨",
+              isAi: true,
+              imageUrl: imageData.image
+            }
+          }));
           break;
+
         case 'quiz':
-          await handleQuizBlock(block, age);
+          const { data: quizData, error: quizError } = await supabase.functions.invoke('generate-quiz', {
+            body: { topic: block.metadata?.topic || block.title }
+          });
+          if (quizError) throw quizError;
+          
+          window.dispatchEvent(new CustomEvent('wonderwhiz:newMessage', {
+            detail: {
+              text: "Let's test your knowledge with a fun quiz! 🎯",
+              isAi: true,
+              quizState: {
+                isActive: true,
+                currentQuestion: quizData.questions[0],
+                blocksExplored: 0,
+                currentTopic: block.metadata?.topic || block.title
+              }
+            }
+          }));
           break;
-        case 'fact':
-          await handleContentBlock(block, age);
-          break;
+
         default:
-          onBlockClick(block);
+          const { data: contentData, error: contentError } = await supabase.functions.invoke('generate-blocks', {
+            body: {
+              query: block.metadata?.prompt || block.title,
+              context: block.metadata?.topic || 'general'
+            }
+          });
+          if (contentError) throw contentError;
+          
+          window.dispatchEvent(new CustomEvent('wonderwhiz:newMessage', {
+            detail: {
+              text: contentData.text || "Here's what I found about that! 🌟",
+              isAi: true,
+              blocks: contentData.blocks
+            }
+          }));
       }
+
+      onBlockClick(block);
     } catch (error) {
       console.error('Error handling block click:', error);
       toast({
@@ -100,67 +105,58 @@ export const ChatBlocks = ({ blocks = [], onBlockClick }: ChatBlocksProps) => {
         description: "Something went wrong. Please try again!",
         variant: "destructive"
       });
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  return (
-    <div className="relative w-full px-1">
-      <AnimatePresence>
-        {blocks.length > visibleBlocksCount && !isMobile && (
-          <>
-            <BlockNavigationButton 
-              direction="left" 
-              onClick={() => handleScroll('left')} 
-              className="left-0 z-10"
-              disabled={currentScrollIndex === 0}
-            />
-            <BlockNavigationButton 
-              direction="right" 
-              onClick={() => handleScroll('right')} 
-              className="right-0 z-10"
-              disabled={currentScrollIndex >= blocks.length - visibleBlocksCount}
-            />
-          </>
-        )}
-      </AnimatePresence>
+  if (!blocks?.length) return null;
 
+  return (
+    <div className="relative w-full px-4 py-2">
+      {isLoading && (
+        <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-sm rounded-xl z-50">
+          <LoadingSparkles />
+        </div>
+      )}
+      
       <div 
-        ref={scrollContainerRef}
-        className="flex gap-2 overflow-x-auto pb-3 pt-1 snap-x snap-mandatory hide-scrollbar"
+        ref={containerRef}
+        className="flex gap-3 overflow-x-auto pb-4 pt-1 snap-x snap-mandatory hide-scrollbar"
         style={{
           scrollSnapType: 'x mandatory',
-          WebkitOverflowScrolling: 'touch'
+          WebkitOverflowScrolling: 'touch',
+          msOverflowStyle: 'none',
+          scrollbarWidth: 'none'
         }}
       >
         <AnimatePresence>
           {blocks.map((block, index) => (
-            <motion.div 
+            <motion.button
               key={`${block.title}-${index}`}
-              className={cn(
-                "flex-none snap-center px-1",
-                isMobile ? "w-full" : "w-1/3"
-              )}
+              onClick={() => handleBlockClick(block, index)}
+              className={`
+                flex-none snap-center px-6 py-3 rounded-full
+                bg-gradient-to-br from-white/90 to-white/80
+                shadow-luxury backdrop-blur-sm
+                border border-white/20
+                transition-all duration-300
+                hover:shadow-xl hover:-translate-y-1
+                text-sm font-medium text-gray-800
+                whitespace-nowrap
+                ${isLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
+              `}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
               transition={{ delay: index * 0.1 }}
+              disabled={isLoading}
             >
-              <EnhancedBlockCard
-                block={block}
-                index={index}
-                onClick={() => handleBlockClick(block)}
-              />
-            </motion.div>
+              {index <= 2 ? '🌟' : index === 3 ? '🎨' : '🎯'} {block.title}
+            </motion.button>
           ))}
         </AnimatePresence>
       </div>
-
-      {blocks.length > visibleBlocksCount && (
-        <ScrollProgressDots
-          totalBlocks={blocks.length}
-          visibleBlocksCount={visibleBlocksCount}
-          currentScrollIndex={currentScrollIndex}
-        />
-      )}
     </div>
   );
 };
