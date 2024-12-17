@@ -3,6 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 
 export const generateRelatedBlocks = async (topic: string, age: number): Promise<Block[]> => {
   try {
+    console.log('Generating blocks for:', { topic, age });
+    
     const { data, error } = await supabase.functions.invoke('generate-blocks', {
       body: {
         query: topic,
@@ -11,22 +13,19 @@ export const generateRelatedBlocks = async (topic: string, age: number): Promise
       }
     });
 
-    if (error) throw error;
+    if (error) {
+      console.error('Error generating blocks:', error);
+      throw error;
+    }
+
+    console.log('API response:', data);
 
     // Generate exactly 5 blocks with specific types
     const blocks: Block[] = [];
 
-    // First 3 blocks for content
-    for (let i = 0; i < 3; i++) {
-      blocks.push({
-        title: `🌟 Discover amazing fact #${i + 1} about ${topic}!`,
-        description: "Click to learn something fascinating!",
-        metadata: {
-          topic,
-          type: "fact",
-          prompt: `Tell me an interesting fact about ${topic}`
-        }
-      });
+    // First 3 blocks from API response
+    if (data?.blocks && Array.isArray(data.blocks)) {
+      blocks.push(...data.blocks.slice(0, 3));
     }
     
     // Add image block (4th block)
@@ -51,54 +50,34 @@ export const generateRelatedBlocks = async (topic: string, age: number): Promise
       }
     });
 
-    return blocks;
+    // Ensure we always return exactly 5 blocks
+    while (blocks.length < 5) {
+      blocks.push(getFallbackBlock(topic, blocks.length));
+    }
+
+    console.log('Generated blocks:', blocks);
+    return blocks.slice(0, 5); // Ensure we only return 5 blocks
   } catch (error) {
     console.error('Error generating related blocks:', error);
     return getFallbackBlocks(topic);
   }
 };
 
-const getFallbackBlocks = (topic: string): Block[] => {
-  return [
-    {
-      title: `🌟 Discover amazing facts about ${topic}!`,
-      description: "Click to learn more",
-      metadata: {
-        topic,
-        type: "fact"
-      }
-    },
-    {
-      title: `💡 Explore interesting ideas about ${topic}!`,
-      description: "Click to discover more",
-      metadata: {
-        topic,
-        type: "fact"
-      }
-    },
-    {
-      title: `🔍 Investigate the secrets of ${topic}!`,
-      description: "Click to uncover more",
-      metadata: {
-        topic,
-        type: "fact"
-      }
-    },
-    {
-      title: `🎨 Create amazing art about ${topic}!`,
-      description: "Let's make something creative",
-      metadata: {
-        topic,
-        type: "image"
-      }
-    },
-    {
-      title: `🎯 Test your ${topic} knowledge!`,
-      description: "Ready for a challenge?",
-      metadata: {
-        topic,
-        type: "quiz"
-      }
+const getFallbackBlock = (topic: string, index: number): Block => {
+  const types = ["fact", "fact", "fact", "image", "quiz"];
+  const emojis = ["🌟", "💡", "🔍", "🎨", "🎯"];
+  
+  return {
+    title: `${emojis[index]} Explore ${topic}!`,
+    description: "Click to learn more",
+    metadata: {
+      topic,
+      type: types[index],
+      prompt: `Tell me about ${topic}`
     }
-  ];
+  };
+};
+
+const getFallbackBlocks = (topic: string): Block[] => {
+  return Array.from({ length: 5 }, (_, i) => getFallbackBlock(topic, i));
 };

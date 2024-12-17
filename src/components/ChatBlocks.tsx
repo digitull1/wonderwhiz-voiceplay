@@ -51,14 +51,9 @@ export const ChatBlocks = ({ blocks = [], onBlockClick }: ChatBlocksProps) => {
   const handleBlockClick = async (block: Block) => {
     console.log('Block clicked:', block);
 
-    if (!block.metadata?.type) {
-      onBlockClick(block);
-      return;
-    }
-
     try {
-      const { data: userData } = await supabase.auth.getUser();
-      if (!userData.user) {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) {
         toast({
           title: "Please log in",
           description: "You need to be logged in to use this feature!",
@@ -70,13 +65,13 @@ export const ChatBlocks = ({ blocks = [], onBlockClick }: ChatBlocksProps) => {
       const { data: profileData } = await supabase
         .from('profiles')
         .select('age')
-        .eq('id', userData.user.id)
+        .eq('id', user.id)
         .single();
 
       const age = profileData?.age || 8;
       console.log('User age for content generation:', age);
 
-      // Show loading state in chat
+      // Show loading state
       window.dispatchEvent(new CustomEvent('wonderwhiz:newMessage', {
         detail: {
           text: "✨ Creating something magical for you! Watch the sparkles...",
@@ -85,12 +80,15 @@ export const ChatBlocks = ({ blocks = [], onBlockClick }: ChatBlocksProps) => {
         }
       }));
 
-      if (block.metadata.type === 'image') {
-        console.log('Generating image with block:', block);
-        await handleImageBlock(block);
-      } else if (block.metadata.type === 'quiz') {
-        console.log('Generating quiz with block:', block);
-        await handleQuizBlock(block, age);
+      switch (block.metadata?.type) {
+        case 'image':
+          await handleImageBlock(block);
+          break;
+        case 'quiz':
+          await handleQuizBlock(block, age);
+          break;
+        default:
+          onBlockClick(block);
       }
     } catch (error) {
       console.error('Error handling block click:', error);
@@ -101,6 +99,9 @@ export const ChatBlocks = ({ blocks = [], onBlockClick }: ChatBlocksProps) => {
       });
     }
   };
+
+  // Ensure we only display 5 blocks
+  const displayBlocks = blocks.slice(0, 5);
 
   return (
     <div className="relative w-full px-1">
@@ -132,7 +133,7 @@ export const ChatBlocks = ({ blocks = [], onBlockClick }: ChatBlocksProps) => {
         }}
       >
         <AnimatePresence>
-          {blocks.map((block, index) => (
+          {displayBlocks.map((block, index) => (
             <motion.div 
               key={`${block.title}-${index}`}
               className={cn(
