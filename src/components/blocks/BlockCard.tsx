@@ -5,6 +5,7 @@ import { cn } from "@/lib/utils";
 import { handleContentBlock, handleImageBlock, handleQuizBlock } from "@/utils/blockHandlers";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import { LoadingSparkles } from "../LoadingSparkles";
 
 interface BlockCardProps {
   block: Block;
@@ -115,20 +116,26 @@ export const BlockCard: React.FC<BlockCardProps> = ({
       whileHover={{ scale: 1.02 }}
       whileTap={{ scale: 0.98 }}
     >
-      <h3 className="text-lg font-semibold text-white">
-        {block.title}
-      </h3>
-      {block.description && (
-        <p className="text-sm text-white/80">
-          {block.description}
-        </p>
-      )}
-      {block.metadata?.type && (
-        <div className="mt-2 text-xs text-white/60">
-          {block.metadata.type === 'image' && '🎨 Click to generate an image'}
-          {block.metadata.type === 'quiz' && '🎯 Click to start a quiz'}
-          {block.metadata.type === 'fact' && '🌟 Click to learn more'}
-        </div>
+      {isLoading ? (
+        <LoadingSparkles />
+      ) : (
+        <>
+          <h3 className="text-lg font-semibold text-white">
+            {block.title}
+          </h3>
+          {block.description && (
+            <p className="text-sm text-white/80">
+              {block.description}
+            </p>
+          )}
+          {block.metadata?.type && (
+            <div className="mt-2 text-xs text-white/60">
+              {block.metadata.type === 'image' && '🎨 Click to generate an image'}
+              {block.metadata.type === 'quiz' && '🎯 Click to start a quiz'}
+              {block.metadata.type === 'fact' && '🌟 Click to learn more'}
+            </div>
+          )}
+        </>
       )}
     </motion.button>
   );
