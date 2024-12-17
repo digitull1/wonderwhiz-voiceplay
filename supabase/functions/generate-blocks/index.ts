@@ -6,6 +6,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
   'Access-Control-Max-Age': '86400',
+  'Cache-Control': 'no-store, no-cache, must-revalidate'
 };
 
 const getFallbackBlocks = (topic: string, context: string) => ({
@@ -40,9 +41,22 @@ const getFallbackBlocks = (topic: string, context: string) => ({
   ]
 });
 
+const retryWithBackoff = async (fn: () => Promise<any>, maxRetries = 3) => {
+  for (let i = 0; i < maxRetries; i++) {
+    try {
+      return await fn();
+    } catch (error) {
+      if (i === maxRetries - 1) throw error;
+      const delay = Math.min(1000 * Math.pow(2, i), 10000);
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+  }
+};
+
 serve(async (req) => {
   console.log('Function called with method:', req.method);
   
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, {
       status: 204,
@@ -91,10 +105,12 @@ serve(async (req) => {
 
     try {
       console.log('Sending prompt to Gemini');
-      const result = await model.generateContent(prompt);
-      const response = result.response;
-      const text = response.text();
-      
+      const generateContent = async () => {
+        const result = await model.generateContent(prompt);
+        return result.response.text();
+      };
+
+      const text = await retryWithBackoff(generateContent);
       console.log('Received response from Gemini:', text);
 
       let blocks;
