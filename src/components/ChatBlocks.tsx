@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "./ui/use-toast";
 import { LoadingSparkles } from "./LoadingSparkles";
 import { FEEDBACK_MESSAGES } from "@/utils/contentPrompts";
+import { Sparkles } from "lucide-react";
 
 interface ChatBlocksProps {
   blocks: Block[];
@@ -15,12 +16,14 @@ export const ChatBlocks = ({ blocks = [], onBlockClick }: ChatBlocksProps) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [loadingBlockId, setLoadingBlockId] = useState<string | null>(null);
 
   const handleBlockClick = async (block: Block, index: number) => {
+    const blockId = `${block.title}-${index}`;
+    setLoadingBlockId(blockId);
     setIsLoading(true);
+    
     try {
-      console.log('Block clicked:', { block, index });
-
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
         toast({
@@ -31,7 +34,6 @@ export const ChatBlocks = ({ blocks = [], onBlockClick }: ChatBlocksProps) => {
         return;
       }
 
-      // Show loading state
       window.dispatchEvent(new CustomEvent('wonderwhiz:newMessage', {
         detail: {
           text: "✨ Creating something magical for you! Watch the sparkles...",
@@ -40,7 +42,6 @@ export const ChatBlocks = ({ blocks = [], onBlockClick }: ChatBlocksProps) => {
         }
       }));
 
-      // Determine block type and handle accordingly
       const blockType = index <= 2 ? 'fact' : index === 3 ? 'image' : 'quiz';
       
       try {
@@ -49,7 +50,7 @@ export const ChatBlocks = ({ blocks = [], onBlockClick }: ChatBlocksProps) => {
             const { data: imageData, error: imageError } = await supabase.functions.invoke('generate-image', {
               body: { 
                 prompt: block.metadata?.prompt || block.title,
-                age_group: "8-12" // Default age group if not specified
+                age_group: "8-12"
               }
             });
             
@@ -68,7 +69,7 @@ export const ChatBlocks = ({ blocks = [], onBlockClick }: ChatBlocksProps) => {
             const { data: quizData, error: quizError } = await supabase.functions.invoke('generate-quiz', {
               body: { 
                 topic: block.metadata?.topic || block.title,
-                age: 8 // Default age if not specified
+                age: 8
               }
             });
             
@@ -88,7 +89,7 @@ export const ChatBlocks = ({ blocks = [], onBlockClick }: ChatBlocksProps) => {
             }));
             break;
 
-          default: // fact blocks
+          default:
             const { data: contentData, error: contentError } = await supabase.functions.invoke('generate-blocks', {
               body: {
                 query: block.metadata?.prompt || block.title,
@@ -126,7 +127,17 @@ export const ChatBlocks = ({ blocks = [], onBlockClick }: ChatBlocksProps) => {
       });
     } finally {
       setIsLoading(false);
+      setLoadingBlockId(null);
     }
+  };
+
+  const getGradientClass = (index: number) => {
+    const gradients = [
+      'block-card-gradient-1',
+      'block-card-gradient-2',
+      'block-card-gradient-3'
+    ];
+    return gradients[index % gradients.length];
   };
 
   return (
@@ -139,49 +150,40 @@ export const ChatBlocks = ({ blocks = [], onBlockClick }: ChatBlocksProps) => {
       
       <div 
         ref={containerRef}
-        className="flex gap-3 overflow-x-auto pb-4 pt-1 snap-x snap-mandatory hide-scrollbar"
-        style={{
-          scrollSnapType: 'x mandatory',
-          WebkitOverflowScrolling: 'touch',
-          msOverflowStyle: 'none',
-          scrollbarWidth: 'none'
-        }}
+        className="block-container"
       >
         <AnimatePresence>
-          {blocks.map((block, index) => {
-            const gradients = [
-              'from-purple-500/20 to-pink-500/20',
-              'from-blue-500/20 to-purple-500/20',
-              'from-green-500/20 to-blue-500/20',
-              'from-orange-500/20 to-red-500/20',
-              'from-pink-500/20 to-purple-500/20'
-            ];
-            
-            return (
-              <motion.button
-                key={`${block.title}-${index}`}
-                onClick={() => handleBlockClick(block, index)}
-                className={`
-                  flex-none snap-center px-6 py-3 rounded-full
-                  bg-gradient-to-br ${gradients[index % gradients.length]}
-                  shadow-luxury backdrop-blur-sm
-                  border border-white/20
-                  transition-all duration-300
-                  hover:shadow-xl hover:-translate-y-1
-                  text-sm font-medium text-white
-                  whitespace-nowrap
-                  ${isLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'}
-                `}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ delay: index * 0.1 }}
-                disabled={isLoading}
-              >
-                {index <= 2 ? '🌟' : index === 3 ? '🎨' : '🎯'} {block.title}
-              </motion.button>
-            );
-          })}
+          {blocks.map((block, index) => (
+            <motion.button
+              key={`${block.title}-${index}`}
+              onClick={() => handleBlockClick(block, index)}
+              className={`block-card ${getGradientClass(index)} ${
+                isLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+              }`}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ delay: index * 0.1 }}
+              disabled={isLoading}
+            >
+              {loadingBlockId === `${block.title}-${index}` ? (
+                <div className="loading-animation">
+                  <Sparkles className="loading-icon" />
+                </div>
+              ) : (
+                <>
+                  <div className="block-title">
+                    {index <= 2 ? '🌟' : index === 3 ? '🎨' : '🎯'} {block.title}
+                  </div>
+                  {block.description && (
+                    <div className="block-subtitle">
+                      {block.description}
+                    </div>
+                  )}
+                </>
+              )}
+            </motion.button>
+          ))}
         </AnimatePresence>
       </div>
     </div>
