@@ -133,9 +133,9 @@ export const ChatBlocks = ({ blocks = [], onBlockClick }: ChatBlocksProps) => {
 
   const getGradientClass = (index: number) => {
     const gradients = [
-      'block-card-gradient-1',
-      'block-card-gradient-2',
-      'block-card-gradient-3'
+      'bg-gradient-block-1',
+      'bg-gradient-block-2',
+      'bg-gradient-block-3'
     ];
     return gradients[index % gradients.length];
   };
@@ -150,16 +150,23 @@ export const ChatBlocks = ({ blocks = [], onBlockClick }: ChatBlocksProps) => {
       
       <div 
         ref={containerRef}
-        className="block-container"
+        className="flex gap-3 overflow-x-auto pb-4 pt-1 snap-x snap-mandatory hide-scrollbar"
       >
         <AnimatePresence>
           {blocks.map((block, index) => (
             <motion.button
               key={`${block.title}-${index}`}
               onClick={() => handleBlockClick(block, index)}
-              className={`block-card ${getGradientClass(index)} ${
-                isLoading ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
-              }`}
+              className={cn(
+                "flex-none snap-center px-6 py-3 rounded-xl",
+                "backdrop-blur-sm border border-white/20",
+                "transition-all duration-300 cursor-pointer",
+                "text-sm font-medium text-white whitespace-nowrap",
+                "hover:scale-102 hover:-translate-y-1",
+                getGradientClass(index),
+                "min-w-[280px] max-w-[320px]",
+                isLoading && "opacity-50 cursor-not-allowed"
+              )}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
@@ -167,16 +174,16 @@ export const ChatBlocks = ({ blocks = [], onBlockClick }: ChatBlocksProps) => {
               disabled={isLoading}
             >
               {loadingBlockId === `${block.title}-${index}` ? (
-                <div className="loading-animation">
-                  <Sparkles className="loading-icon" />
+                <div className="flex items-center justify-center p-4">
+                  <Sparkles className="animate-sparkle text-white" />
                 </div>
               ) : (
                 <>
-                  <div className="block-title">
+                  <div className="text-block-title font-bold mb-1 line-clamp-2">
                     {index <= 2 ? '🌟' : index === 3 ? '🎨' : '🎯'} {block.title}
                   </div>
                   {block.description && (
-                    <div className="block-subtitle">
+                    <div className="text-block-desc text-white/80 line-clamp-2">
                       {block.description}
                     </div>
                   )}
