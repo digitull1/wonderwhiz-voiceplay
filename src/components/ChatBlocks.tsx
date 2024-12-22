@@ -44,7 +44,7 @@ export const ChatBlocks = ({ blocks = [], onBlockClick }: ChatBlocksProps) => {
         }
       }));
 
-      const blockType = index <= 2 ? 'fact' : index === 3 ? 'image' : 'quiz';
+      const blockType = block.metadata?.type || 'fact';
       
       try {
         switch (blockType) {
@@ -98,7 +98,8 @@ export const ChatBlocks = ({ blocks = [], onBlockClick }: ChatBlocksProps) => {
             const { data: contentData, error: contentError } = await supabase.functions.invoke('generate-blocks', {
               body: {
                 query: block.metadata?.prompt || block.title,
-                context: block.metadata?.topic || 'general'
+                context: block.metadata?.topic || 'general',
+                age_group: "8-12"
               }
             });
             
@@ -123,7 +124,7 @@ export const ChatBlocks = ({ blocks = [], onBlockClick }: ChatBlocksProps) => {
         console.error('Error handling block interaction:', error);
         window.dispatchEvent(new CustomEvent('wonderwhiz:newMessage', {
           detail: {
-            text: FEEDBACK_MESSAGES.ERROR[blockType.toUpperCase() as keyof typeof FEEDBACK_MESSAGES.ERROR],
+            text: "Oops! Something went wrong. Let's try something else! ✨",
             isAi: true
           }
         }));

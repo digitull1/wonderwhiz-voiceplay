@@ -19,13 +19,15 @@ export const BlockItem: React.FC<BlockItemProps> = ({
   isLoading,
   loadingBlockId
 }) => {
-  const getGradientClass = (index: number) => {
-    const gradients = [
-      'bg-gradient-block-1',
-      'bg-gradient-block-2',
-      'bg-gradient-block-3'
-    ];
-    return gradients[index % gradients.length];
+  const getGradientClass = (type: string) => {
+    const gradients = {
+      fact: 'bg-gradient-to-br from-purple-500/20 to-pink-500/20',
+      exploration: 'bg-gradient-to-br from-blue-500/20 to-purple-500/20',
+      'quiz-teaser': 'bg-gradient-to-br from-green-500/20 to-blue-500/20',
+      image: 'bg-gradient-to-br from-orange-500/20 to-red-500/20',
+      quiz: 'bg-gradient-to-br from-yellow-500/20 to-orange-500/20'
+    };
+    return gradients[block.metadata?.type || 'fact'];
   };
 
   const blockId = `${block.title}-${index}`;
@@ -40,7 +42,7 @@ export const BlockItem: React.FC<BlockItemProps> = ({
         "transition-all duration-300 cursor-pointer",
         "text-sm font-medium text-white",
         "hover:scale-102 hover:-translate-y-1",
-        getGradientClass(index),
+        getGradientClass(block.metadata?.type || 'fact'),
         "min-w-[280px] max-w-[320px] h-[120px]",
         "flex flex-col justify-center items-start gap-2",
         isLoading && "opacity-50 cursor-not-allowed"
@@ -77,6 +79,8 @@ export const BlockItem: React.FC<BlockItemProps> = ({
               }}
             >
               {block.metadata?.type === 'fact' ? '🌟' : 
+               block.metadata?.type === 'exploration' ? '🔍' : 
+               block.metadata?.type === 'quiz-teaser' ? '💭' :
                block.metadata?.type === 'image' ? '🎨' : 
                block.metadata?.type === 'quiz' ? '🎯' : '✨'}
             </motion.span>
