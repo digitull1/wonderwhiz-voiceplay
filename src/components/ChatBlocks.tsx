@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Block } from "@/types/chat";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "./ui/use-toast";
-import { LoadingSparkles } from "./LoadingSparkles";
+import { LoadingAnimation } from "./LoadingAnimation";
 import { FEEDBACK_MESSAGES } from "@/utils/contentPrompts";
 import { Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -35,6 +35,7 @@ export const ChatBlocks = ({ blocks = [], onBlockClick }: ChatBlocksProps) => {
         return;
       }
 
+      // Show loading message
       window.dispatchEvent(new CustomEvent('wonderwhiz:newMessage', {
         detail: {
           text: "✨ Creating something magical for you! Watch the sparkles...",
@@ -56,6 +57,9 @@ export const ChatBlocks = ({ blocks = [], onBlockClick }: ChatBlocksProps) => {
             });
             
             if (imageError) throw imageError;
+            
+            // Show success animation
+            showCelebrationAnimation();
             
             window.dispatchEvent(new CustomEvent('wonderwhiz:newMessage', {
               detail: {
@@ -108,6 +112,14 @@ export const ChatBlocks = ({ blocks = [], onBlockClick }: ChatBlocksProps) => {
               }
             }));
         }
+
+        // Show success toast
+        toast({
+          title: "Success! 🎉",
+          description: "Your content is ready to explore!",
+          className: "bg-primary text-white"
+        });
+
       } catch (error) {
         console.error('Error handling block interaction:', error);
         window.dispatchEvent(new CustomEvent('wonderwhiz:newMessage', {
@@ -132,6 +144,17 @@ export const ChatBlocks = ({ blocks = [], onBlockClick }: ChatBlocksProps) => {
     }
   };
 
+  const showCelebrationAnimation = () => {
+    // Import confetti dynamically to avoid SSR issues
+    import('canvas-confetti').then((confetti) => {
+      confetti.default({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 }
+      });
+    });
+  };
+
   const getGradientClass = (index: number) => {
     const gradients = [
       'bg-gradient-block-1',
@@ -145,7 +168,7 @@ export const ChatBlocks = ({ blocks = [], onBlockClick }: ChatBlocksProps) => {
     <div className="relative w-full px-4 py-2">
       {isLoading && (
         <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-sm rounded-xl z-50">
-          <LoadingSparkles />
+          <LoadingAnimation />
         </div>
       )}
       
@@ -175,9 +198,7 @@ export const ChatBlocks = ({ blocks = [], onBlockClick }: ChatBlocksProps) => {
               disabled={isLoading}
             >
               {loadingBlockId === `${block.title}-${index}` ? (
-                <div className="flex items-center justify-center p-4">
-                  <Sparkles className="animate-sparkle text-white" />
-                </div>
+                <LoadingAnimation />
               ) : (
                 <>
                   <div className="text-block-title font-bold mb-1 line-clamp-2">
