@@ -7,13 +7,14 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { prompt } = await req.json();
-    console.log('Generating image for prompt:', prompt);
+    const { prompt, age_group = "8-12" } = await req.json();
+    console.log('Generating image for prompt:', prompt, 'age group:', age_group);
 
     // Try HuggingFace Flux first
     try {
@@ -27,7 +28,10 @@ serve(async (req) => {
       const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
 
       return new Response(
-        JSON.stringify({ image: `data:image/png;base64,${base64}` }),
+        JSON.stringify({ 
+          image: `data:image/png;base64,${base64}`,
+          success: true 
+        }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     } catch (hfError) {
@@ -54,7 +58,11 @@ serve(async (req) => {
 
       const data = await openaiResponse.json();
       return new Response(
-        JSON.stringify({ image: data.data[0].url }),
+        JSON.stringify({ 
+          image: data.data[0].url,
+          success: true,
+          using_fallback: true
+        }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
     }
@@ -63,11 +71,12 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({ 
         error: 'Failed to generate image',
-        details: error.message
+        details: error.message,
+        success: false
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500
+        status: 200 // Return 200 even for errors to prevent CORS issues
       }
     );
   }

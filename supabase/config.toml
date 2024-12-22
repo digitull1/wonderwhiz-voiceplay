@@ -22,6 +22,7 @@ enabled = true
 [realtime]
 enabled = true
 
+[functions]
 [functions.analyze-image]
 verify_jwt = false
 
