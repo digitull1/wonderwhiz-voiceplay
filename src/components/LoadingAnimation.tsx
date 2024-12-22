@@ -5,7 +5,7 @@ import { Sparkles } from "lucide-react";
 export const LoadingAnimation = () => {
   return (
     <motion.div
-      className="flex flex-col items-center justify-center p-8 space-y-4"
+      className="flex flex-col items-center justify-center p-8 space-y-4 w-full"
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
@@ -21,10 +21,10 @@ export const LoadingAnimation = () => {
           ease: "linear",
         }}
       >
-        <Sparkles className="w-8 h-8 text-primary" />
+        <Sparkles className="w-8 h-8 text-white" />
       </motion.div>
       <motion.p
-        className="text-primary font-medium text-center"
+        className="text-white font-medium text-center text-sm"
         animate={{ opacity: [0.5, 1, 0.5] }}
         transition={{ duration: 1.5, repeat: Infinity }}
       >
