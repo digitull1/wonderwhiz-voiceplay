@@ -37,6 +37,7 @@ const getFallbackBlocks = (topic: string = "general") => ({
 });
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -65,9 +66,13 @@ serve(async (req) => {
         blocks = JSON.parse(text);
       } catch (parseError) {
         console.error('Error parsing Gemini response:', parseError);
+        // Return fallback content with 200 status
         return new Response(
           JSON.stringify(getFallbackBlocks(context)),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 200 // Changed to 200 since we're handling the fallback gracefully
+          }
         );
       }
 
@@ -82,9 +87,13 @@ serve(async (req) => {
       // Check if it's a rate limit error
       if (geminiError.message?.includes('429') || geminiError.message?.includes('quota')) {
         console.log('Rate limit hit, using fallback content');
+        // Return fallback content with 200 status
         return new Response(
           JSON.stringify(getFallbackBlocks(context)),
-          { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+            status: 200 // Changed to 200 since we're handling the fallback gracefully
+          }
         );
       }
 
@@ -92,15 +101,15 @@ serve(async (req) => {
     }
   } catch (error) {
     console.error('Error generating blocks:', error);
+    // For any other errors, return fallback content with 200 status
     return new Response(
       JSON.stringify({ 
-        error: 'Failed to generate blocks',
-        details: error.message,
-        fallback: getFallbackBlocks(context).blocks
+        blocks: getFallbackBlocks(context).blocks,
+        isUsingFallback: true // Added flag to indicate fallback content
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500
+        status: 200 // Changed to 200 since we're handling the fallback gracefully
       }
     );
   }
