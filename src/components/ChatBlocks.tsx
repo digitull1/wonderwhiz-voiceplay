@@ -6,6 +6,7 @@ import { useToast } from "./ui/use-toast";
 import { LoadingSparkles } from "./LoadingSparkles";
 import { FEEDBACK_MESSAGES } from "@/utils/contentPrompts";
 import { Sparkles } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 interface ChatBlocksProps {
   blocks: Block[];
