@@ -19,6 +19,9 @@ export const BlockItem: React.FC<BlockItemProps> = ({
   isLoading,
   loadingBlockId
 }) => {
+  const blockId = `${block.title}-${index}`;
+  const isBlockLoading = loadingBlockId === blockId;
+
   const getGradientClass = (type: string) => {
     const gradients = {
       fact: 'bg-gradient-to-br from-purple-500/20 to-pink-500/20',
@@ -30,8 +33,16 @@ export const BlockItem: React.FC<BlockItemProps> = ({
     return gradients[block.metadata?.type || 'fact'];
   };
 
-  const blockId = `${block.title}-${index}`;
-  const isBlockLoading = loadingBlockId === blockId;
+  const getBlockEmoji = (type: string) => {
+    const emojis = {
+      fact: '🌟',
+      exploration: '🔍',
+      'quiz-teaser': '💭',
+      image: '🎨',
+      quiz: '🎯'
+    };
+    return emojis[type] || '✨';
+  };
 
   return (
     <motion.button
@@ -78,11 +89,7 @@ export const BlockItem: React.FC<BlockItemProps> = ({
                 ease: "easeInOut"
               }}
             >
-              {block.metadata?.type === 'fact' ? '🌟' : 
-               block.metadata?.type === 'exploration' ? '🔍' : 
-               block.metadata?.type === 'quiz-teaser' ? '💭' :
-               block.metadata?.type === 'image' ? '🎨' : 
-               block.metadata?.type === 'quiz' ? '🎯' : '✨'}
+              {getBlockEmoji(block.metadata?.type || 'fact')}
             </motion.span>
           </div>
         </>
