@@ -1,18 +1,17 @@
 import React from "react";
 import { motion } from "framer-motion";
 import confetti from "canvas-confetti";
-import { cn } from "@/lib/utils";
 
 interface RewardAnimationProps {
-  type: "points" | "achievement" | "streak" | "quiz" | "image";
+  type?: "points" | "achievement" | "streak" | "quiz" | "image";
   points?: number;
   message?: string;
 }
 
 export const RewardAnimation: React.FC<RewardAnimationProps> = ({ 
-  type, 
+  type = "achievement", 
   points, 
-  message 
+  message = "Great job! 🎉" 
 }) => {
   React.useEffect(() => {
     confetti({
@@ -22,43 +21,18 @@ export const RewardAnimation: React.FC<RewardAnimationProps> = ({
     });
   }, [type]);
 
-  const getDefaultMessage = () => {
-    switch (type) {
-      case "points":
-        return "Points earned!";
-      case "achievement":
-        return "Achievement unlocked!";
-      case "streak":
-        return "Daily streak!";
-      case "quiz":
-        return "Correct answer!";
-      case "image":
-        return "Image created!";
-      default:
-        return "Great job!";
-    }
-  };
-
   return (
     <motion.div
-      className={cn(
-        "fixed inset-0 pointer-events-none z-50",
-        "flex items-center justify-center"
-      )}
-      initial={{ opacity: 0, scale: 0.8 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.8 }}
-      transition={{ duration: 0.3 }}
+      className="fixed inset-0 pointer-events-none z-50 flex items-center justify-center"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
     >
       <motion.div
-        className={cn(
-          "bg-gradient-to-r from-primary to-secondary",
-          "rounded-lg shadow-xl p-6 text-white text-center",
-          "flex flex-col items-center gap-2"
-        )}
-        initial={{ y: 50 }}
-        animate={{ y: 0 }}
-        exit={{ y: 50 }}
+        className="bg-gradient-to-r from-primary to-secondary rounded-lg shadow-xl p-6 text-white text-center"
+        initial={{ y: 50, scale: 0.8 }}
+        animate={{ y: 0, scale: 1 }}
+        exit={{ y: 50, scale: 0.8 }}
       >
         {points && (
           <motion.div
@@ -76,7 +50,7 @@ export const RewardAnimation: React.FC<RewardAnimationProps> = ({
           animate={{ opacity: 1 }}
           transition={{ delay: 0.3 }}
         >
-          {message || getDefaultMessage()}
+          {message}
         </motion.div>
       </motion.div>
     </motion.div>

@@ -1,12 +1,13 @@
-import React, { useRef, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import React, { useState } from "react";
+import { AnimatePresence } from "framer-motion";
 import { Block } from "@/types/chat";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "./ui/use-toast";
-import { LoadingAnimation } from "./LoadingAnimation";
+import { useToast } from "@/hooks/use-toast";
 import { FEEDBACK_MESSAGES } from "@/utils/contentPrompts";
-import { Sparkles } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { BlockContainer } from "./blocks/BlockContainer";
+import { BlockItem } from "./blocks/BlockItem";
+import { BlockErrorBoundary } from "./blocks/BlockErrorBoundary";
+import { CelebrationAnimation } from "./CelebrationAnimation";
 
 interface ChatBlocksProps {
   blocks: Block[];
@@ -14,10 +15,10 @@ interface ChatBlocksProps {
 }
 
 export const ChatBlocks = ({ blocks = [], onBlockClick }: ChatBlocksProps) => {
-  const containerRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [loadingBlockId, setLoadingBlockId] = useState<string | null>(null);
+  const [showCelebration, setShowCelebration] = useState(false);
 
   const handleBlockClick = async (block: Block, index: number) => {
     const blockId = `${block.title}-${index}`;
@@ -35,7 +36,6 @@ export const ChatBlocks = ({ blocks = [], onBlockClick }: ChatBlocksProps) => {
         return;
       }
 
-      // Show loading message
       window.dispatchEvent(new CustomEvent('wonderwhiz:newMessage', {
         detail: {
           text: "✨ Creating something magical for you! Watch the sparkles...",
@@ -58,8 +58,8 @@ export const ChatBlocks = ({ blocks = [], onBlockClick }: ChatBlocksProps) => {
             
             if (imageError) throw imageError;
             
-            // Show success animation
-            showCelebrationAnimation();
+            setShowCelebration(true);
+            setTimeout(() => setShowCelebration(false), 3000);
             
             window.dispatchEvent(new CustomEvent('wonderwhiz:newMessage', {
               detail: {
@@ -113,7 +113,6 @@ export const ChatBlocks = ({ blocks = [], onBlockClick }: ChatBlocksProps) => {
             }));
         }
 
-        // Show success toast
         toast({
           title: "Success! 🎉",
           description: "Your content is ready to explore!",
@@ -144,77 +143,23 @@ export const ChatBlocks = ({ blocks = [], onBlockClick }: ChatBlocksProps) => {
     }
   };
 
-  const showCelebrationAnimation = () => {
-    // Import confetti dynamically to avoid SSR issues
-    import('canvas-confetti').then((confetti) => {
-      confetti.default({
-        particleCount: 100,
-        spread: 70,
-        origin: { y: 0.6 }
-      });
-    });
-  };
-
-  const getGradientClass = (index: number) => {
-    const gradients = [
-      'bg-gradient-block-1',
-      'bg-gradient-block-2',
-      'bg-gradient-block-3'
-    ];
-    return gradients[index % gradients.length];
-  };
-
   return (
-    <div className="relative w-full px-4 py-2">
-      {isLoading && (
-        <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-sm rounded-xl z-50">
-          <LoadingAnimation />
-        </div>
-      )}
-      
-      <div 
-        ref={containerRef}
-        className="flex gap-3 overflow-x-auto pb-4 pt-1 snap-x snap-mandatory hide-scrollbar"
-      >
+    <BlockErrorBoundary>
+      <BlockContainer isLoading={isLoading}>
         <AnimatePresence>
           {blocks.map((block, index) => (
-            <motion.button
+            <BlockItem
               key={`${block.title}-${index}`}
+              block={block}
+              index={index}
               onClick={() => handleBlockClick(block, index)}
-              className={cn(
-                "flex-none snap-center px-6 py-3 rounded-xl",
-                "backdrop-blur-sm border border-white/20",
-                "transition-all duration-300 cursor-pointer",
-                "text-sm font-medium text-white whitespace-nowrap",
-                "hover:scale-102 hover:-translate-y-1",
-                getGradientClass(index),
-                "min-w-[280px] max-w-[320px]",
-                isLoading && "opacity-50 cursor-not-allowed"
-              )}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -20 }}
-              transition={{ delay: index * 0.1 }}
-              disabled={isLoading}
-            >
-              {loadingBlockId === `${block.title}-${index}` ? (
-                <LoadingAnimation />
-              ) : (
-                <>
-                  <div className="text-block-title font-bold mb-1 line-clamp-2">
-                    {index <= 2 ? '🌟' : index === 3 ? '🎨' : '🎯'} {block.title}
-                  </div>
-                  {block.description && (
-                    <div className="text-block-desc text-white/80 line-clamp-2">
-                      {block.description}
-                    </div>
-                  )}
-                </>
-              )}
-            </motion.button>
+              isLoading={isLoading}
+              loadingBlockId={loadingBlockId}
+            />
           ))}
         </AnimatePresence>
-      </div>
-    </div>
+      </BlockContainer>
+      {showCelebration && <CelebrationAnimation />}
+    </BlockErrorBoundary>
   );
 };
