@@ -7,10 +7,16 @@ export const handleImageBlock = async (block: Block) => {
   console.log('Handling image block:', block);
   
   try {
-    const safePrompt = `Generate a kid-friendly, colorful cartoon-style image about: "${block.title}". Keep it engaging and educational.`;
+    const safePrompt = `Create a kid-friendly, colorful, educational illustration about: "${block.title}". 
+      Make it engaging and suitable for children.`;
+    
+    console.log('Generating image with prompt:', safePrompt);
     
     const { data, error } = await supabase.functions.invoke('generate-image', {
-      body: { prompt: safePrompt }
+      body: { 
+        prompt: safePrompt,
+        age_group: "8-12"
+      }
     });
 
     if (error) throw error;
@@ -18,6 +24,8 @@ export const handleImageBlock = async (block: Block) => {
     if (!data?.image) {
       throw new Error('No image data received');
     }
+
+    console.log('Image generated successfully');
 
     window.dispatchEvent(new CustomEvent('wonderwhiz:newMessage', {
       detail: {

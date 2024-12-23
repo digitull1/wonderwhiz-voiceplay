@@ -9,17 +9,16 @@ export const handleQuizBlock = async (block: Block, age: number) => {
   try {
     const { data, error } = await supabase.functions.invoke('generate-quiz', {
       body: { 
-        topic: block.title,
+        topic: block.metadata.topic || block.title,
         age,
-        contextualPrompt: `Create a multiple-choice quiz for kids aged ${age} on "${block.title}".
-        Include:
-        - A fun, clear question
-        - 3 options (1 correct, 2 silly distractors)
-        - Correct answer feedback`
+        contextualPrompt: `Create a fun, engaging quiz about "${block.title}" for children aged ${age}. 
+        Include 5 multiple-choice questions with 4 options each. Make it educational and entertaining!`
       }
     });
 
     if (error) throw error;
+
+    console.log('Quiz data received:', data);
 
     window.dispatchEvent(new CustomEvent('wonderwhiz:newMessage', {
       detail: {
