@@ -60,19 +60,6 @@ export const QuizCard = ({ questions, onAnswer }: QuizCardProps) => {
     }, 2000);
   };
 
-  const handleRestart = () => {
-    setCurrentQuestionIndex(0);
-    setScore(0);
-    setQuizComplete(false);
-    setSelectedAnswer(null);
-    setShowCorrect(false);
-  };
-
-  const handleExploreMore = () => {
-    // This can be implemented based on your navigation needs
-    console.log("Exploring more topics...");
-  };
-
   return (
     <>
       {showReward && <RewardAnimation type="quiz" />}
@@ -83,8 +70,8 @@ export const QuizCard = ({ questions, onAnswer }: QuizCardProps) => {
         exit={{ opacity: 0, y: -20 }}
         className={cn(
           "w-full max-w-2xl mx-auto",
-          "bg-gradient-to-br from-primary/95 via-secondary/95 to-accent/95",
-          "rounded-xl shadow-luxury border border-white/20",
+          "bg-gradient-to-br from-violet-500/95 via-purple-500/95 to-blue-500/95",
+          "rounded-2xl shadow-luxury border border-white/20",
           "backdrop-blur-xl overflow-hidden"
         )}
       >
@@ -103,8 +90,17 @@ export const QuizCard = ({ questions, onAnswer }: QuizCardProps) => {
             <QuizCompletion 
               score={score}
               totalQuestions={questionsArray.length}
-              onRestart={handleRestart}
-              onExploreMore={handleExploreMore}
+              onRestart={() => {
+                setCurrentQuestionIndex(0);
+                setScore(0);
+                setQuizComplete(false);
+                setSelectedAnswer(null);
+                setShowCorrect(false);
+              }}
+              onExploreMore={() => {
+                // Handle explore more action
+                console.log("Exploring more topics...");
+              }}
             />
           )}
         </ScrollArea>

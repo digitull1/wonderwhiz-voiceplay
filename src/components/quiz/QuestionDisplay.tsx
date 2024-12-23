@@ -46,7 +46,7 @@ export const QuestionDisplay = ({
       </div>
 
       <motion.h3 
-        className="text-xl sm:text-2xl font-semibold mb-6 text-white leading-relaxed"
+        className="text-2xl font-semibold mb-6 text-white leading-relaxed"
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
@@ -78,7 +78,7 @@ export const QuestionDisplay = ({
                     "bg-white/20 text-white border-white/30 backdrop-blur-xl hover:bg-white/30",
                     showResult && isCorrect && "bg-green-500/90 text-white border-white/20",
                     showResult && isSelected && !isCorrect && "bg-red-500/90 text-white border-white/20",
-                    "sm:text-lg text-base group font-medium",
+                    "text-lg group font-medium",
                     "hover:shadow-xl hover:border-white/40"
                   )}
                   onClick={() => !showCorrect && onAnswerClick(index)}
