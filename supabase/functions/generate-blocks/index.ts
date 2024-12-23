@@ -4,76 +4,31 @@ import { GoogleGenerativeAI } from "https://esm.sh/@google/generative-ai@0.1.3";
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Methods': 'POST, OPTIONS',
+  'Content-Type': 'application/json'
 };
 
-const getFallbackBlocks = (topic: string) => ({
-  blocks: [
-    {
-      title: "🌟 Discover fascinating facts about " + topic,
-      description: "Learn amazing things about " + topic + " that will blow your mind!",
-      metadata: {
-        type: "fact",
-        topic: topic,
-        prompt: `Tell me fascinating facts about ${topic}`
-      }
-    },
-    {
-      title: "🔍 Explore the mysteries of " + topic,
-      description: "Dive deeper into the fascinating world of " + topic + "!",
-      metadata: {
-        type: "exploration",
-        topic: topic,
-        prompt: `Explain ${topic} in detail`
-      }
-    },
-    {
-      title: "💭 Test your knowledge about " + topic,
-      description: "Think you know everything about " + topic + "? Let's find out!",
-      metadata: {
-        type: "quiz-teaser",
-        topic: topic,
-        prompt: `Create a quiz about ${topic}`
-      }
-    },
-    {
-      title: "🎨 Create amazing art about " + topic,
-      description: "Let's make something beautiful about " + topic + "!",
-      metadata: {
-        type: "image",
-        topic: topic,
-        prompt: `Generate a child-friendly illustration about ${topic}`
-      }
-    },
-    {
-      title: "🎯 Challenge yourself with a " + topic + " quiz",
-      description: "Ready to become a " + topic + " expert? Take this fun quiz!",
-      metadata: {
-        type: "quiz",
-        topic: topic,
-        prompt: `Generate a fun quiz about ${topic}`
-      }
-    }
-  ]
-});
-
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
+    if (req.method !== 'POST') {
+      throw new Error(`Method ${req.method} not allowed`);
+    }
+
     const { query, context = "general", age_group = "8-12" } = await req.json();
     console.log('Generating content for:', { query, context, age_group });
 
-    const genAI = new GoogleGenerativeAI(Deno.env.get('GEMINI_API_KEY'));
-    if (!genAI) {
-      console.error('Failed to initialize Gemini API');
-      return new Response(
-        JSON.stringify(getFallbackBlocks(context)),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    const apiKey = Deno.env.get('GEMINI_API_KEY');
+    if (!apiKey) {
+      console.error('GEMINI_API_KEY not configured');
+      throw new Error('API key not configured');
     }
 
+    const genAI = new GoogleGenerativeAI(apiKey);
     const model = genAI.getGenerativeModel({ model: "gemini-pro" });
     
     const prompt = `You are WonderWhiz, a fun AI tutor for children aged ${age_group}.
@@ -151,25 +106,80 @@ serve(async (req) => {
 
       return new Response(
         JSON.stringify({ blocks: formattedBlocks }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { headers: corsHeaders }
       );
     } catch (parseError) {
       console.error('Error parsing Gemini response:', parseError);
       console.error('Failed response:', text);
       
-      // Return fallback blocks instead of throwing
+      // Return fallback blocks
+      const fallbackBlocks = {
+        blocks: [
+          {
+            title: "🌟 Discover fascinating facts about " + context,
+            description: "Learn amazing things about " + context + " that will blow your mind!",
+            metadata: {
+              type: "fact",
+              topic: context,
+              prompt: `Tell me fascinating facts about ${context}`
+            }
+          },
+          {
+            title: "🔍 Explore the mysteries of " + context,
+            description: "Dive deeper into the fascinating world of " + context + "!",
+            metadata: {
+              type: "exploration",
+              topic: context,
+              prompt: `Explain ${context} in detail`
+            }
+          },
+          {
+            title: "💭 Test your knowledge about " + context,
+            description: "Think you know everything about " + context + "? Let's find out!",
+            metadata: {
+              type: "quiz-teaser",
+              topic: context,
+              prompt: `Create a quiz about ${context}`
+            }
+          },
+          {
+            title: "🎨 Create amazing art about " + context,
+            description: "Let's make something beautiful about " + context + "!",
+            metadata: {
+              type: "image",
+              topic: context,
+              prompt: `Generate a child-friendly illustration about ${context}`
+            }
+          },
+          {
+            title: "🎯 Challenge yourself with a " + context + " quiz",
+            description: "Ready to become a " + context + " expert? Take this fun quiz!",
+            metadata: {
+              type: "quiz",
+              topic: context,
+              prompt: `Generate a fun quiz about ${context}`
+            }
+          }
+        ]
+      };
+
       return new Response(
-        JSON.stringify(getFallbackBlocks(context)),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        JSON.stringify(fallbackBlocks),
+        { headers: corsHeaders }
       );
     }
   } catch (error) {
     console.error('Error in generate-blocks function:', error);
     
-    // Return fallback blocks for any error
     return new Response(
-      JSON.stringify(getFallbackBlocks(context)),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      JSON.stringify({
+        error: 'Failed to generate blocks',
+        details: error.message
+      }),
+      { 
+        status: 500,
+        headers: corsHeaders
+      }
     );
   }
 });
