@@ -42,7 +42,11 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
   const isMobile = useIsMobile();
 
   const scrollToBottom = () => {
-    if (messagesEndRef.current && containerRef.current) {
+    if (!messagesEndRef.current || !containerRef.current) {
+      return; // Early return if refs aren't available
+    }
+
+    try {
       const container = containerRef.current;
       const scrollHeight = container.scrollHeight;
       const currentScroll = container.scrollTop;
@@ -54,11 +58,13 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
         (messages.length > 0 && messages[messages.length - 1].isAi);
       
       if (shouldScroll) {
-        messagesEndRef.current?.scrollIntoView({ 
+        messagesEndRef.current.scrollIntoView({ 
           behavior: "smooth",
           block: "end"
         });
       }
+    } catch (error) {
+      console.error('Error scrolling to bottom:', error);
     }
   };
 
