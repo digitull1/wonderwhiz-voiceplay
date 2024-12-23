@@ -7,71 +7,69 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { query, context = "general", age_group = "8-12" } = await req.json();
+    const { query, context = "general", age_group = "8-12", language = "en" } = await req.json();
     console.log('Generating content for:', { query, context, age_group });
 
     const genAI = new GoogleGenerativeAI(Deno.env.get('GEMINI_API_KEY'));
     const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
-    const prompt = `Generate 5 engaging, educational blocks about "${query}" for children aged ${age_group}.
-    Each block should be one of these types:
+    const systemPrompt = `You are WonderWhiz, a fun and educational AI assistant for children aged ${age_group}.
+    Generate 5 engaging, educational blocks about "${query}" that follow these types:
     1. fact: A fascinating fact with a hook question
     2. exploration: A deeper dive into the topic
     3. quiz-teaser: A teaser for a fun quiz
     4. image: A prompt for generating a child-friendly illustration
     5. quiz: A full quiz about the topic
 
-    Format as JSON with:
+    Each block must have:
     - title (max 72 chars, include emoji)
     - description (2 engaging sentences)
     - metadata (type and topic)
     
-    Make it fun, educational, and child-friendly!`;
+    Make it fun, educational, and child-friendly!
+    Format as a JSON array with exactly 5 blocks.`;
 
+    const result = await model.generateContent(systemPrompt);
+    const response = result.response;
+    const text = response.text();
+    console.log('Generated content:', text);
+
+    let blocks;
     try {
-      const result = await model.generateContent(prompt);
-      const response = result.response;
-      const text = response.text();
-      console.log('Generated content:', text);
+      blocks = JSON.parse(text);
+    } catch (parseError) {
+      console.error('Error parsing Gemini response:', parseError);
+      throw new Error('Invalid response format from Gemini');
+    }
 
-      let blocks;
-      try {
-        blocks = JSON.parse(text);
-      } catch (parseError) {
-        console.error('Error parsing Gemini response:', parseError);
-        throw new Error('Invalid response format from Gemini');
-      }
+    // Validate and format blocks
+    if (!blocks?.blocks || !Array.isArray(blocks.blocks) || blocks.blocks.length !== 5) {
+      throw new Error('Invalid blocks format in response');
+    }
 
-      // Validate and format blocks
-      if (!blocks?.blocks || !Array.isArray(blocks.blocks)) {
-        throw new Error('Invalid blocks format in response');
-      }
-
-      const formattedBlocks = blocks.blocks.map((block: any) => ({
+    const formattedBlocks = blocks.blocks.map((block: any, index: number) => {
+      const types = ['fact', 'exploration', 'quiz-teaser', 'image', 'quiz'];
+      return {
         title: block.title?.substring(0, 72) || "",
         description: block.description || "Click to explore more!",
         metadata: {
-          type: block.metadata?.type || "fact",
-          topic: block.metadata?.topic || context,
+          type: types[index], // Ensure correct type assignment
+          topic: context,
           prompt: block.metadata?.prompt || `Tell me about ${block.title}`
         }
-      }));
+      };
+    });
 
-      return new Response(
-        JSON.stringify({ blocks: formattedBlocks }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
+    return new Response(
+      JSON.stringify({ blocks: formattedBlocks }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
 
-    } catch (geminiError) {
-      console.error('Gemini API error:', geminiError);
-      throw geminiError;
-    }
   } catch (error) {
     console.error('Error generating blocks:', error);
     return new Response(
