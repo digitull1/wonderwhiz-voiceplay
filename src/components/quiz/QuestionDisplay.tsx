@@ -32,13 +32,13 @@ export const QuestionDisplay = ({
     >
       <div className="flex justify-between items-center mb-4">
         <motion.span 
-          className="text-white/90 text-sm font-medium bg-white/10 px-4 py-2 rounded-full"
+          className="text-white/90 text-sm font-medium"
           whileHover={{ scale: 1.05 }}
         >
           Question {currentQuestionIndex + 1} of {totalQuestions}
         </motion.span>
         <motion.span 
-          className="text-white/90 text-sm font-medium bg-white/10 px-4 py-2 rounded-full"
+          className="text-white/90 text-sm font-medium"
           whileHover={{ scale: 1.05 }}
         >
           Score: {correctAnswers}/{totalQuestions}
