@@ -24,11 +24,11 @@ export const BlockItem: React.FC<BlockItemProps> = ({
 
   const getGradientClass = (type: string) => {
     const gradients = {
-      fact: 'bg-gradient-to-br from-purple-500/20 to-pink-500/20',
-      exploration: 'bg-gradient-to-br from-blue-500/20 to-purple-500/20',
-      'quiz-teaser': 'bg-gradient-to-br from-green-500/20 to-blue-500/20',
-      image: 'bg-gradient-to-br from-orange-500/20 to-red-500/20',
-      quiz: 'bg-gradient-to-br from-yellow-500/20 to-orange-500/20'
+      fact: 'bg-gradient-to-br from-purple-500/30 to-pink-500/30',
+      exploration: 'bg-gradient-to-br from-blue-500/30 to-purple-500/30',
+      'quiz-teaser': 'bg-gradient-to-br from-green-500/30 to-blue-500/30',
+      image: 'bg-gradient-to-br from-orange-500/30 to-red-500/30',
+      quiz: 'bg-gradient-to-br from-yellow-500/30 to-orange-500/30'
     };
     return gradients[block.metadata?.type || 'fact'];
   };
@@ -51,11 +51,12 @@ export const BlockItem: React.FC<BlockItemProps> = ({
         "flex-none snap-center px-6 py-4 rounded-xl",
         "backdrop-blur-sm border border-white/20",
         "transition-all duration-300 cursor-pointer",
-        "text-sm font-medium text-white",
+        "text-sm font-medium text-white shadow-lg",
         "hover:scale-102 hover:-translate-y-1",
         getGradientClass(block.metadata?.type || 'fact'),
         "min-w-[280px] max-w-[320px] h-[120px]",
         "flex flex-col justify-center items-start gap-2",
+        "bg-opacity-90 hover:bg-opacity-100",
         isLoading && "opacity-50 cursor-not-allowed"
       )}
       initial={{ opacity: 0, y: 20 }}
@@ -68,11 +69,11 @@ export const BlockItem: React.FC<BlockItemProps> = ({
         <LoadingAnimation />
       ) : (
         <>
-          <div className="text-block-title font-bold mb-1 line-clamp-2 text-left">
+          <div className="text-block-title font-bold mb-1 line-clamp-2 text-left text-white text-base">
             {block.title}
           </div>
           {block.description && (
-            <div className="text-block-desc text-white/80 line-clamp-2 text-left">
+            <div className="text-block-desc text-white/90 line-clamp-2 text-left text-sm">
               {block.description}
             </div>
           )}

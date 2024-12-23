@@ -9,10 +9,15 @@ export const handleQuizBlock = async (block: Block, age: number) => {
   try {
     const { data, error } = await supabase.functions.invoke('generate-quiz', {
       body: { 
-        topic: block.metadata.topic || block.title,
+        topic: block.metadata.topic,
         age,
-        contextualPrompt: `Create a fun, engaging quiz about "${block.title}" for children aged ${age}. 
-        Include 5 multiple-choice questions with 4 options each. Make it educational and entertaining!`
+        contextualPrompt: `Create an engaging educational quiz about "${block.metadata.topic}" for children aged ${age}.
+        Include exactly 5 multiple-choice questions.
+        Each question must have:
+        - A clear, fun question text
+        - Exactly 4 answer options
+        - One correct answer
+        - Make it fun and educational!`
       }
     });
 
@@ -20,9 +25,13 @@ export const handleQuizBlock = async (block: Block, age: number) => {
 
     console.log('Quiz data received:', data);
 
+    if (!data?.questions || !Array.isArray(data.questions)) {
+      throw new Error('Invalid quiz data format');
+    }
+
     window.dispatchEvent(new CustomEvent('wonderwhiz:newMessage', {
       detail: {
-        text: `Let's test what you've learned about ${block.title}! Ready to become a quiz champion? 🌟`,
+        text: `Let's test what you've learned about ${block.metadata.topic}! Ready for a fun quiz? 🎯`,
         isAi: true,
         quizState: {
           isActive: true,
@@ -35,7 +44,7 @@ export const handleQuizBlock = async (block: Block, age: number) => {
 
     toast({
       title: "Quiz time! 🎯",
-      description: "Let's see what you know!",
+      description: "Let's test your knowledge!",
       className: "bg-primary text-white"
     });
   } catch (error) {
