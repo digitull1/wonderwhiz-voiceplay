@@ -2,7 +2,7 @@ import React from "react";
 import { motion } from "framer-motion";
 import { Block } from "@/types/chat";
 import { cn } from "@/lib/utils";
-import { LoadingAnimation } from "../LoadingAnimation";
+import { LoadingSparkles } from "../LoadingSparkles";
 
 interface BlockItemProps {
   block: Block;
@@ -26,10 +26,14 @@ export const BlockItem: React.FC<BlockItemProps> = ({
     switch (type) {
       case 'fact':
         return 'from-violet-500/90 to-purple-500/90';
-      case 'image':
+      case 'exploration':
         return 'from-blue-500/90 to-cyan-500/90';
-      case 'quiz':
+      case 'quiz-teaser':
         return 'from-emerald-500/90 to-teal-500/90';
+      case 'image':
+        return 'from-pink-500/90 to-rose-500/90';
+      case 'quiz':
+        return 'from-amber-500/90 to-orange-500/90';
       default:
         return 'from-indigo-500/90 to-blue-500/90';
     }
@@ -39,8 +43,12 @@ export const BlockItem: React.FC<BlockItemProps> = ({
     switch (type) {
       case 'fact':
         return '🌟';
+      case 'exploration':
+        return '🔍';
+      case 'quiz-teaser':
+        return '💭';
       case 'image':
-        return '✨';
+        return '🎨';
       case 'quiz':
         return '🎯';
       default:
@@ -69,7 +77,7 @@ export const BlockItem: React.FC<BlockItemProps> = ({
       disabled={isLoading}
     >
       {isBlockLoading ? (
-        <LoadingAnimation />
+        <LoadingSparkles />
       ) : (
         <>
           <div className="flex items-center justify-between w-full">

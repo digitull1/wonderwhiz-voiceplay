@@ -6,36 +6,6 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const getFallbackBlocks = (topic: string = "general") => ({
-  blocks: [
-    {
-      title: "🌟 Discover Amazing Facts About Our World!",
-      description: "Click to learn fascinating facts that will blow your mind!",
-      metadata: { type: 'fact', topic }
-    },
-    {
-      title: "🔍 Explore the Mysteries of Science",
-      description: "Dive deeper into exciting scientific discoveries!",
-      metadata: { type: 'exploration', topic: 'science' }
-    },
-    {
-      title: "💭 Test Your Knowledge with Fun Questions",
-      description: "Think you know everything? Let's find out!",
-      metadata: { type: 'quiz-teaser', topic }
-    },
-    {
-      title: "🎨 Create Amazing Pictures",
-      description: "Let's make something beautiful together!",
-      metadata: { type: 'image', topic: 'art' }
-    },
-    {
-      title: "🎯 Challenge Yourself with a Quiz",
-      description: "Ready to become a quiz champion?",
-      metadata: { type: 'quiz', topic }
-    }
-  ]
-});
-
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -49,14 +19,23 @@ serve(async (req) => {
     const genAI = new GoogleGenerativeAI(Deno.env.get('GEMINI_API_KEY'));
     const model = genAI.getGenerativeModel({ model: "gemini-pro" });
 
-    try {
-      const result = await model.generateContent([{
-        text: `Generate 5 engaging, educational blocks about "${query}" for children aged ${age_group}.
-               Format as JSON with title (max 72 chars), description (2 sentences), and metadata (type and topic).
-               Types should be: fact, exploration, quiz-teaser, image, or quiz.
-               Make it fun and child-friendly!`
-      }]);
+    const prompt = `Generate 5 engaging, educational blocks about "${query}" for children aged ${age_group}.
+    Each block should be one of these types:
+    1. fact: A fascinating fact with a hook question
+    2. exploration: A deeper dive into the topic
+    3. quiz-teaser: A teaser for a fun quiz
+    4. image: A prompt for generating a child-friendly illustration
+    5. quiz: A full quiz about the topic
 
+    Format as JSON with:
+    - title (max 72 chars, include emoji)
+    - description (2 engaging sentences)
+    - metadata (type and topic)
+    
+    Make it fun, educational, and child-friendly!`;
+
+    try {
+      const result = await model.generateContent(prompt);
       const response = result.response;
       const text = response.text();
       console.log('Generated content:', text);
@@ -66,50 +45,43 @@ serve(async (req) => {
         blocks = JSON.parse(text);
       } catch (parseError) {
         console.error('Error parsing Gemini response:', parseError);
-        // Return fallback content with 200 status
-        return new Response(
-          JSON.stringify(getFallbackBlocks(context)),
-          { 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            status: 200 // Changed to 200 since we're handling the fallback gracefully
-          }
-        );
+        throw new Error('Invalid response format from Gemini');
       }
 
+      // Validate and format blocks
+      if (!blocks?.blocks || !Array.isArray(blocks.blocks)) {
+        throw new Error('Invalid blocks format in response');
+      }
+
+      const formattedBlocks = blocks.blocks.map((block: any) => ({
+        title: block.title?.substring(0, 72) || "",
+        description: block.description || "Click to explore more!",
+        metadata: {
+          type: block.metadata?.type || "fact",
+          topic: block.metadata?.topic || context,
+          prompt: block.metadata?.prompt || `Tell me about ${block.title}`
+        }
+      }));
+
       return new Response(
-        JSON.stringify(blocks),
+        JSON.stringify({ blocks: formattedBlocks }),
         { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
       );
 
     } catch (geminiError) {
       console.error('Gemini API error:', geminiError);
-      
-      // Check if it's a rate limit error
-      if (geminiError.message?.includes('429') || geminiError.message?.includes('quota')) {
-        console.log('Rate limit hit, using fallback content');
-        // Return fallback content with 200 status
-        return new Response(
-          JSON.stringify(getFallbackBlocks(context)),
-          { 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-            status: 200 // Changed to 200 since we're handling the fallback gracefully
-          }
-        );
-      }
-
       throw geminiError;
     }
   } catch (error) {
     console.error('Error generating blocks:', error);
-    // For any other errors, return fallback content with 200 status
     return new Response(
       JSON.stringify({ 
-        blocks: getFallbackBlocks(context).blocks,
-        isUsingFallback: true // Added flag to indicate fallback content
+        error: 'Failed to generate blocks',
+        details: error.message
       }),
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200 // Changed to 200 since we're handling the fallback gracefully
+        status: 500
       }
     );
   }

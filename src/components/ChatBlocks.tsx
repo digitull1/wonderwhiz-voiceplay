@@ -3,7 +3,6 @@ import { AnimatePresence } from "framer-motion";
 import { Block } from "@/types/chat";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { FEEDBACK_MESSAGES } from "@/utils/contentPrompts";
 import { BlockContainer } from "./blocks/BlockContainer";
 import { BlockItem } from "./blocks/BlockItem";
 import { BlockErrorBoundary } from "./blocks/BlockErrorBoundary";
@@ -51,7 +50,8 @@ export const ChatBlocks = ({ blocks = [], onBlockClick }: ChatBlocksProps) => {
           case 'image':
             const { data: imageData, error: imageError } = await supabase.functions.invoke('generate-image', {
               body: { 
-                prompt: block.metadata?.prompt || block.title,
+                prompt: `Create a child-friendly, whimsical illustration of: ${block.metadata?.prompt || block.title}. 
+                Make it colorful, engaging, and suitable for children.`,
                 age_group: "8-12"
               }
             });
@@ -71,10 +71,13 @@ export const ChatBlocks = ({ blocks = [], onBlockClick }: ChatBlocksProps) => {
             break;
 
           case 'quiz':
+          case 'quiz-teaser':
             const { data: quizData, error: quizError } = await supabase.functions.invoke('generate-quiz', {
               body: { 
                 topic: block.metadata?.topic || block.title,
-                age: 8
+                age: 8,
+                contextualPrompt: `Create 5 fun, engaging multiple-choice questions about "${block.metadata?.topic || block.title}" 
+                for children. Include one silly option in each question to make it entertaining!`
               }
             });
             
@@ -86,7 +89,7 @@ export const ChatBlocks = ({ blocks = [], onBlockClick }: ChatBlocksProps) => {
                 isAi: true,
                 quizState: {
                   isActive: true,
-                  currentQuestion: quizData.questions[0],
+                  currentQuestion: quizData.questions,
                   blocksExplored: 0,
                   currentTopic: block.metadata?.topic || block.title
                 }
