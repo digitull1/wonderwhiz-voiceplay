@@ -1,14 +1,11 @@
-import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import React from "react";
+import { motion } from "framer-motion";
 import { ChatHeader } from "@/components/ChatHeader";
 import { ChatContainer } from "@/components/ChatContainer";
 import { ChatInput } from "@/components/ChatInput";
+import { AuthForm } from "@/components/auth/AuthForm";
 import { CollapsiblePanel } from "@/components/CollapsiblePanel";
-import { AuthOverlay } from "./AuthOverlay";
-import { TopNavigation } from "./TopNavigation";
 import { UserProgress } from "@/types/chat";
-import { supabase } from "@/integrations/supabase/client";
-import { generateInitialBlocks } from "@/utils/profileUtils";
 
 interface MainContainerProps {
   messages: any[];
@@ -24,7 +21,6 @@ interface MainContainerProps {
   handleImageAnalysis: (response: string) => void;
   isAuthenticated: boolean;
   userProgress: UserProgress;
-  onLogout: () => void;
 }
 
 export const MainContainer: React.FC<MainContainerProps> = ({
@@ -40,61 +36,9 @@ export const MainContainer: React.FC<MainContainerProps> = ({
   sendMessage,
   handleImageAnalysis,
   isAuthenticated,
-  userProgress,
-  onLogout
+  userProgress
 }) => {
-  const [showAuthForm, setShowAuthForm] = useState(false);
-  const [showLogin, setShowLogin] = useState(false);
-  const [isPanelOpen, setIsPanelOpen] = useState(false);
-  const [profile, setProfile] = useState<any>(null);
-
-  useEffect(() => {
-    if (isAuthenticated) {
-      loadUserProfile();
-    }
-  }, [isAuthenticated]);
-
-  const loadUserProfile = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', user.id)
-        .single();
-
-      setProfile(profile);
-    } catch (error) {
-      console.error('Error loading profile:', error);
-    }
-  };
-
-  const getWelcomeMessage = () => {
-    if (!isAuthenticated) {
-      return {
-        text: "Hi! I'm WonderWhiz! Your friendly AI Assistant! Please login or register to continue 😊",
-        isAi: true,
-        showAuthPrompt: true
-      };
-    }
-
-    const name = profile?.name || "friend";
-    const interests = profile?.topics_of_interest || [];
-    const interestText = interests.length > 0
-      ? `I see you're interested in ${interests.join(", ")}! Let's explore those topics together!`
-      : "Let's explore some exciting topics together!";
-
-    return {
-      text: `Welcome back, ${name}! 🌟 ${interestText} What would you like to learn about today?`,
-      isAi: true,
-      blocks: generateInitialBlocks(profile?.age || 8)
-    };
-  };
-
-  const welcomeMessage = getWelcomeMessage();
-  const displayMessages = isAuthenticated ? messages : [welcomeMessage];
+  const [showAuthForm, setShowAuthForm] = React.useState(false);
 
   return (
     <motion.div 
@@ -106,19 +50,21 @@ export const MainContainer: React.FC<MainContainerProps> = ({
       <div className="absolute inset-0 bg-gradient-luxury opacity-50" />
       
       <div className="relative z-10 w-full h-full flex flex-col">
-        <TopNavigation 
-          isAuthenticated={isAuthenticated}
-          onPanelToggle={() => setIsPanelOpen(!isPanelOpen)}
-          onLogout={onLogout}
-          onAuthClick={(isLogin) => {
-            setShowLogin(isLogin);
-            setShowAuthForm(true);
+        <motion.div 
+          className="flex-1 flex flex-col h-full relative overflow-hidden"
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{ 
+            duration: 0.5,
+            type: "spring",
+            stiffness: 260,
+            damping: 20
           }}
-        />
-
-        <div className="flex-1 flex flex-col h-full relative overflow-hidden">
+        >
+          <ChatHeader />
+          
           <ChatContainer 
-            messages={displayMessages}
+            messages={messages}
             handleListen={handleListen}
             onBlockClick={handleBlockClick}
             quizState={quizState}
@@ -126,14 +72,27 @@ export const MainContainer: React.FC<MainContainerProps> = ({
             onAuthPromptClick={() => setShowAuthForm(true)}
           />
 
-          <AnimatePresence>
-            {showAuthForm && (
-              <AuthOverlay 
-                showLogin={showLogin}
-                onClose={() => setShowAuthForm(false)}
-              />
-            )}
-          </AnimatePresence>
+          {showAuthForm && (
+            <motion.div 
+              className="absolute inset-0 bg-white/95 backdrop-blur-xl p-4 
+                flex items-center justify-center z-50"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              <div className="w-full max-w-md">
+                <button 
+                  onClick={() => setShowAuthForm(false)}
+                  className="absolute top-4 right-4 text-gray-500 hover:text-gray-700
+                    w-8 h-8 flex items-center justify-center rounded-full
+                    hover:bg-gray-100 transition-colors"
+                >
+                  ✕
+                </button>
+                <AuthForm onComplete={() => setShowAuthForm(false)} />
+              </div>
+            </motion.div>
+          )}
 
           <ChatInput 
             input={input}
@@ -145,17 +104,10 @@ export const MainContainer: React.FC<MainContainerProps> = ({
             onImageAnalyzed={handleImageAnalysis}
             placeholder="Ask me something magical..."
           />
-        </div>
+        </motion.div>
       </div>
 
-      <CollapsiblePanel 
-        userProgress={userProgress} 
-        onLogout={onLogout}
-        isOpen={isPanelOpen}
-        onClose={() => setIsPanelOpen(false)}
-      />
+      <CollapsiblePanel userProgress={userProgress} />
     </motion.div>
   );
 };
-
-export default MainContainer;

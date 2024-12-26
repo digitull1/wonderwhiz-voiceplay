@@ -1,88 +1,116 @@
-import React from "react";
+import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { Button } from "./ui/button";
+import { Menu, X } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { UserProgress } from "@/types/chat";
 import { ProgressCard } from "./panel/ProgressCard";
+import { TalkToWizzy } from "./panel/TalkToWizzy";
 import { TimeTracker } from "./panel/TimeTracker";
 import { TopicHistory } from "./panel/TopicHistory";
-import { X, LogOut } from "lucide-react";
-import { Button } from "./ui/button";
-import { ProfileSettings } from "./profile/ProfileSettings";
-import { cn } from "@/lib/utils";
 
 interface CollapsiblePanelProps {
   userProgress?: UserProgress;
   className?: string;
-  onLogout?: () => void;
-  isOpen?: boolean;
-  onClose: () => void;
 }
 
 export const CollapsiblePanel: React.FC<CollapsiblePanelProps> = ({
   userProgress,
-  className,
-  onLogout,
-  isOpen = false,
-  onClose
+  className
 }) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  const handleToggle = () => {
+    console.log('Toggle panel:', !isOpen);
+    setIsOpen(!isOpen);
+  };
+
+  const handleTopicClick = (topic: string) => {
+    console.log('Topic clicked:', topic);
+    // Close panel when topic is clicked
+    setIsOpen(false);
+    // Send message to chat
+    const event = new CustomEvent('wonderwhiz:newMessage', {
+      detail: {
+        text: `Tell me about "${topic}"`,
+        isAi: false
+      }
+    });
+    window.dispatchEvent(event);
+  };
+
   return (
-    <AnimatePresence>
-      {isOpen && (
-        <>
+    <>
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={handleToggle}
+        className={cn(
+          "fixed top-4 right-4 z-50",
+          "bg-white/95 backdrop-blur-xl shadow-luxury border border-white/20",
+          "hover:bg-white hover:scale-110 active:scale-95",
+          "transition-all duration-300",
+          className
+        )}
+        aria-label={isOpen ? "Close menu" : "Open menu"}
+      >
+        <AnimatePresence mode="wait">
+          {isOpen ? (
+            <motion.div
+              key="close"
+              initial={{ scale: 0, rotate: -180 }}
+              animate={{ scale: 1, rotate: 0 }}
+              exit={{ scale: 0, rotate: 180 }}
+              transition={{ duration: 0.3, type: "spring" }}
+            >
+              <X className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+            </motion.div>
+          ) : (
+            <motion.div
+              key="menu"
+              initial={{ scale: 0 }}
+              animate={{ scale: 1 }}
+              exit={{ scale: 0 }}
+              transition={{ duration: 0.3, type: "spring" }}
+            >
+              <Menu className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+            </motion.div>
+          )}
+        </AnimatePresence>
+        {!isOpen && userProgress && (
+          <motion.div 
+            className="absolute -bottom-4 -right-2 bg-primary text-white text-xs px-1.5 py-0.5 rounded-full"
+            initial={{ scale: 0 }}
+            animate={{ scale: 1 }}
+            transition={{ delay: 0.2 }}
+          >
+            {userProgress.points}
+          </motion.div>
+        )}
+      </Button>
+
+      <AnimatePresence>
+        {isOpen && (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm z-30"
-            onClick={onClose}
-          />
-          <motion.div
-            initial={{ x: "100%" }}
-            animate={{ x: 0 }}
-            exit={{ x: "100%" }}
+            initial={{ opacity: 0, x: "100%" }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: "100%" }}
             transition={{ type: "spring", damping: 20, stiffness: 300 }}
             className={cn(
-              "fixed top-0 right-0 z-40 h-full w-96",
+              "fixed top-0 right-0 z-40 h-full w-80",
               "bg-white/95 backdrop-blur-xl shadow-luxury",
-              "border-l border-white/20",
-              className
+              "border-l border-white/20 p-6 overflow-y-auto"
             )}
           >
-            <div className="sticky top-0 z-10 w-full p-4 bg-white/80 backdrop-blur-sm border-b border-gray-100 flex justify-between items-center">
-              <h2 className="text-lg font-semibold text-gray-800">Profile</h2>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={onClose}
-                className="text-gray-500 hover:text-gray-700"
-              >
-                <X className="h-5 w-5" />
-              </Button>
-            </div>
-
-            <div className="h-[calc(100vh-4rem)] overflow-y-auto">
-              <div className="p-6 space-y-6">
-                <ProgressCard userProgress={userProgress} />
-                <TimeTracker />
-                <TopicHistory onTopicClick={() => {}} />
-                <ProfileSettings />
-                
-                {onLogout && (
-                  <div className="pt-4 border-t border-gray-100">
-                    <Button
-                      variant="ghost"
-                      className="w-full justify-start text-red-600 hover:text-red-700"
-                      onClick={onLogout}
-                    >
-                      <LogOut className="mr-2 h-4 w-4" />
-                      Sign Out
-                    </Button>
-                  </div>
-                )}
-              </div>
+            <div className="pt-14 space-y-6">
+              <ProgressCard userProgress={userProgress} />
+              <TimeTracker />
+              <TopicHistory onTopicClick={handleTopicClick} />
+              <TalkToWizzy />
             </div>
           </motion.div>
-        </>
-      )}
-    </AnimatePresence>
+        )}
+      </AnimatePresence>
+    </>
   );
 };

@@ -1,8 +1,10 @@
 import React, { useState, useRef } from "react";
+import { Button } from "./ui/button";
+import { Mic, Send, Upload, Dice6 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { ImageUpload } from "./ImageUpload";
 import { useToast } from "./ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { ChatInputIcons } from "./chat/ChatInputIcons";
 
 interface ChatInputProps {
   input: string;
@@ -12,20 +14,18 @@ interface ChatInputProps {
   isLoading?: boolean;
   currentTopic?: string;
   onImageAnalyzed?: (response: string) => void;
-  onQuizGenerated?: (quiz: any) => void;
   placeholder?: string;
 }
 
-export const ChatInput: React.FC<ChatInputProps> = ({
+export const ChatInput = ({
   input,
   setInput,
   handleSend,
   isLoading,
   currentTopic,
   onImageAnalyzed,
-  onQuizGenerated,
   placeholder = "Type a message..."
-}) => {
+}: ChatInputProps) => {
   const [isListening, setIsListening] = useState(false);
   const { toast } = useToast();
   const recognition = useRef<any>(null);
@@ -64,14 +64,6 @@ export const ChatInput: React.FC<ChatInputProps> = ({
         description: "Couldn't generate a question right now. Try again!",
         variant: "destructive"
       });
-    }
-  };
-
-  const toggleListening = () => {
-    if (isListening) {
-      stopListening();
-    } else {
-      startListening();
     }
   };
 
@@ -143,9 +135,33 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     }
   };
 
+  const toggleListening = () => {
+    if (isListening) {
+      stopListening();
+    } else {
+      startListening();
+    }
+  };
+
   return (
     <div className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-xl border-t border-white/20 p-4 md:p-6">
       <div className="max-w-screen-lg mx-auto flex items-center gap-2">
+        {onImageAnalyzed && (
+          <ImageUpload onImageAnalyzed={onImageAnalyzed}>
+            <Button
+              variant="ghost"
+              size="icon"
+              className={cn(
+                "bg-white/95 backdrop-blur-xl shadow-luxury border border-white/20",
+                "hover:bg-white hover:scale-110 active:scale-95",
+                "transition-all duration-300"
+              )}
+            >
+              <Upload className="w-4 h-4" />
+            </Button>
+          </ImageUpload>
+        )}
+        
         <div className="flex-1 relative">
           <input
             type="text"
@@ -163,15 +179,46 @@ export const ChatInput: React.FC<ChatInputProps> = ({
           />
         </div>
 
-        <ChatInputIcons
-          onSend={handleSend}
-          onVoice={toggleListening}
-          onRandom={generateRandomQuestion}
-          onImageAnalyzed={onImageAnalyzed}
-          onQuizGenerated={onQuizGenerated}
-          isLoading={isLoading}
-          disabled={!input.trim()}
-        />
+        <Button
+          onClick={generateRandomQuestion}
+          variant="ghost"
+          size="icon"
+          className={cn(
+            "bg-white/95 backdrop-blur-xl shadow-luxury border border-white/20",
+            "hover:bg-white hover:scale-110 active:scale-95",
+            "transition-all duration-300"
+          )}
+        >
+          <Dice6 className="w-4 h-4" />
+        </Button>
+
+        <Button
+          onClick={toggleListening}
+          variant="ghost"
+          size="icon"
+          className={cn(
+            "bg-white/95 backdrop-blur-xl shadow-luxury border border-white/20",
+            "hover:bg-white hover:scale-110 active:scale-95",
+            "transition-all duration-300",
+            isListening && "bg-red-500 hover:bg-red-600 text-white"
+          )}
+        >
+          <Mic className="w-4 h-4" />
+        </Button>
+
+        <Button
+          onClick={handleSend}
+          disabled={isLoading || !input.trim()}
+          variant="ghost"
+          size="icon"
+          className={cn(
+            "bg-white/95 backdrop-blur-xl shadow-luxury border border-white/20",
+            "hover:bg-white hover:scale-110 active:scale-95",
+            "transition-all duration-300"
+          )}
+        >
+          <Send className="w-4 h-4" />
+        </Button>
       </div>
     </div>
   );

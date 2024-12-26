@@ -3,37 +3,27 @@ import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 interface TimeTrackerRingProps {
-  timeSpent: number;  // Add this prop
+  percentage: number;
   size?: number;
   strokeWidth?: number;
   color?: string;
-  label?: string;
-  goal?: number;
-  isLoading?: boolean;  // Add this prop
+  label: string;
+  time: string;
+  goal: number;
 }
 
 export const TimeTrackerRing = ({
-  timeSpent = 0,  // Default to 0
+  percentage,
   size = 120,
   strokeWidth = 8,
   color = "stroke-secondary",
-  label = "Learning Time",
-  goal = 30,  // Default goal of 30 minutes
-  isLoading = false
+  label,
+  time,
+  goal
 }: TimeTrackerRingProps) => {
-  // Calculate percentage, ensuring it doesn't exceed 100%
-  const percentage = Math.min((timeSpent / goal) * 100, 100);
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
   const dash = (percentage * circumference) / 100;
-
-  if (isLoading) {
-    return (
-      <div className="flex flex-col items-center justify-center">
-        <div className="animate-pulse w-32 h-32 bg-gray-200 rounded-full"></div>
-      </div>
-    );
-  }
 
   return (
     <div className="flex flex-col items-center justify-center">
@@ -78,7 +68,7 @@ export const TimeTrackerRing = ({
             animate={{ scale: 1 }}
             transition={{ delay: 0.5, type: "spring" }}
           >
-            {timeSpent}m
+            {time}
           </motion.span>
           <motion.span 
             className="text-sm text-gray-600 mt-0.5"

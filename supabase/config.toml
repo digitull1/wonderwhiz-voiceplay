@@ -19,6 +19,10 @@ port = 54324
 [storage]
 enabled = true
 
+[auth]
+enabled = true
+port = 54325
+
 [realtime]
 enabled = true
 

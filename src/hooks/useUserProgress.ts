@@ -48,82 +48,31 @@ export const useUserProgress = () => {
   };
 
   const fetchUserProgress = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        console.log('No authenticated user found');
-        return;
-      }
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return;
 
-      console.log('Fetching progress for user:', user.id);
-      const { data, error } = await supabase
-        .from('user_progress')
-        .select('*')
-        .eq('user_id', user.id)
-        .maybeSingle();
+    const { data, error } = await supabase
+      .from('user_progress')
+      .select('*')
+      .eq('user_id', user.id)
+      .single();
 
-      if (error) {
-        console.error('Error fetching user progress:', error);
-        return;
-      }
+    if (error) {
+      console.error('Error fetching user progress:', error);
+      return;
+    }
 
-      if (data) {
-        console.log('Found user progress:', data);
-        // Map snake_case database fields to camelCase TypeScript fields
-        setUserProgress({
-          points: data.points,
-          level: data.level,
-          streak_days: data.streak_days,
-          last_interaction_date: data.last_interaction_date,
-          topicsExplored: data.topics_explored,
-          questionsAsked: data.questions_asked,
-          quizScore: data.quiz_score
-        });
-      } else {
-        console.log('No progress found, creating initial progress');
-        const { error: createError } = await supabase
-          .from('user_progress')
-          .insert([
-            {
-              user_id: user.id,
-              points: 100,
-              level: 1,
-              streak_days: 0,
-              topics_explored: 0,
-              questions_asked: 0,
-              quiz_score: 0
-            }
-          ]);
-
-        if (createError) {
-          console.error('Error creating initial user progress:', createError);
-          return;
-        }
-
-        // Fetch the newly created progress
-        const { data: newProgress, error: fetchError } = await supabase
-          .from('user_progress')
-          .select('*')
-          .eq('user_id', user.id)
-          .single();
-
-        if (fetchError || !newProgress) {
-          console.error('Error fetching new progress:', fetchError);
-          return;
-        }
-
-        setUserProgress({
-          points: newProgress.points,
-          level: newProgress.level,
-          streak_days: newProgress.streak_days,
-          last_interaction_date: newProgress.last_interaction_date,
-          topicsExplored: newProgress.topics_explored,
-          questionsAsked: newProgress.questions_asked,
-          quizScore: newProgress.quiz_score
-        });
-      }
-    } catch (error) {
-      console.error('Error in fetchUserProgress:', error);
+    if (data) {
+      // Map snake_case database fields to camelCase TypeScript fields
+      setUserProgress({
+        points: data.points,
+        level: data.level,
+        streak_days: data.streak_days,
+        last_interaction_date: data.last_interaction_date,
+        topicsExplored: data.topics_explored,
+        questionsAsked: data.questions_asked,
+        quizScore: data.quiz_score
+      });
     }
   };
 

@@ -1,97 +1,136 @@
 import React, { useEffect, useState } from "react";
 import { Clock } from "lucide-react";
+import { motion } from "framer-motion";
 import { TimeTrackerRing } from "./TimeTrackerRing";
 import { supabase } from "@/integrations/supabase/client";
-import { useToast } from "@/components/ui/use-toast";
+
+interface TimeSpent {
+  today: number;
+  week: number;
+}
 
 export const TimeTracker = () => {
-  const [timeSpent, setTimeSpent] = useState(0);
+  const [timeSpent, setTimeSpent] = useState<TimeSpent>({ today: 0, week: 0 });
   const [isLoading, setIsLoading] = useState(true);
-  const { toast } = useToast();
-
-  const fetchTimeSpent = async () => {
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        setIsLoading(false);
-        return;
-      }
-
-      const today = new Date().toISOString().split('T')[0];
-      
-      // First try to get existing record
-      const { data: existingData, error: fetchError } = await supabase
-        .from('learning_time')
-        .select('minutes_spent')
-        .eq('user_id', user.id)
-        .eq('date', today)
-        .maybeSingle();
-
-      if (fetchError && fetchError.code !== 'PGRST116') {
-        console.error('Error fetching time spent:', fetchError);
-        setIsLoading(false);
-        return;
-      }
-
-      // If no record exists, create one
-      if (!existingData) {
-        const { data: newData, error: insertError } = await supabase
-          .from('learning_time')
-          .insert([
-            {
-              user_id: user.id,
-              date: today,
-              minutes_spent: 0
-            }
-          ])
-          .select('minutes_spent')
-          .single();
-
-        if (insertError) {
-          console.error('Error creating learning time:', insertError);
-          toast({
-            title: "Error",
-            description: "Could not track learning time",
-            variant: "destructive"
-          });
-        } else {
-          setTimeSpent(newData?.minutes_spent || 0);
-        }
-      } else {
-        setTimeSpent(existingData.minutes_spent || 0);
-      }
-      
-      setIsLoading(false);
-    } catch (error) {
-      console.error('Error in fetchTimeSpent:', error);
-      setIsLoading(false);
-      toast({
-        title: "Error",
-        description: "Could not fetch learning time",
-        variant: "destructive"
-      });
-    }
-  };
 
   useEffect(() => {
+    const fetchTimeSpent = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+          setIsLoading(false);
+          return;
+        }
+
+        const today = new Date().toISOString().split('T')[0];
+        const weekAgo = new Date();
+        weekAgo.setDate(weekAgo.getDate() - 7);
+        
+        // Fetch today's time - handle case where no entry exists
+        const { data: todayData, error: todayError } = await supabase
+          .from('learning_time')
+          .select('minutes_spent')
+          .eq('user_id', user.id)
+          .eq('date', today);
+
+        if (todayError) {
+          console.error('Error fetching today\'s learning time:', todayError);
+        }
+
+        // Fetch week's time
+        const { data: weekData, error: weekError } = await supabase
+          .from('learning_time')
+          .select('minutes_spent')
+          .gte('date', weekAgo.toISOString().split('T')[0]);
+
+        if (weekError) {
+          console.error('Error fetching week\'s learning time:', weekError);
+        }
+
+        const todayMinutes = todayData && todayData[0] ? todayData[0].minutes_spent : 0;
+        const weekMinutes = weekData ? weekData.reduce((acc, curr) => acc + (curr.minutes_spent || 0), 0) : 0;
+
+        setTimeSpent({
+          today: todayMinutes,
+          week: weekMinutes
+        });
+        setIsLoading(false);
+      } catch (error) {
+        console.error('Error fetching time spent:', error);
+        setIsLoading(false);
+      }
+    };
+
     fetchTimeSpent();
-    const interval = setInterval(fetchTimeSpent, 60000); // Update every minute
-    return () => clearInterval(interval);
+
+    // Set up real-time subscription
+    const timeChannel = supabase
+      .channel('learning_time_changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'learning_time'
+        },
+        () => {
+          console.log('Learning time updated, refetching...');
+          fetchTimeSpent();
+        }
+      )
+      .subscribe();
+
+    // Update every minute
+    const interval = setInterval(fetchTimeSpent, 60000);
+
+    return () => {
+      clearInterval(interval);
+      timeChannel.unsubscribe();
+    };
   }, []);
 
   return (
-    <div className="bg-white/80 backdrop-blur-sm rounded-xl p-4 shadow-sm">
-      <div className="flex items-center gap-2 mb-3">
-        <Clock className="w-5 h-5 text-primary" />
-        <h3 className="text-lg font-semibold">Today's Progress</h3>
+    <motion.div 
+      className="bg-white/80 backdrop-blur-sm rounded-xl p-4 shadow-sm"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.5 }}
+    >
+      <div className="flex items-center gap-2 mb-4">
+        <Clock className="w-5 h-5 text-accent" />
+        <h3 className="text-lg font-semibold">Learning Time</h3>
       </div>
-      <div className="flex justify-center">
-        <TimeTrackerRing 
-          timeSpent={timeSpent} 
-          isLoading={isLoading}
-          goal={30}  // Optional: set a default goal of 30 minutes
-        />
-      </div>
-    </div>
+
+      {isLoading ? (
+        <div className="flex justify-center py-4">
+          <motion.div
+            className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          />
+        </div>
+      ) : (
+        <div className="grid grid-cols-2 gap-4">
+          <TimeTrackerRing
+            percentage={(timeSpent.today / 60) * 100}
+            size={120}
+            strokeWidth={8}
+            color="stroke-primary"
+            label="Today"
+            time={`${timeSpent.today}m`}
+            goal={60}
+          />
+          <TimeTrackerRing
+            percentage={(timeSpent.week / 300) * 100}
+            size={120}
+            strokeWidth={8}
+            color="stroke-secondary"
+            label="This Week"
+            time={`${timeSpent.week}m`}
+            goal={300}
+          />
+        </div>
+      )}
+    </motion.div>
   );
 };
