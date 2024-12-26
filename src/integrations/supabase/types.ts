@@ -9,30 +9,257 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      achievements: {
+      achievement_progress: {
         Row: {
+          achievement_type_id: string
+          current_progress: number | null
+          id: string
+          last_updated: string | null
+          user_id: string
+        }
+        Insert: {
+          achievement_type_id: string
+          current_progress?: number | null
+          id?: string
+          last_updated?: string | null
+          user_id: string
+        }
+        Update: {
+          achievement_type_id?: string
+          current_progress?: number | null
+          id?: string
+          last_updated?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "achievement_progress_achievement_type_id_fkey"
+            columns: ["achievement_type_id"]
+            isOneToOne: false
+            referencedRelation: "achievement_types"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      achievement_types: {
+        Row: {
+          category: string | null
           created_at: string
           description: string
           icon: string
           id: string
           name: string
-          user_id: string
+          points: number
+          required_progress: number | null
         }
         Insert: {
+          category?: string | null
           created_at?: string
           description: string
           icon: string
           id?: string
           name: string
-          user_id: string
+          points?: number
+          required_progress?: number | null
         }
         Update: {
+          category?: string | null
           created_at?: string
           description?: string
           icon?: string
           id?: string
           name?: string
+          points?: number
+          required_progress?: number | null
+        }
+        Relationships: []
+      }
+      achievements: {
+        Row: {
+          category: string | null
+          created_at: string
+          description: string
+          icon: string
+          id: string
+          is_sharable: boolean | null
+          name: string
+          progress: number | null
+          required_progress: number | null
+          user_id: string
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string
+          description: string
+          icon: string
+          id?: string
+          is_sharable?: boolean | null
+          name: string
+          progress?: number | null
+          required_progress?: number | null
+          user_id: string
+        }
+        Update: {
+          category?: string | null
+          created_at?: string
+          description?: string
+          icon?: string
+          id?: string
+          is_sharable?: boolean | null
+          name?: string
+          progress?: number | null
+          required_progress?: number | null
           user_id?: string
+        }
+        Relationships: []
+      }
+      content_blocks: {
+        Row: {
+          age_range: unknown
+          content_type: string
+          created_at: string
+          description: string
+          id: string
+          language: string | null
+          metadata: Json | null
+          title: string
+          topic: string
+        }
+        Insert: {
+          age_range: unknown
+          content_type: string
+          created_at?: string
+          description: string
+          id?: string
+          language?: string | null
+          metadata?: Json | null
+          title: string
+          topic: string
+        }
+        Update: {
+          age_range?: unknown
+          content_type?: string
+          created_at?: string
+          description?: string
+          id?: string
+          language?: string | null
+          metadata?: Json | null
+          title?: string
+          topic?: string
+        }
+        Relationships: []
+      }
+      content_translations: {
+        Row: {
+          content_key: string
+          created_at: string
+          id: string
+          language: string
+          translated_content: string
+        }
+        Insert: {
+          content_key: string
+          created_at?: string
+          id?: string
+          language: string
+          translated_content: string
+        }
+        Update: {
+          content_key?: string
+          created_at?: string
+          id?: string
+          language?: string
+          translated_content?: string
+        }
+        Relationships: []
+      }
+      conversation_follow_ups: {
+        Row: {
+          completed: boolean | null
+          context_key: string
+          created_at: string | null
+          follow_up_type: string
+          id: string
+          priority: number | null
+          scheduled_for: string | null
+          updated_at: string | null
+          user_id: string | null
+        }
+        Insert: {
+          completed?: boolean | null
+          context_key: string
+          created_at?: string | null
+          follow_up_type: string
+          id?: string
+          priority?: number | null
+          scheduled_for?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          completed?: boolean | null
+          context_key?: string
+          created_at?: string | null
+          follow_up_type?: string
+          id?: string
+          priority?: number | null
+          scheduled_for?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      conversation_memory: {
+        Row: {
+          context_type: string
+          created_at: string
+          expires_at: string | null
+          id: string
+          memory_key: string
+          memory_value: Json
+          user_id: string
+        }
+        Insert: {
+          context_type: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          memory_key: string
+          memory_value: Json
+          user_id: string
+        }
+        Update: {
+          context_type?: string
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          memory_key?: string
+          memory_value?: Json
+          user_id?: string
+        }
+        Relationships: []
+      }
+      daily_challenges: {
+        Row: {
+          created_at: string | null
+          description: string
+          id: string
+          points: number | null
+          title: string
+        }
+        Insert: {
+          created_at?: string | null
+          description: string
+          id?: string
+          points?: number | null
+          title: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string
+          id?: string
+          points?: number | null
+          title?: string
         }
         Relationships: []
       }
@@ -84,21 +311,121 @@ export type Database = {
         }
         Relationships: []
       }
+      message_reactions: {
+        Row: {
+          context: Json | null
+          created_at: string | null
+          id: string
+          is_auto: boolean | null
+          message_id: string
+          reaction: string
+          sentiment: string | null
+          user_id: string
+        }
+        Insert: {
+          context?: Json | null
+          created_at?: string | null
+          id?: string
+          is_auto?: boolean | null
+          message_id: string
+          reaction: string
+          sentiment?: string | null
+          user_id: string
+        }
+        Update: {
+          context?: Json | null
+          created_at?: string | null
+          id?: string
+          is_auto?: boolean | null
+          message_id?: string
+          reaction?: string
+          sentiment?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      onboarding_state: {
+        Row: {
+          communication_preferences: Json | null
+          completed_steps: string[] | null
+          conversation_context: Json | null
+          created_at: string
+          goals: Json | null
+          id: string
+          interaction_history: Json | null
+          interests: string[] | null
+          learning_preferences: Json | null
+          onboarding_step: string | null
+          personality_traits: Json | null
+          preferred_topics: string[] | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          communication_preferences?: Json | null
+          completed_steps?: string[] | null
+          conversation_context?: Json | null
+          created_at?: string
+          goals?: Json | null
+          id?: string
+          interaction_history?: Json | null
+          interests?: string[] | null
+          learning_preferences?: Json | null
+          onboarding_step?: string | null
+          personality_traits?: Json | null
+          preferred_topics?: string[] | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          communication_preferences?: Json | null
+          completed_steps?: string[] | null
+          conversation_context?: Json | null
+          created_at?: string
+          goals?: Json | null
+          id?: string
+          interaction_history?: Json | null
+          interests?: string[] | null
+          learning_preferences?: Json | null
+          onboarding_step?: string | null
+          personality_traits?: Json | null
+          preferred_topics?: string[] | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           age: number
           created_at: string
           gender: string
           id: string
+          language: string
+          learning_style: Database["public"]["Enums"]["learning_style"] | null
+          multimedia_enabled: boolean | null
           name: string | null
+          onboarding_completed: boolean | null
+          points: number | null
+          preferred_language: string | null
+          preferred_topics: string[] | null
+          topics_of_interest: string[] | null
           updated_at: string
         }
         Insert: {
-          age: number
+          age?: number
           created_at?: string
-          gender: string
+          gender?: string
           id: string
+          language?: string
+          learning_style?: Database["public"]["Enums"]["learning_style"] | null
+          multimedia_enabled?: boolean | null
           name?: string | null
+          onboarding_completed?: boolean | null
+          points?: number | null
+          preferred_language?: string | null
+          preferred_topics?: string[] | null
+          topics_of_interest?: string[] | null
           updated_at?: string
         }
         Update: {
@@ -106,15 +433,99 @@ export type Database = {
           created_at?: string
           gender?: string
           id?: string
+          language?: string
+          learning_style?: Database["public"]["Enums"]["learning_style"] | null
+          multimedia_enabled?: boolean | null
           name?: string | null
+          onboarding_completed?: boolean | null
+          points?: number | null
+          preferred_language?: string | null
+          preferred_topics?: string[] | null
+          topics_of_interest?: string[] | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      suggestion_patterns: {
+        Row: {
+          created_at: string | null
+          frequency: number | null
+          id: string
+          last_suggested: string | null
+          pattern_type: string
+          pattern_value: Json
+          updated_at: string | null
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          frequency?: number | null
+          id?: string
+          last_suggested?: string | null
+          pattern_type: string
+          pattern_value: Json
+          updated_at?: string | null
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          frequency?: number | null
+          id?: string
+          last_suggested?: string | null
+          pattern_type?: string
+          pattern_value?: Json
+          updated_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      user_goals: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          id: string
+          progress: number | null
+          status: string | null
+          target_date: string | null
+          title: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          progress?: number | null
+          status?: string | null
+          target_date?: string | null
+          title: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          progress?: number | null
+          status?: string | null
+          target_date?: string | null
+          title?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
       user_progress: {
         Row: {
+          achievements_count: number | null
           created_at: string
+          current_challenge_id: string | null
+          daily_challenge_completed: boolean | null
           id: string
+          last_challenge_date: string | null
           last_interaction_date: string
           level: number
           points: number
@@ -126,8 +537,12 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          achievements_count?: number | null
           created_at?: string
+          current_challenge_id?: string | null
+          daily_challenge_completed?: boolean | null
           id?: string
+          last_challenge_date?: string | null
           last_interaction_date?: string
           level?: number
           points?: number
@@ -139,8 +554,12 @@ export type Database = {
           user_id: string
         }
         Update: {
+          achievements_count?: number | null
           created_at?: string
+          current_challenge_id?: string | null
+          daily_challenge_completed?: boolean | null
           id?: string
+          last_challenge_date?: string | null
           last_interaction_date?: string
           level?: number
           points?: number
@@ -153,20 +572,108 @@ export type Database = {
         }
         Relationships: []
       }
+      weekly_recaps: {
+        Row: {
+          achievements_earned: number | null
+          created_at: string | null
+          id: string
+          interaction_count: number | null
+          mood_summary: Json | null
+          points_earned: number | null
+          topics_explored: string[] | null
+          user_id: string
+          week_end_date: string
+          week_start_date: string
+        }
+        Insert: {
+          achievements_earned?: number | null
+          created_at?: string | null
+          id?: string
+          interaction_count?: number | null
+          mood_summary?: Json | null
+          points_earned?: number | null
+          topics_explored?: string[] | null
+          user_id: string
+          week_end_date: string
+          week_start_date: string
+        }
+        Update: {
+          achievements_earned?: number | null
+          created_at?: string | null
+          id?: string
+          interaction_count?: number | null
+          mood_summary?: Json | null
+          points_earned?: number | null
+          topics_explored?: string[] | null
+          user_id?: string
+          week_end_date?: string
+          week_start_date?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      award_achievement: {
+        Args: {
+          p_user_id: string
+          p_achievement_type_id: string
+        }
+        Returns: undefined
+      }
       calculate_next_level_points: {
         Args: {
           current_level: number
         }
         Returns: number
       }
+      cleanup_expired_memories: {
+        Args: Record<PropertyKey, never>
+        Returns: undefined
+      }
+      enhance_weekly_recap: {
+        Args: {
+          user_id_param: string
+          week_start: string
+        }
+        Returns: {
+          recap_id: string
+          mood_summary: Json
+          top_topics: string[]
+          achievement_details: Json
+          suggested_goals: Json
+        }[]
+      }
+      generate_proactive_suggestions: {
+        Args: {
+          user_id_param: string
+        }
+        Returns: {
+          suggestion_text: string
+          context: string
+          relevance_score: number
+        }[]
+      }
+      generate_weekly_recap: {
+        Args: {
+          user_id_param: string
+          week_start: string
+        }
+        Returns: string
+      }
+      update_user_progress: {
+        Args: {
+          points_to_add: number
+          quiz_completed: boolean
+        }
+        Returns: undefined
+      }
     }
     Enums: {
       gender_type: "boy" | "girl" | "other"
+      learning_style: "visual" | "reading" | "interactive"
     }
     CompositeTypes: {
       [_ in never]: never
