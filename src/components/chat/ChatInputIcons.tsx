@@ -4,7 +4,6 @@ import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { ImageUpload } from "../ImageUpload";
-import { motion } from "framer-motion";
 
 interface ChatInputIconsProps {
   onSend: () => void;
@@ -26,7 +25,7 @@ export const ChatInputIcons: React.FC<ChatInputIconsProps> = ({
   disabled
 }) => {
   return (
-    <TooltipProvider delayDuration={300}>
+    <TooltipProvider>
       <div className="flex items-center gap-2">
         <Tooltip>
           <TooltipTrigger asChild>
@@ -44,9 +43,7 @@ export const ChatInputIcons: React.FC<ChatInputIconsProps> = ({
               <Send className="w-4 h-4" />
             </Button>
           </TooltipTrigger>
-          <TooltipContent side="top" className="bg-primary text-white">
-            <p>Send message</p>
-          </TooltipContent>
+          <TooltipContent>Send message</TooltipContent>
         </Tooltip>
 
         <Tooltip>
@@ -64,39 +61,29 @@ export const ChatInputIcons: React.FC<ChatInputIconsProps> = ({
               <Mic className="w-4 h-4" />
             </Button>
           </TooltipTrigger>
-          <TooltipContent side="top" className="bg-primary text-white">
-            <p>Use your voice</p>
-          </TooltipContent>
+          <TooltipContent>Use your voice</TooltipContent>
         </Tooltip>
 
         {onImageAnalyzed && (
           <Tooltip>
             <TooltipTrigger asChild>
-              <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }}>
-                <ImageUpload 
-                  onImageAnalyzed={onImageAnalyzed}
-                  className="z-10"
+              <ImageUpload onImageAnalyzed={onImageAnalyzed}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className={cn(
+                    "bg-white/95 backdrop-blur-xl shadow-luxury border border-white/20",
+                    "hover:bg-white hover:scale-110 active:scale-95",
+                    "transition-all duration-300",
+                    "relative overflow-hidden"
+                  )}
                 >
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    className={cn(
-                      "bg-white/95 backdrop-blur-xl shadow-luxury border border-white/20",
-                      "hover:bg-white hover:scale-110 active:scale-95",
-                      "transition-all duration-300 relative overflow-hidden",
-                      "after:content-[''] after:absolute after:inset-0",
-                      "after:bg-gradient-to-r after:from-primary/20 after:to-secondary/20",
-                      "after:opacity-0 after:hover:opacity-100 after:transition-opacity"
-                    )}
-                  >
-                    <Camera className="w-4 h-4 relative z-10" />
-                  </Button>
-                </ImageUpload>
-              </motion.div>
+                  <Camera className="w-4 h-4" />
+                  <div className="absolute inset-0 bg-gradient-to-r from-primary/20 to-secondary/20 opacity-0 hover:opacity-100 transition-opacity duration-300" />
+                </Button>
+              </ImageUpload>
             </TooltipTrigger>
-            <TooltipContent side="top" className="bg-primary text-white">
-              <p>Share a picture</p>
-            </TooltipContent>
+            <TooltipContent>Share a picture</TooltipContent>
           </Tooltip>
         )}
 
@@ -115,9 +102,7 @@ export const ChatInputIcons: React.FC<ChatInputIconsProps> = ({
               <Dice6 className="w-4 h-4" />
             </Button>
           </TooltipTrigger>
-          <TooltipContent side="top" className="bg-primary text-white">
-            <p>Get a random question</p>
-          </TooltipContent>
+          <TooltipContent>Get a random question</TooltipContent>
         </Tooltip>
 
         {onQuizGenerated && (
@@ -144,9 +129,7 @@ export const ChatInputIcons: React.FC<ChatInputIconsProps> = ({
                 )}
               </Button>
             </TooltipTrigger>
-            <TooltipContent side="top" className="bg-primary text-white">
-              <p>Generate a quiz</p>
-            </TooltipContent>
+            <TooltipContent>Generate a quiz</TooltipContent>
           </Tooltip>
         )}
       </div>

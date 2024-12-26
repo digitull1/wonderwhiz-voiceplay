@@ -38,17 +38,17 @@ export const AuthForm = ({ onComplete }: AuthFormProps) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-    console.log("Starting registration/login process...");
+    console.log("Starting registration process...");
 
     try {
-      // First try to sign in
-      const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+      // First check if user exists
+      const { data: existingUser, error: checkError } = await supabase.auth.signInWithPassword({
         email: formData.email,
         password: formData.password,
       });
 
-      if (signInData?.user) {
-        console.log('User exists, signed in successfully');
+      if (existingUser?.user) {
+        console.log('User exists, signing in instead');
         toast({
           title: "Welcome back! 👋",
           description: "Successfully signed in to your account.",
@@ -57,7 +57,8 @@ export const AuthForm = ({ onComplete }: AuthFormProps) => {
         return;
       }
 
-      // If sign in fails, try to sign up
+      // If user doesn't exist, proceed with registration
+      console.log("Creating new user...");
       const { data: signUpData, error: signUpError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
@@ -66,20 +67,13 @@ export const AuthForm = ({ onComplete }: AuthFormProps) => {
             name: formData.name,
             age: parseInt(formData.age),
           },
-        }
+          emailRedirectTo: window.location.origin // Ensure proper URL construction
+        },
       });
 
       if (signUpError) {
-        if (signUpError.message.includes('User already registered')) {
-          toast({
-            title: "Account exists",
-            description: "Please try signing in instead.",
-            variant: "destructive"
-          });
-        } else {
-          throw signUpError;
-        }
-        return;
+        console.error("Registration error:", signUpError);
+        throw signUpError;
       }
 
       if (signUpData.user) {
@@ -155,7 +149,6 @@ export const AuthForm = ({ onComplete }: AuthFormProps) => {
                 required
                 placeholder="Choose a secure password"
                 className="mt-1"
-                minLength={6}
               />
             </div>
             

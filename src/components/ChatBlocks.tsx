@@ -6,7 +6,9 @@ import { ScrollProgressDots } from "./blocks/ScrollProgressDots";
 import { EnhancedBlockCard } from "./blocks/EnhancedBlockCard";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { supabase } from "@/integrations/supabase/client";
-import { handleImageBlock, handleQuizBlock } from "@/utils/blockHandlers";
+import { useToast } from "./ui/use-toast";
+import { handleQuizGeneration } from "./quiz/QuizGenerator";
+import { handleImageGeneration } from "./image/ImageGenerator";
 
 interface ChatBlocksProps {
   blocks: Block[];
@@ -18,6 +20,7 @@ export const ChatBlocks = ({ blocks, onBlockClick }: ChatBlocksProps) => {
   const [currentScrollIndex, setCurrentScrollIndex] = useState(0);
   const isMobile = useIsMobile();
   const visibleBlocksCount = isMobile ? 1 : 3;
+  const { toast } = useToast();
 
   const handleScroll = (direction: 'left' | 'right') => {
     if (!scrollContainerRef.current) return;
@@ -34,15 +37,10 @@ export const ChatBlocks = ({ blocks, onBlockClick }: ChatBlocksProps) => {
   };
 
   const handleBlockClick = async (block: Block) => {
-    console.log('Block clicked:', block);
-
-    if (!block.metadata?.type) {
-      onBlockClick(block);
-      return;
-    }
-
-    try {
-      if (block.metadata.type === 'image') {
+    if (block.metadata.type === 'image') {
+      try {
+        console.log('Generating image for prompt:', block.title);
+        
         // Dispatch loading animation event
         const loadingEvent = new CustomEvent('wonderwhiz:newMessage', {
           detail: {
@@ -53,8 +51,19 @@ export const ChatBlocks = ({ blocks, onBlockClick }: ChatBlocksProps) => {
         });
         window.dispatchEvent(loadingEvent);
 
-        await handleImageBlock(block);
-      } else if (block.metadata.type === 'quiz') {
+        await handleImageGeneration(block.title, toast);
+      } catch (error) {
+        console.error('Error generating image:', error);
+        toast({
+          title: "Oops!",
+          description: "Couldn't create an image right now. Try again!",
+          variant: "destructive"
+        });
+      }
+    } else if (block.metadata.type === 'quiz') {
+      try {
+        console.log('Generating quiz for topic:', block.metadata.topic || block.title);
+        
         // Get user's age
         const { data: userData } = await supabase.auth.getUser();
         const { data: profileData } = await supabase
@@ -66,12 +75,17 @@ export const ChatBlocks = ({ blocks, onBlockClick }: ChatBlocksProps) => {
         const age = profileData?.age || 8;
         console.log('User age for quiz generation:', age);
 
-        await handleQuizBlock(block, age);
-      } else {
-        onBlockClick(block);
+        await handleQuizGeneration(block.metadata.topic || block.title, age, toast);
+      } catch (error) {
+        console.error('Error generating quiz:', error);
+        toast({
+          title: "Oops!",
+          description: "Couldn't create a quiz right now. Try again!",
+          variant: "destructive"
+        });
       }
-    } catch (error) {
-      console.error('Error handling block click:', error);
+    } else {
+      onBlockClick(block);
     }
   };
 

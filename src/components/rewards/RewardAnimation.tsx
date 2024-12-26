@@ -1,84 +1,113 @@
-import React from "react";
-import { motion } from "framer-motion";
-import confetti from "canvas-confetti";
-import { cn } from "@/lib/utils";
+import React from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import confetti from 'canvas-confetti';
+import { cn } from '@/lib/utils';
 
 interface RewardAnimationProps {
-  type: "points" | "achievement" | "streak" | "quiz" | "image";
   points?: number;
-  message?: string;
+  badge?: string;
+  type: 'points' | 'badge' | 'streak' | 'quiz' | 'image';
+  className?: string;
 }
 
-export const RewardAnimation: React.FC<RewardAnimationProps> = ({ 
-  type, 
-  points, 
-  message 
+export const RewardAnimation: React.FC<RewardAnimationProps> = ({
+  points,
+  badge,
+  type,
+  className
 }) => {
-  React.useEffect(() => {
+  const triggerConfetti = () => {
     confetti({
-      particleCount: type === "achievement" ? 150 : 100,
+      particleCount: 100,
       spread: 70,
-      origin: { y: 0.6 }
+      origin: { y: 0.6 },
+      colors: ['#9b87f5', '#33C3F0', '#FEC6A1', '#7E69AB'],
+      shapes: ['circle', 'square'],
     });
-  }, [type]);
-
-  const getDefaultMessage = () => {
-    switch (type) {
-      case "points":
-        return "Points earned!";
-      case "achievement":
-        return "Achievement unlocked!";
-      case "streak":
-        return "Daily streak!";
-      case "quiz":
-        return "Correct answer!";
-      case "image":
-        return "Image created!";
-      default:
-        return "Great job!";
-    }
   };
 
+  React.useEffect(() => {
+    if (type === 'badge' || type === 'quiz') {
+      triggerConfetti();
+    }
+  }, [type]);
+
   return (
-    <motion.div
-      className={cn(
-        "fixed inset-0 pointer-events-none z-50",
-        "flex items-center justify-center"
-      )}
-      initial={{ opacity: 0, scale: 0.8 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.8 }}
-      transition={{ duration: 0.3 }}
-    >
+    <AnimatePresence>
       <motion.div
         className={cn(
-          "bg-gradient-to-r from-primary to-secondary",
-          "rounded-lg shadow-xl p-6 text-white text-center",
-          "flex flex-col items-center gap-2"
+          "fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2",
+          "pointer-events-none z-50",
+          className
         )}
-        initial={{ y: 50 }}
-        animate={{ y: 0 }}
-        exit={{ y: 50 }}
+        initial={{ scale: 0, opacity: 0 }}
+        animate={{ scale: 1, opacity: 1 }}
+        exit={{ scale: 0, opacity: 0 }}
+        transition={{ type: "spring", duration: 0.5 }}
       >
-        {points && (
+        {type === 'points' && (
           <motion.div
-            className="text-4xl font-bold"
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            transition={{ delay: 0.2 }}
+            className="text-2xl font-bold text-primary"
+            initial={{ y: 0 }}
+            animate={{ y: -50 }}
+            transition={{ duration: 1 }}
           >
-            +{points}
+            +{points} points! ⭐
           </motion.div>
         )}
-        <motion.div
-          className="text-xl"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.3 }}
-        >
-          {message || getDefaultMessage()}
-        </motion.div>
+
+        {type === 'badge' && (
+          <motion.div
+            className="bg-gradient-to-br from-primary to-secondary p-6 rounded-xl shadow-luxury"
+            animate={{ rotate: [0, 360] }}
+            transition={{ duration: 1 }}
+          >
+            <div className="text-white text-center space-y-2">
+              <motion.div 
+                className="text-4xl"
+                animate={{ scale: [1, 1.2, 1] }}
+                transition={{ duration: 0.5, repeat: Infinity }}
+              >
+                🏆
+              </motion.div>
+              <div className="text-lg font-semibold">New Badge!</div>
+              <div>{badge}</div>
+            </div>
+          </motion.div>
+        )}
+
+        {type === 'streak' && (
+          <motion.div
+            className="text-2xl font-bold text-orange-500"
+            animate={{ scale: [1, 1.2, 1] }}
+            transition={{ duration: 0.5, repeat: Infinity }}
+          >
+            🔥 Streak!
+          </motion.div>
+        )}
+
+        {type === 'quiz' && (
+          <motion.div
+            className="text-2xl font-bold text-green-500"
+            initial={{ y: 0 }}
+            animate={{ y: -50 }}
+            transition={{ duration: 1 }}
+          >
+            Correct! 🎯
+          </motion.div>
+        )}
+
+        {type === 'image' && (
+          <motion.div
+            className="text-2xl font-bold text-purple-500"
+            initial={{ y: 0 }}
+            animate={{ y: -50 }}
+            transition={{ duration: 1 }}
+          >
+            Creative Genius! 🎨
+          </motion.div>
+        )}
       </motion.div>
-    </motion.div>
+    </AnimatePresence>
   );
 };

@@ -37,16 +37,6 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
     console.log('Starting image upload and analysis...');
 
     try {
-      // Show loading message in chat
-      const loadingEvent = new CustomEvent('wonderwhiz:newMessage', {
-        detail: {
-          text: "✨ Analyzing your image... Give me a moment to understand what I see!",
-          isAi: true,
-          isLoading: true
-        }
-      });
-      window.dispatchEvent(loadingEvent);
-
       const reader = new FileReader();
       reader.onload = async (e) => {
         const base64Image = e.target?.result as string;
@@ -96,23 +86,15 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      className={cn(
-        "relative cursor-pointer",
-        "hover:scale-105 transition-transform duration-200",
-        className
-      )}
+      className={cn("relative cursor-pointer", className)}
     >
       <Button
         variant="ghost"
-        className={cn(
-          "w-full h-full p-0 relative",
-          "hover:bg-white/10 active:scale-95",
-          "transition-all duration-300"
-        )}
+        className="w-full h-full p-0 hover:bg-transparent"
         disabled={isLoading}
       >
         {isLoading ? (
-          <Loader2 className="h-5 w-5 animate-spin text-primary" />
+          <Loader2 className="h-5 w-5 animate-spin text-white" />
         ) : (
           children
         )}
@@ -120,7 +102,7 @@ export const ImageUpload: React.FC<ImageUploadProps> = ({
           type="file"
           accept="image/*"
           onChange={handleImageUpload}
-          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20"
+          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
           disabled={isLoading}
         />
       </Button>

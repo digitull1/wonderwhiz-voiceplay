@@ -15,13 +15,8 @@ export interface Message {
 }
 
 export interface UserProfile {
-  id?: string;  // Added optional id to match Supabase profiles table
   name: string;
   age: number;
-  language: string;  // Added language property
-  gender: string;    // Added gender property
-  topics_of_interest?: string[];
-  preferred_language?: string;
 }
 
 export interface UserProgress {
