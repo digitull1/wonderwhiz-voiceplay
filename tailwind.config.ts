@@ -18,9 +18,6 @@ export default {
       },
     },
     extend: {
-      scale: {
-        '102': '1.02',
-      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -60,12 +57,12 @@ export default {
         }
       },
       fontFamily: {
-        sans: ['Nunito', 'system-ui', 'sans-serif'],
-        display: ['Roboto', 'system-ui', 'sans-serif'],
+        sans: ['SF Pro Display', 'system-ui', 'sans-serif'],
+        display: ['SF Pro Display', 'system-ui', 'sans-serif'],
       },
       fontSize: {
-        'title': '16px',
-        'subtitle': '14px',
+        'title': '28px',
+        'subtitle': '24px',
         'body': '16px',
         'small': '14px',
         'block-title': '16px',
@@ -75,9 +72,7 @@ export default {
       backgroundImage: {
         'gradient-luxury': 'linear-gradient(135deg, #F5F5F7 0%, #E5E5E7 100%)',
         'gradient-card': 'linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.85) 100%)',
-        'gradient-block-1': 'linear-gradient(135deg, rgba(155,135,245,0.95) 0%, rgba(51,195,240,0.95) 100%)',
-        'gradient-block-2': 'linear-gradient(135deg, rgba(51,195,240,0.95) 0%, rgba(254,198,161,0.95) 100%)',
-        'gradient-block-3': 'linear-gradient(135deg, rgba(254,198,161,0.95) 0%, rgba(155,135,245,0.95) 100%)',
+        'gradient-block': 'linear-gradient(135deg, rgba(155,135,245,0.95) 0%, rgba(51,195,240,0.95) 100%)',
       },
       boxShadow: {
         'luxury': '0 8px 32px -4px rgba(0, 0, 0, 0.1)',

@@ -1,83 +1,41 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { HfInference } from "https://esm.sh/@huggingface/inference@2.3.2";
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { HfInference } from 'https://esm.sh/@huggingface/inference@2.3.2'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-};
+}
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    return new Response(null, { headers: corsHeaders });
+    return new Response(null, { headers: corsHeaders })
   }
 
   try {
-    const { prompt, age_group = "8-12" } = await req.json();
-    console.log('Generating image for prompt:', prompt, 'age group:', age_group);
+    const { prompt } = await req.json()
+    console.log('Generating image for prompt:', prompt)
 
-    // Try HuggingFace Flux first
-    try {
-      const hf = new HfInference(Deno.env.get('HUGGING_FACE_ACCESS_TOKEN'));
-      const image = await hf.textToImage({
-        inputs: prompt,
-        model: 'black-forest-labs/FLUX.1-schnell',
-      });
+    const hf = new HfInference(Deno.env.get('HUGGING_FACE_ACCESS_TOKEN'))
 
-      const arrayBuffer = await image.arrayBuffer();
-      const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+    const image = await hf.textToImage({
+      inputs: prompt,
+      model: 'black-forest-labs/FLUX.1-schnell',
+    })
 
-      return new Response(
-        JSON.stringify({ 
-          image: `data:image/png;base64,${base64}`,
-          success: true 
-        }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    } catch (hfError) {
-      console.error('HuggingFace error:', hfError);
-      
-      // Fallback to DALL·E
-      const openaiResponse = await fetch('https://api.openai.com/v1/images/generations', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
-        },
-        body: JSON.stringify({
-          model: "dall-e-3",
-          prompt: `${prompt} (child-friendly, educational, colorful illustration)`,
-          n: 1,
-          size: "1024x1024",
-        }),
-      });
+    const arrayBuffer = await image.arrayBuffer()
+    const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)))
 
-      if (!openaiResponse.ok) {
-        throw new Error(`DALL·E API error: ${openaiResponse.statusText}`);
-      }
-
-      const data = await openaiResponse.json();
-      return new Response(
-        JSON.stringify({ 
-          image: data.data[0].url,
-          success: true,
-          using_fallback: true
-        }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      );
-    }
-  } catch (error) {
-    console.error('Error:', error);
+    console.log('Image generated successfully')
+    
     return new Response(
-      JSON.stringify({ 
-        error: 'Failed to generate image',
-        details: error.message,
-        success: false
-      }),
-      { 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200 // Return 200 even for errors to prevent CORS issues
-      }
-    );
+      JSON.stringify({ image: `data:image/png;base64,${base64}` }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    )
+  } catch (error) {
+    console.error('Error:', error)
+    return new Response(
+      JSON.stringify({ error: 'An unexpected error occurred', details: error.message }),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' }, status: 500 }
+    )
   }
-});
+})

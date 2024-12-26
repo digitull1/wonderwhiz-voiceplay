@@ -402,13 +402,9 @@ export type Database = {
           gender: string
           id: string
           language: string
-          learning_style: Database["public"]["Enums"]["learning_style"] | null
           multimedia_enabled: boolean | null
           name: string | null
-          onboarding_completed: boolean | null
-          points: number | null
           preferred_language: string | null
-          preferred_topics: string[] | null
           topics_of_interest: string[] | null
           updated_at: string
         }
@@ -418,13 +414,9 @@ export type Database = {
           gender?: string
           id: string
           language?: string
-          learning_style?: Database["public"]["Enums"]["learning_style"] | null
           multimedia_enabled?: boolean | null
           name?: string | null
-          onboarding_completed?: boolean | null
-          points?: number | null
           preferred_language?: string | null
-          preferred_topics?: string[] | null
           topics_of_interest?: string[] | null
           updated_at?: string
         }
@@ -434,13 +426,9 @@ export type Database = {
           gender?: string
           id?: string
           language?: string
-          learning_style?: Database["public"]["Enums"]["learning_style"] | null
           multimedia_enabled?: boolean | null
           name?: string | null
-          onboarding_completed?: boolean | null
-          points?: number | null
           preferred_language?: string | null
-          preferred_topics?: string[] | null
           topics_of_interest?: string[] | null
           updated_at?: string
         }
@@ -663,17 +651,9 @@ export type Database = {
         }
         Returns: string
       }
-      update_user_progress: {
-        Args: {
-          points_to_add: number
-          quiz_completed: boolean
-        }
-        Returns: undefined
-      }
     }
     Enums: {
       gender_type: "boy" | "girl" | "other"
-      learning_style: "visual" | "reading" | "interactive"
     }
     CompositeTypes: {
       [_ in never]: never

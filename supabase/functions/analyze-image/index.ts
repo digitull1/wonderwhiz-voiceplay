@@ -55,21 +55,21 @@ serve(async (req) => {
         temperature: 0.7,
         max_tokens: 1024
       })
-    });
+    })
 
     if (!response.ok) {
-      const error = await response.json();
-      console.error('Groq API Error:', error);
-      throw new Error(error.error?.message || 'Failed to analyze image');
+      const error = await response.json()
+      console.error('Groq API Error:', error)
+      throw new Error(error.error?.message || 'Failed to analyze image')
     }
 
-    const data = await response.json();
+    const data = await response.json()
     console.log('Successfully received response from Groq API');
 
     return new Response(
       JSON.stringify(data),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    )
   } catch (error) {
     console.error('Error in analyze-image function:', error);
     return new Response(
@@ -82,6 +82,6 @@ serve(async (req) => {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }, 
         status: 500 
       }
-    );
+    )
   }
-});
+})

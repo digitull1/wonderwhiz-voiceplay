@@ -22,7 +22,6 @@ enabled = true
 [realtime]
 enabled = true
 
-[functions]
 [functions.analyze-image]
 verify_jwt = false
 
@@ -39,7 +38,4 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.transcribe-audio]
-verify_jwt = false
-
-[functions.generate-with-gemini]
 verify_jwt = false

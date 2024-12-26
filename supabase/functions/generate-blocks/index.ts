@@ -1,184 +1,129 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { GoogleGenerativeAI } from "https://esm.sh/@google/generative-ai@0.1.3";
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  'Content-Type': 'application/json'
-};
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import "https://deno.land/x/xhr@0.1.0/mod.ts"
+import { corsHeaders } from "../_shared/cors.ts"
+import { callGroq } from "../_shared/groq.ts"
+import { generateAgeSpecificInstructions, buildPrompt } from "./prompts.ts"
+import { parseGroqResponse, validateBlocksStructure } from "../_shared/jsonParser.ts"
 
 serve(async (req) => {
-  // Handle CORS preflight requests
+  // Handle CORS preflight
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    if (req.method !== 'POST') {
-      throw new Error(`Method ${req.method} not allowed`);
+    if (!req.body) {
+      throw new Error('Request body is required');
     }
 
-    const { query, context = "general", age_group = "8-12" } = await req.json();
-    console.log('Generating content for:', { query, context, age_group });
+    const { query, context, age_group = "8-11" } = await req.json();
+    console.log('Processing request with params:', { query, context, age_group });
 
-    const apiKey = Deno.env.get('GEMINI_API_KEY');
-    if (!apiKey) {
-      console.error('GEMINI_API_KEY not configured');
-      throw new Error('API key not configured');
+    if (!query) {
+      throw new Error('Query parameter is required');
     }
 
-    const genAI = new GoogleGenerativeAI(apiKey);
-    const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+    const ageSpecificInstructions = generateAgeSpecificInstructions(age_group);
+    const prompt = buildPrompt(query, context, ageSpecificInstructions);
     
-    const prompt = `You are WonderWhiz, a fun AI tutor for children aged ${age_group}.
-    Create exactly 5 educational blocks about "${query}" formatted as a JSON object.
+    console.log('Making request to Groq API with prompt:', prompt);
     
-    Return ONLY a JSON object with this EXACT structure (no other text):
-    {
-      "blocks": [
-        {
-          "title": "🌟 [engaging title here, max 72 chars]",
-          "description": "[two engaging sentences here]",
-          "metadata": {
-            "type": "fact",
-            "topic": "${context}",
-            "prompt": "[detailed prompt for content]"
-          }
-        },
-        // ... 4 more similar blocks
-      ]
+    const data = await callGroq([
+      {
+        role: "system",
+        content: `You are WonderWhiz, generating exciting educational content for kids aged ${age_group}. Always respond with valid JSON containing an array of blocks.`
+      },
+      { role: "user", content: prompt }
+    ], 0.7, 500, 5);
+
+    if (!data?.choices?.[0]?.message?.content) {
+      console.error('Invalid response format from Groq API:', data);
+      throw new Error('Invalid response format from Groq API');
     }
 
-    Make each block unique:
-    1. First block: type "fact" - a fascinating fact
-    2. Second block: type "exploration" - deeper dive
-    3. Third block: type "quiz-teaser" - teaser for quiz
-    4. Fourth block: type "image" - for image generation
-    5. Fifth block: type "quiz" - full quiz block
+    const content = data.choices[0].message.content;
+    console.log('Raw content from Groq:', content);
 
-    Requirements:
-    - Each title MUST start with an emoji
-    - Keep titles under 72 characters
-    - Make content fun and educational
-    - Target age group: ${age_group}
-    - Topic: ${query}
-
-    IMPORTANT: Return ONLY the JSON object, no other text or explanation.`;
-
-    console.log('Sending prompt to Gemini:', prompt);
-
-    const result = await model.generateContent(prompt);
-    const response = result.response;
-    const text = response.text();
-    
-    console.log('Raw Gemini response:', text);
-
-    let parsedResponse;
+    let parsedContent;
     try {
-      // Clean the response - remove any markdown formatting
-      const cleanText = text.replace(/```json\s*|\s*```/g, '').trim();
-      parsedResponse = JSON.parse(cleanText);
+      // Parse and validate the response
+      parsedContent = parseGroqResponse(content);
+      parsedContent = validateBlocksStructure(parsedContent);
       
-      // Validate response structure
-      if (!parsedResponse?.blocks || !Array.isArray(parsedResponse.blocks)) {
-        console.error('Invalid response structure:', parsedResponse);
-        throw new Error('Invalid response structure');
-      }
-
-      // Ensure we have exactly 5 blocks
-      if (parsedResponse.blocks.length !== 5) {
-        console.error('Incorrect number of blocks:', parsedResponse.blocks.length);
-        throw new Error('Incorrect number of blocks');
-      }
-
-      // Format and validate each block
-      const types = ['fact', 'exploration', 'quiz-teaser', 'image', 'quiz'];
-      const formattedBlocks = parsedResponse.blocks.map((block: any, index: number) => ({
-        title: (block.title || "").substring(0, 72),
-        description: block.description || "Click to explore more!",
+      // Ensure each block has required fields and limit to 3 blocks
+      parsedContent.blocks = parsedContent.blocks.slice(0, 3).map(block => ({
+        title: block.title?.substring(0, 75) || "Interesting fact!",
         metadata: {
-          type: types[index],
-          topic: context,
-          prompt: block.metadata?.prompt || `Tell me about ${block.title}`
+          topic: block.metadata?.topic || context || "general",
+          type: block.metadata?.type || "fact"
         }
       }));
 
-      return new Response(
-        JSON.stringify({ blocks: formattedBlocks }),
-        { headers: corsHeaders }
-      );
-    } catch (parseError) {
-      console.error('Error parsing Gemini response:', parseError);
-      console.error('Failed response:', text);
-      
-      // Return fallback blocks
-      const fallbackBlocks = {
-        blocks: [
-          {
-            title: "🌟 Discover fascinating facts about " + context,
-            description: "Learn amazing things about " + context + " that will blow your mind!",
-            metadata: {
-              type: "fact",
-              topic: context,
-              prompt: `Tell me fascinating facts about ${context}`
-            }
-          },
-          {
-            title: "🔍 Explore the mysteries of " + context,
-            description: "Dive deeper into the fascinating world of " + context + "!",
-            metadata: {
-              type: "exploration",
-              topic: context,
-              prompt: `Explain ${context} in detail`
-            }
-          },
-          {
-            title: "💭 Test your knowledge about " + context,
-            description: "Think you know everything about " + context + "? Let's find out!",
-            metadata: {
-              type: "quiz-teaser",
-              topic: context,
-              prompt: `Create a quiz about ${context}`
-            }
-          },
-          {
-            title: "🎨 Create amazing art about " + context,
-            description: "Let's make something beautiful about " + context + "!",
-            metadata: {
-              type: "image",
-              topic: context,
-              prompt: `Generate a child-friendly illustration about ${context}`
-            }
-          },
-          {
-            title: "🎯 Challenge yourself with a " + context + " quiz",
-            description: "Ready to become a " + context + " expert? Take this fun quiz!",
-            metadata: {
-              type: "quiz",
-              topic: context,
-              prompt: `Generate a fun quiz about ${context}`
-            }
+      // Add image and quiz blocks
+      parsedContent.blocks.push(
+        {
+          title: `🎨 Create amazing ${context} artwork!`,
+          metadata: {
+            topic: context,
+            type: "image"
           }
-        ]
-      };
-
-      return new Response(
-        JSON.stringify(fallbackBlocks),
-        { headers: corsHeaders }
+        },
+        {
+          title: `🎯 Test your ${context} knowledge!`,
+          metadata: {
+            topic: context,
+            type: "quiz"
+          }
+        }
       );
+
+      console.log('Final blocks structure:', parsedContent);
+
+    } catch (error) {
+      console.error('Error parsing or processing content:', error);
+      throw new Error(`Failed to process Groq response: ${error.message}`);
     }
+
+    return new Response(
+      JSON.stringify(parsedContent),
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+    );
+
   } catch (error) {
     console.error('Error in generate-blocks function:', error);
     
+    // Return a fallback response with basic blocks
+    const fallbackResponse = {
+      blocks: [
+        {
+          title: "Let's learn something new!",
+          metadata: {
+            topic: "general",
+            type: "fact"
+          }
+        },
+        {
+          title: "🎨 Create some artwork!",
+          metadata: {
+            topic: "general",
+            type: "image"
+          }
+        },
+        {
+          title: "🎯 Test your knowledge!",
+          metadata: {
+            topic: "general",
+            type: "quiz"
+          }
+        }
+      ]
+    };
+    
     return new Response(
-      JSON.stringify({
-        error: 'Failed to generate blocks',
-        details: error.message
-      }),
+      JSON.stringify(fallbackResponse),
       { 
-        status: 500,
-        headers: corsHeaders
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200 // Return 200 with fallback content instead of 500
       }
     );
   }

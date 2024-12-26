@@ -9,7 +9,6 @@ import { TopNavigation } from "./TopNavigation";
 import { UserProgress } from "@/types/chat";
 import { supabase } from "@/integrations/supabase/client";
 import { generateInitialBlocks } from "@/utils/profileUtils";
-import { TooltipProvider } from "@/components/ui/tooltip";
 
 interface MainContainerProps {
   messages: any[];
@@ -98,9 +97,8 @@ export const MainContainer: React.FC<MainContainerProps> = ({
     };
   };
 
-  // Only show welcome message if there are no other messages
   const welcomeMessage = getWelcomeMessage();
-  const displayMessages = messages.length === 0 ? [welcomeMessage] : messages;
+  const displayMessages = isAuthenticated ? messages : [welcomeMessage];
 
   return (
     <motion.div 
@@ -108,14 +106,10 @@ export const MainContainer: React.FC<MainContainerProps> = ({
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
-      role="main"
-      aria-label="WonderWhiz Chat Interface"
     >
       <div className="absolute inset-0 bg-gradient-luxury opacity-50" />
-      <div className="fixed inset-0 bg-stars opacity-10 animate-float" />
-      <div className="fixed inset-0 backdrop-blur-[100px]" />
       
-      <div className="relative z-10 flex flex-col h-[100dvh] w-full">
+      <div className="relative z-10 w-full h-full flex flex-col">
         <TopNavigation 
           isAuthenticated={isAuthenticated}
           onPanelToggle={() => setIsPanelOpen(!isPanelOpen)}
@@ -127,16 +121,14 @@ export const MainContainer: React.FC<MainContainerProps> = ({
         />
 
         <div className="flex-1 flex flex-col h-full relative overflow-hidden">
-          <TooltipProvider>
-            <ChatContainer 
-              messages={displayMessages}
-              handleListen={handleListen}
-              onBlockClick={handleBlockClick}
-              quizState={quizState}
-              onQuizAnswer={handleQuizAnswer}
-              onAuthPromptClick={() => setShowAuthForm(true)}
-            />
-          </TooltipProvider>
+          <ChatContainer 
+            messages={displayMessages}
+            handleListen={handleListen}
+            onBlockClick={handleBlockClick}
+            quizState={quizState}
+            onQuizAnswer={handleQuizAnswer}
+            onAuthPromptClick={() => setShowAuthForm(true)}
+          />
 
           <AnimatePresence>
             {showAuthForm && (

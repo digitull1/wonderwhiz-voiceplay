@@ -1,144 +1,87 @@
-import React from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Block } from "@/types/chat";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
-import { handleContentBlock, handleImageBlock, handleQuizBlock } from "@/utils/blockHandlers";
-import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
-import { LoadingSparkles } from "../LoadingSparkles";
+import { RewardAnimation } from "../rewards/RewardAnimation";
 
 interface BlockCardProps {
   block: Block;
   index: number;
   onClick: () => void;
-  color?: string;
+  color: string;
 }
 
-export const BlockCard: React.FC<BlockCardProps> = ({
-  block,
-  index,
-  onClick,
-  color = "bg-gradient-to-br from-primary/20 to-secondary/20"
-}) => {
-  const { toast } = useToast();
-  const [isLoading, setIsLoading] = React.useState(false);
+export const BlockCard = ({ block, index, onClick, color }: BlockCardProps) => {
+  const isMobile = useIsMobile();
+  const [showReward, setShowReward] = useState(false);
 
-  const handleClick = async () => {
-    setIsLoading(true);
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) {
-        toast({
-          title: "Please log in",
-          description: "You need to be logged in to interact with blocks!",
-          variant: "destructive"
-        });
-        return;
-      }
-
-      const { data: profileData } = await supabase
-        .from('profiles')
-        .select('age')
-        .eq('id', user.id)
-        .single();
-
-      const age = profileData?.age || 8;
-      console.log('Processing block click:', { blockType: block.metadata?.type, age });
-
-      // Show initial loading message
-      window.dispatchEvent(new CustomEvent('wonderwhiz:newMessage', {
-        detail: {
-          text: "✨ Creating something magical for you! Watch the sparkles...",
-          isAi: true,
-          isLoading: true
-        }
-      }));
-
-      // Handle different block types
-      switch (block.metadata?.type) {
-        case 'image':
-          await handleImageBlock(block);
-          break;
-        case 'quiz':
-          await handleQuizBlock(block, age);
-          break;
-        default:
-          await handleContentBlock(block, age);
-      }
-
-      // Update user progress
-      const { data: userProgress } = await supabase
-        .from('user_progress')
-        .select('topics_explored, points')
-        .eq('user_id', user.id)
-        .single();
-
-      if (userProgress) {
-        await supabase
-          .from('user_progress')
-          .update({ 
-            topics_explored: (userProgress.topics_explored || 0) + 1,
-            points: (userProgress.points || 0) + 10
-          })
-          .eq('user_id', user.id);
-
-        toast({
-          title: "Great exploring! 🚀",
-          description: "You've earned points for your curiosity!",
-          className: "bg-secondary text-white",
-        });
-      }
-
-    } catch (error) {
-      console.error('Error handling block click:', error);
-      toast({
-        title: "Oops!",
-        description: "Something went wrong. Please try again!",
-        variant: "destructive"
-      });
-    } finally {
-      setIsLoading(false);
+  const handleClick = () => {
+    if (block.metadata.type === 'image') {
+      setShowReward(true);
+      setTimeout(() => setShowReward(false), 2000);
     }
+    onClick();
   };
 
   return (
-    <motion.button
-      onClick={handleClick}
-      disabled={isLoading}
-      className={cn(
-        "w-full p-6 rounded-xl border border-white/10",
-        "backdrop-blur-sm shadow-luxury hover:shadow-luxury-hover",
-        "transition-all duration-300 ease-in-out",
-        "flex flex-col items-start gap-2 text-left",
-        color,
-        isLoading && "animate-pulse"
-      )}
-      whileHover={{ scale: 1.02 }}
-      whileTap={{ scale: 0.98 }}
-    >
-      {isLoading ? (
-        <LoadingSparkles />
-      ) : (
-        <>
-          <h3 className="text-lg font-semibold text-white">
-            {block.title}
-          </h3>
-          {block.description && (
-            <p className="text-sm text-white/80">
-              {block.description}
-            </p>
-          )}
-          {block.metadata?.type && (
-            <div className="mt-2 text-xs text-white/60">
-              {block.metadata.type === 'image' && '🎨 Click to generate an image'}
-              {block.metadata.type === 'quiz' && '🎯 Click to start a quiz'}
-              {block.metadata.type === 'fact' && '🌟 Click to learn more'}
-            </div>
-          )}
-        </>
-      )}
-    </motion.button>
+    <>
+      {showReward && <RewardAnimation type="image" />}
+      
+      <motion.div
+        className={cn(
+          "snap-center w-full px-2 py-4",
+          isMobile ? "w-full" : "sm:w-[280px]"
+        )}
+        initial={{ opacity: 0, x: 20 }}
+        animate={{ opacity: 1, x: 0 }}
+        transition={{ delay: index * 0.1 }}
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
+      >
+        <motion.button
+          onClick={handleClick}
+          className={`block-hover flex flex-col items-center justify-center p-6 
+            rounded-xl w-full min-h-[160px] transition-all hover:shadow-block 
+            shadow-block relative overflow-hidden text-white snap-center 
+            group bg-gradient-to-br ${color}`}
+          initial={{ y: 20, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={{
+            type: "spring",
+            stiffness: 260,
+            damping: 20,
+            delay: index * 0.1
+          }}
+        >
+          <div className="relative z-10 h-full w-full flex flex-col items-center 
+            justify-center text-center space-y-3">
+            <h3 className="text-block-title font-bold text-app-text-light 
+              break-words whitespace-pre-wrap px-2">
+              {block.title}
+            </h3>
+          </div>
+          
+          <div className="absolute bottom-0 right-0 w-24 h-24 opacity-20 
+            bg-white rounded-tl-full transform translate-x-6 translate-y-6 
+            group-hover:scale-110 transition-transform duration-500" />
+          
+          <motion.div 
+            className="absolute top-2 right-2 opacity-70 group-hover:opacity-100"
+            animate={{ 
+              rotate: [0, 10, -10, 0],
+              scale: [1, 1.1, 1]
+            }}
+            transition={{ 
+              duration: 2, 
+              repeat: Infinity,
+              ease: "easeInOut"
+            }}
+          >
+            <span className="text-2xl">✨</span>
+          </motion.div>
+        </motion.button>
+      </motion.div>
+    </>
   );
 };
-
-export default BlockCard;

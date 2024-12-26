@@ -15,6 +15,7 @@ export const useBlockGeneration = (userProfile: UserProfile | null) => {
         
         if (i === maxRetries - 1) throw error;
         
+        // Exponential backoff with jitter
         const delay = Math.min(1000 * Math.pow(2, i) + Math.random() * 1000, 10000);
         console.log(`Retrying in ${delay}ms...`);
         await new Promise(resolve => setTimeout(resolve, delay));
@@ -46,8 +47,7 @@ export const useBlockGeneration = (userProfile: UserProfile | null) => {
           context: topic,
           previous_context: previousContext,
           age_group: userProfile ? `${userProfile.age}-${userProfile.age + 2}` : "8-12",
-          name: userProfile?.name,
-          language: userProfile?.language || 'en'
+          name: userProfile?.name
         };
         
         console.log("Request body:", JSON.stringify(requestBody, null, 2));
@@ -58,29 +58,6 @@ export const useBlockGeneration = (userProfile: UserProfile | null) => {
 
         if (error) {
           console.error('Error from generate-blocks:', error);
-          // Parse the error response body if it exists
-          let errorBody;
-          try {
-            errorBody = typeof error.message === 'string' && error.message.includes('{') 
-              ? JSON.parse(error.message)
-              : null;
-          } catch (e) {
-            console.error('Error parsing error body:', e);
-          }
-
-          // If we have fallback content in the error response, use it
-          if (errorBody?.body) {
-            try {
-              const parsedBody = JSON.parse(errorBody.body);
-              if (parsedBody.fallback) {
-                console.log('Using fallback content from error response');
-                return parsedBody.fallback;
-              }
-            } catch (e) {
-              console.error('Error parsing fallback content:', e);
-            }
-          }
-          
           throw error;
         }
 
@@ -90,67 +67,56 @@ export const useBlockGeneration = (userProfile: UserProfile | null) => {
 
       const data = await retryWithBackoff(makeRequest);
 
-      let parsedData;
-      try {
-        parsedData = typeof data === 'string' ? JSON.parse(data) : data;
-      } catch (parseError) {
-        console.error('Error parsing response:', parseError);
-        throw new Error('Invalid response format from server');
-      }
-
-      if (!parsedData?.blocks || !Array.isArray(parsedData.blocks)) {
-        throw new Error('Invalid blocks format in response');
-      }
-
-      const formattedBlocks = parsedData.blocks.map((block: Block) => ({
-        ...block,
-        title: block.title?.substring(0, 75) || "",
-        metadata: {
-          ...block.metadata,
-          topic: block.metadata?.topic || topic
+      if (data?.choices?.[0]?.message?.content) {
+        let parsedData;
+        try {
+          parsedData = typeof data.choices[0].message.content === 'string' 
+            ? JSON.parse(data.choices[0].message.content) 
+            : data.choices[0].message.content;
+        } catch (parseError) {
+          console.error('Error parsing response:', parseError);
+          console.log('Raw content:', data.choices[0].message.content);
+          throw new Error('Invalid response format from server');
         }
-      }));
 
-      console.log("Formatted blocks:", formattedBlocks);
-      return formattedBlocks;
+        console.log("Parsed blocks data:", parsedData);
+        
+        if (!Array.isArray(parsedData.blocks)) {
+          console.error('Invalid blocks format:', parsedData);
+          throw new Error('Invalid blocks format in response');
+        }
 
+        const formattedBlocks = parsedData.blocks.map((block: Block) => ({
+          ...block,
+          title: block.title?.substring(0, 75) || "",
+          metadata: {
+            ...block.metadata,
+            topic: block.metadata?.topic || topic
+          }
+        }));
+
+        console.log("Formatted blocks:", formattedBlocks);
+        return formattedBlocks;
+      }
+
+      console.error('Invalid data format received:', data);
+      toast({
+        title: "Oops!",
+        description: "Had trouble generating content. Please try again!",
+        variant: "destructive"
+      });
+      
+      return [];
     } catch (error) {
       console.error('Error generating blocks:', error);
       
-      // Show a user-friendly toast message
       toast({
-        title: "Taking a quick break! 🌟",
-        description: "We're generating lots of fun content! Here are some cool topics to explore in the meantime.",
-        variant: "default"
+        title: "Connection Error",
+        description: "Having trouble connecting. Please check your internet and try again.",
+        variant: "destructive"
       });
       
-      // Return contextual fallback blocks
-      return [
-        {
-          title: `🌟 Learn more about ${topic}!`,
-          description: "Discover fascinating facts",
-          metadata: {
-            topic: topic,
-            type: "fact"
-          }
-        },
-        {
-          title: `🎨 Create ${topic} artwork!`,
-          description: "Let's make something creative",
-          metadata: {
-            topic: topic,
-            type: "image"
-          }
-        },
-        {
-          title: `🎯 Test your ${topic} knowledge!`,
-          description: "Challenge yourself",
-          metadata: {
-            topic: topic,
-            type: "quiz"
-          }
-        }
-      ];
+      return [];
     }
   };
 

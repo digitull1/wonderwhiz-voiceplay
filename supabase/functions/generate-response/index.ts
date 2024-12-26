@@ -23,6 +23,7 @@ async function retryWithBackoff<T>(
       console.error(`Attempt ${i + 1} failed:`, error);
       
       if (error.message?.includes('Rate limit reached')) {
+        // Extract wait time from error message
         const waitTime = parseFloat(error.message.match(/try again in (\d+\.?\d*)s/)?.[1] || '1') * 1000;
         console.log(`Rate limit hit, waiting for ${waitTime}ms before retry ${i + 1}`);
         await wait(waitTime);
@@ -38,32 +39,21 @@ async function retryWithBackoff<T>(
 }
 
 serve(async (req) => {
-  console.log('Received request:', req.method);
-
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
-    console.log('Handling CORS preflight request');
-    return new Response(null, { 
-      headers: {
-        ...corsHeaders,
-        'Access-Control-Allow-Methods': 'POST, OPTIONS',
-        'Access-Control-Max-Age': '86400',
-      }
-    });
+    return new Response(null, { headers: corsHeaders })
   }
 
   try {
-    const { prompt, max_words = 100 } = await req.json();
-    console.log('Generating response for prompt:', prompt, 'with max words:', max_words);
+    const { prompt, max_words = 100 } = await req.json()
+    console.log('Generating response for prompt:', prompt, 'with max words:', max_words)
 
-    const apiKey = Deno.env.get('GROQ_API_KEY');
+    const apiKey = Deno.env.get('GROQ_API_KEY')
     if (!apiKey) {
-      console.error('Groq API key not found');
-      throw new Error('Groq API key not configured');
+      console.error('Groq API key not found')
+      throw new Error('Groq API key not configured')
     }
 
     const makeRequest = async () => {
-      console.log('Making request to Groq API...');
       const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
         method: 'POST',
         headers: {
@@ -125,17 +115,9 @@ serve(async (req) => {
 
     return new Response(
       JSON.stringify({ 
-        response: data.choices[0].message.content,
-        status: 'success'
+        response: data.choices[0].message.content
       }),
-      { 
-        headers: { 
-          ...corsHeaders, 
-          'Content-Type': 'application/json',
-          'Cache-Control': 'no-cache'
-        },
-        status: 200
-      }
+      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     );
   } catch (error) {
     console.error('Error in generate-response function:', error);
@@ -146,10 +128,7 @@ serve(async (req) => {
         success: false 
       }),
       { 
-        headers: { 
-          ...corsHeaders, 
-          'Content-Type': 'application/json'
-        },
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500
       }
     );

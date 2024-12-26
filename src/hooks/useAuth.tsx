@@ -4,94 +4,94 @@ import { useToast } from "@/components/ui/use-toast";
 
 export const useAuth = () => {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
   const [tempUserId, setTempUserId] = useState<string | null>(null);
   const { toast } = useToast();
 
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const { data: { session } } = await supabase.auth.getSession();
+        const { data: { user } } = await supabase.auth.getUser();
+        console.log('Auth check - User:', user);
         
-        if (session?.user) {
-          console.log('User authenticated:', session.user.id);
-          setIsAuthenticated(true);
-          
-          // Check if onboarding is completed
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('onboarding_completed')
-            .eq('id', session.user.id)
-            .single();
+        if (!user) {
+          console.log('No user found, trying stored credentials...');
+          try {
+            // Try to sign in with stored credentials first
+            const storedEmail = localStorage.getItem('anonymousEmail');
+            const storedPassword = localStorage.getItem('anonymousPassword');
             
-          if (!profile?.onboarding_completed) {
-            toast({
-              title: "Complete your profile!",
-              description: "Let's set up your magical learning journey!",
-              variant: "default"
+            if (storedEmail && storedPassword) {
+              const { data, error } = await supabase.auth.signInWithPassword({
+                email: storedEmail,
+                password: storedPassword
+              });
+              
+              if (!error && data.user) {
+                console.log('Signed in with stored anonymous account');
+                setIsAuthenticated(true);
+                return;
+              }
+            }
+            
+            // If no stored credentials or sign in failed, create new account
+            const email = `${crypto.randomUUID()}@anonymous.wonderwhiz.com`;
+            const password = crypto.randomUUID();
+            
+            const { data, error } = await supabase.auth.signUp({
+              email,
+              password,
             });
+            
+            if (error) {
+              if (error.status === 429) {
+                console.log('Rate limit reached, using local storage only');
+                const tempId = localStorage.getItem('tempUserId') || crypto.randomUUID();
+                setTempUserId(tempId);
+                localStorage.setItem('tempUserId', tempId);
+                toast({
+                  title: "Notice",
+                  description: "Using temporary mode. Your progress will be saved locally.",
+                  variant: "default"
+                });
+                return;
+              }
+              throw error;
+            }
+            
+            // Store credentials for future sessions
+            localStorage.setItem('anonymousEmail', email);
+            localStorage.setItem('anonymousPassword', password);
+            console.log('Anonymous signup successful');
+            setIsAuthenticated(true);
+          } catch (signUpError) {
+            console.error('Error in anonymous auth:', signUpError);
+            // Fallback to temporary ID
+            const tempId = localStorage.getItem('tempUserId') || crypto.randomUUID();
+            setTempUserId(tempId);
+            localStorage.setItem('tempUserId', tempId);
           }
         } else {
-          console.log('No authenticated session found');
-          // Set up temporary ID for anonymous users
-          const tempId = localStorage.getItem('tempUserId') || crypto.randomUUID();
-          setTempUserId(tempId);
-          localStorage.setItem('tempUserId', tempId);
-          
-          toast({
-            title: "Welcome to WonderWhiz!",
-            description: "Sign in or register to save your progress and unlock all features.",
-            variant: "default"
-          });
+          console.log('User already authenticated:', user);
+          setIsAuthenticated(true);
         }
       } catch (error) {
         console.error('Error in checkAuth:', error);
-        // Fallback to temporary ID
         const tempId = localStorage.getItem('tempUserId') || crypto.randomUUID();
         setTempUserId(tempId);
         localStorage.setItem('tempUserId', tempId);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    // Initial auth check
-    checkAuth();
-
-    // Set up auth state change listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log('Auth state changed:', event, session);
-      
-      if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
-        setIsAuthenticated(true);
         toast({
-          title: "Welcome back! 🌟",
-          description: "Ready to continue your learning adventure?",
-          className: "bg-primary text-white"
-        });
-      } else if (event === 'SIGNED_OUT') {
-        setIsAuthenticated(false);
-        const tempId = crypto.randomUUID();
-        setTempUserId(tempId);
-        localStorage.setItem('tempUserId', tempId);
-        
-        toast({
-          title: "See you soon! 👋",
-          description: "Come back anytime to continue learning!",
+          title: "Authentication Notice",
+          description: "Some features might be limited. Don't worry, we'll keep trying to connect!",
           variant: "default"
         });
       }
-    });
-
-    // Cleanup subscription
-    return () => {
-      subscription.unsubscribe();
     };
+
+    checkAuth();
   }, [toast]);
 
   return { 
     isAuthenticated,
-    isLoading,
     tempUserId 
   };
 };

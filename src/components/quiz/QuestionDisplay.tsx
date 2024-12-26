@@ -32,13 +32,13 @@ export const QuestionDisplay = ({
     >
       <div className="flex justify-between items-center mb-4">
         <motion.span 
-          className="text-white text-sm font-medium bg-white/20 px-4 py-2 rounded-full shadow-sm"
+          className="text-white/90 text-sm font-medium bg-white/10 px-4 py-2 rounded-full"
           whileHover={{ scale: 1.05 }}
         >
           Question {currentQuestionIndex + 1} of {totalQuestions}
         </motion.span>
         <motion.span 
-          className="text-white text-sm font-medium bg-white/20 px-4 py-2 rounded-full shadow-sm"
+          className="text-white/90 text-sm font-medium bg-white/10 px-4 py-2 rounded-full"
           whileHover={{ scale: 1.05 }}
         >
           Score: {correctAnswers}/{totalQuestions}
@@ -46,7 +46,7 @@ export const QuestionDisplay = ({
       </div>
 
       <motion.h3 
-        className="text-2xl font-semibold mb-6 text-white leading-relaxed"
+        className="text-xl sm:text-2xl font-semibold mb-6 text-white leading-relaxed"
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.3 }}
@@ -75,11 +75,11 @@ export const QuestionDisplay = ({
                   className={cn(
                     "w-full text-left justify-start p-4 relative overflow-hidden",
                     "transition-all duration-300",
-                    "bg-white/20 text-white border-white/30 backdrop-blur-xl hover:bg-white/30",
+                    "bg-white/10 text-white border-white/20 backdrop-blur-xl hover:bg-white/20",
                     showResult && isCorrect && "bg-green-500/90 text-white border-white/20",
                     showResult && isSelected && !isCorrect && "bg-red-500/90 text-white border-white/20",
-                    "text-lg group font-medium",
-                    "hover:shadow-xl hover:border-white/40"
+                    "sm:text-lg text-base group font-medium",
+                    "hover:shadow-xl hover:border-white/30"
                   )}
                   onClick={() => !showCorrect && onAnswerClick(index)}
                   disabled={showCorrect}
@@ -87,7 +87,7 @@ export const QuestionDisplay = ({
                   <span className="relative z-10 flex items-center gap-3">
                     <span className={cn(
                       "text-sm font-bold px-3 py-1.5 rounded-full transition-colors",
-                      "bg-white/30 group-hover:bg-white/40"
+                      "bg-white/20 group-hover:bg-white/30"
                     )}>
                       {String.fromCharCode(65 + index)}
                     </span>
@@ -104,7 +104,7 @@ export const QuestionDisplay = ({
                   </span>
                   {!showCorrect && (
                     <motion.div
-                      className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0"
+                      className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/5 to-white/0"
                       initial={{ x: "-100%" }}
                       animate={{ x: "100%" }}
                       transition={{

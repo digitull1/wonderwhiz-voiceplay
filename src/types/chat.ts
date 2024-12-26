@@ -3,8 +3,7 @@ export interface Block {
   description: string;
   metadata: {
     topic: string;
-    type: 'fact' | 'image' | 'quiz' | 'exploration' | 'quiz-teaser';
-    prompt?: string;
+    type?: 'fact' | 'image' | 'quiz';
   };
   color?: string;
 }

@@ -19,7 +19,7 @@ export const QuizCard = ({ questions, onAnswer }: QuizCardProps) => {
   const [showReward, setShowReward] = useState(false);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [quizComplete, setQuizComplete] = useState(false);
-  const [score, setScore] = useState(0);
+  const [correctAnswers, setCorrectAnswers] = useState(0);
 
   const questionsArray = Array.isArray(questions) ? questions : [questions];
   const currentTopic = questionsArray[0]?.topic || "this topic";
@@ -31,7 +31,7 @@ export const QuizCard = ({ questions, onAnswer }: QuizCardProps) => {
     const isCorrect = index === currentQuestion.correctAnswer;
     
     if (isCorrect) {
-      setScore(prev => prev + 1);
+      setCorrectAnswers(prev => prev + 1);
       setShowReward(true);
       confetti({
         particleCount: 150,
@@ -70,8 +70,8 @@ export const QuizCard = ({ questions, onAnswer }: QuizCardProps) => {
         exit={{ opacity: 0, y: -20 }}
         className={cn(
           "w-full max-w-2xl mx-auto",
-          "bg-gradient-to-br from-violet-500/95 via-purple-500/95 to-blue-500/95",
-          "rounded-2xl shadow-luxury border border-white/20",
+          "bg-gradient-to-br from-primary/95 via-secondary/95 to-accent/95",
+          "rounded-xl shadow-luxury border border-white/20",
           "backdrop-blur-xl overflow-hidden"
         )}
       >
@@ -81,26 +81,16 @@ export const QuizCard = ({ questions, onAnswer }: QuizCardProps) => {
               question={questionsArray[currentQuestionIndex]}
               currentQuestionIndex={currentQuestionIndex}
               totalQuestions={questionsArray.length}
-              correctAnswers={score}
+              correctAnswers={correctAnswers}
               selectedAnswer={selectedAnswer}
               showCorrect={showCorrect}
               onAnswerClick={handleAnswerClick}
             />
           ) : (
             <QuizCompletion 
-              score={score}
+              correctAnswers={correctAnswers} 
               totalQuestions={questionsArray.length}
-              onRestart={() => {
-                setCurrentQuestionIndex(0);
-                setScore(0);
-                setQuizComplete(false);
-                setSelectedAnswer(null);
-                setShowCorrect(false);
-              }}
-              onExploreMore={() => {
-                // Handle explore more action
-                console.log("Exploring more topics...");
-              }}
+              currentTopic={currentTopic}
             />
           )}
         </ScrollArea>
