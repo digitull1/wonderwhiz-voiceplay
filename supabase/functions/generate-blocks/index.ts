@@ -28,10 +28,10 @@ async function retryWithBackoff<T>(operation: () => Promise<T>, retries = 3, bas
       
       // Extract wait time from rate limit error message
       if (error.message?.includes('Rate limit reached')) {
-        const waitTimeMatch = error.message.match(/try again in (\d+\.?\d*)s/);
+        const waitTimeMatch = error.message.match(/try again in (\d+\.?\d*)ms/);
         if (waitTimeMatch) {
-          const waitTimeSeconds = parseFloat(waitTimeMatch[1]);
-          await wait(waitTimeSeconds * 1000);
+          const waitTimeMs = parseFloat(waitTimeMatch[1]);
+          await wait(waitTimeMs);
           continue;
         }
       }
@@ -95,7 +95,6 @@ function generateAgeSpecificInstructions(ageGroup: string, language: string = 'e
   }
 }
 
-// Update the serve function to include language support
 serve(async (req) => {
   console.log(`Received ${req.method} request to generate-blocks`);
   
