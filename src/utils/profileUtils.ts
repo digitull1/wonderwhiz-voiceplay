@@ -4,8 +4,6 @@ import { supabase } from "@/integrations/supabase/client";
 
 export const generateInitialBlocks = async (age: number): Promise<Block[]> => {
   try {
-    console.log('Generating initial blocks for age:', age);
-    
     const { data, error } = await supabase.functions.invoke('generate-blocks', {
       body: {
         query: `Generate engaging educational topics for a ${age} year old`,
@@ -19,48 +17,11 @@ export const generateInitialBlocks = async (age: number): Promise<Block[]> => {
       return [];
     }
 
-    console.log('Raw response from generate-blocks:', data);
+    const parsedData = typeof data.choices[0].message.content === 'string' 
+      ? JSON.parse(data.choices[0].message.content) 
+      : data.choices[0].message.content;
 
-    // Handle different response formats
-    let parsedData;
-    if (typeof data === 'string') {
-      try {
-        parsedData = JSON.parse(data);
-      } catch (e) {
-        console.error('Error parsing string response:', e);
-        return [];
-      }
-    } else if (data?.choices?.[0]?.message?.content) {
-      try {
-        parsedData = typeof data.choices[0].message.content === 'string' 
-          ? JSON.parse(data.choices[0].message.content) 
-          : data.choices[0].message.content;
-      } catch (e) {
-        console.error('Error parsing content:', e);
-        return [];
-      }
-    } else if (data?.blocks) {
-      parsedData = data;
-    } else {
-      console.error('Invalid response format:', data);
-      return [];
-    }
-
-    console.log('Parsed data:', parsedData);
-
-    if (!parsedData?.blocks || !Array.isArray(parsedData.blocks)) {
-      console.error('No blocks array in parsed data:', parsedData);
-      return [];
-    }
-
-    return parsedData.blocks.map((block: Block) => ({
-      ...block,
-      title: block.title || "Interesting topic!",
-      metadata: {
-        ...block.metadata,
-        topic: block.metadata?.topic || "general"
-      }
-    }));
+    return parsedData.blocks || [];
   } catch (error) {
     console.error('Error in generateInitialBlocks:', error);
     return [];

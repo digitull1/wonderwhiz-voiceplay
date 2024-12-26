@@ -47,7 +47,6 @@ export const MainContainer: React.FC<MainContainerProps> = ({
   const [showLogin, setShowLogin] = useState(false);
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [profile, setProfile] = useState<any>(null);
-  const [language, setLanguage] = useState("en");
 
   useEffect(() => {
     if (isAuthenticated) {
@@ -67,9 +66,6 @@ export const MainContainer: React.FC<MainContainerProps> = ({
         .single();
 
       setProfile(profile);
-      if (profile?.preferred_language) {
-        setLanguage(profile.preferred_language);
-      }
     } catch (error) {
       console.error('Error loading profile:', error);
     }
@@ -140,13 +136,14 @@ export const MainContainer: React.FC<MainContainerProps> = ({
           </AnimatePresence>
 
           <ChatInput 
-            onSend={sendMessage}
-            isLoading={isLoading}
             input={input}
             setInput={setInput}
+            handleSend={() => sendMessage(input)}
+            handleVoiceInput={() => {}}
+            isLoading={isLoading}
+            currentTopic={currentTopic}
             onImageAnalyzed={handleImageAnalysis}
             placeholder="Ask me something magical..."
-            language={language}
           />
         </div>
       </div>
