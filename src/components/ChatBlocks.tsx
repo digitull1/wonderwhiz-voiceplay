@@ -51,8 +51,8 @@ export const ChatBlocks = ({ blocks, onBlockClick }: ChatBlocksProps) => {
         });
         window.dispatchEvent(loadingEvent);
 
-        // Ensure the URL is properly formatted before making the request
-        const baseUrl = window.location.origin.replace(/:\/$/, ''); // Remove trailing colon if present
+        // Get the base URL without any trailing colons or slashes
+        const baseUrl = window.location.origin.replace(/[:\/]+$/, '');
         console.log('Using base URL:', baseUrl);
         
         await handleImageGeneration(block.title, toast);
@@ -79,8 +79,8 @@ export const ChatBlocks = ({ blocks, onBlockClick }: ChatBlocksProps) => {
         const age = profileData?.age || 8;
         console.log('User age for quiz generation:', age);
 
-        // Ensure the URL is properly formatted
-        const baseUrl = window.location.origin.replace(/:\/$/, '');
+        // Get the base URL without any trailing colons or slashes
+        const baseUrl = window.location.origin.replace(/[:\/]+$/, '');
         console.log('Using base URL:', baseUrl);
 
         await handleQuizGeneration(block.metadata.topic || block.title, age, toast);
