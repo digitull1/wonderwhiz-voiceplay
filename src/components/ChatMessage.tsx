@@ -5,7 +5,7 @@ import { Block, QuizState } from "@/types/chat";
 import { RelatedBlocks } from "./chat/RelatedBlocks";
 import MessageContent from "./chat/MessageContent";
 import { QuizCard } from "./quiz/QuizCard";
-import { LoaderCircle } from "lucide-react";
+import { LoaderCircle, Sparkles } from "lucide-react";
 import { RewardAnimation } from "./rewards/RewardAnimation";
 import { LoadingSparkles } from './LoadingSparkles';
 
@@ -47,15 +47,12 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
 
   useEffect(() => {
     if (isAi && message) {
-      console.log("New message received, setting typing state");
       setIsTyping(true);
       setShowBlocks(false);
       
       setIsTyping(false);
       setTimeout(() => {
-        console.log("Setting showBlocks to true");
         setShowBlocks(true);
-        // Show reward animation for new messages
         setShowReward(true);
         setTimeout(() => setShowReward(false), 2000);
       }, 500);
@@ -63,7 +60,6 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
   }, [message, isAi]);
 
   const handleTypingComplete = () => {
-    console.log("Typing complete");
     setIsTyping(false);
     setTimeout(() => {
       setShowBlocks(true);
@@ -77,13 +73,33 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
       <motion.div 
         className={cn(
           "flex w-full",
-          isAi ? "bg-gradient-luxury" : "bg-white/5"
+          isAi ? "bg-gradient-luxury" : "bg-white/5",
+          "relative overflow-hidden"
         )}
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         exit={{ opacity: 0, y: -20 }}
-        transition={{ duration: 0.3, type: "spring", stiffness: 200, damping: 20 }}
+        transition={{ 
+          duration: 0.5,
+          type: "spring",
+          stiffness: 100,
+          damping: 15
+        }}
       >
+        {/* Decorative Background Elements */}
+        <motion.div 
+          className="absolute inset-0 bg-gradient-to-br from-primary/5 to-secondary/5 opacity-50"
+          animate={{ 
+            scale: [1, 1.02, 1],
+            opacity: [0.5, 0.3, 0.5] 
+          }}
+          transition={{ 
+            duration: 3,
+            repeat: Infinity,
+            ease: "easeInOut"
+          }}
+        />
+        
         <div className={cn(
           "w-full max-w-full mx-auto flex flex-col items-start gap-2",
           "px-3 sm:px-4 md:px-6",
@@ -103,15 +119,32 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
 
           <motion.div
             className={cn(
-              "relative flex-1 w-full group",
+              "relative flex-1 w-full group backdrop-blur-sm",
               isAi ? "message-bubble-ai" : "message-bubble-user",
               "rounded-xl sm:rounded-2xl p-4 sm:p-6",
               "transition-all duration-300 ease-in-out",
               "hover:shadow-xl hover:scale-[1.01]",
-              isAi ? "bg-gradient-to-br from-primary/95 to-secondary/95" : "bg-gradient-card"
+              isAi ? "bg-gradient-to-br from-primary/95 to-secondary/95" : "bg-gradient-card",
+              "border border-white/20"
             )}
             layout
           >
+            {/* Sparkle Effects */}
+            <motion.div 
+              className="absolute -top-2 -right-2"
+              animate={{ 
+                rotate: [0, 180, 360],
+                scale: [0.8, 1, 0.8]
+              }}
+              transition={{ 
+                duration: 4,
+                repeat: Infinity,
+                ease: "linear"
+              }}
+            >
+              <Sparkles className="w-4 h-4 text-white/40" />
+            </motion.div>
+
             {isLoading ? (
               <LoadingSparkles />
             ) : (
