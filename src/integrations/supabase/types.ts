@@ -113,6 +113,127 @@ export type Database = {
         }
         Relationships: []
       }
+      agent_collaboration_logs: {
+        Row: {
+          created_at: string | null
+          id: string
+          message: string
+          project_id: string | null
+          requesting_agent: string
+          status: string | null
+          target_agent: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          message: string
+          project_id?: string | null
+          requesting_agent: string
+          status?: string | null
+          target_agent: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          message?: string
+          project_id?: string | null
+          requesting_agent?: string
+          status?: string | null
+          target_agent?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_collaboration_logs_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agent_mentions: {
+        Row: {
+          agent_name: string
+          context: Json | null
+          id: string
+          mentioned_at: string | null
+          message_id: string | null
+          resolved: boolean | null
+          thread_id: string | null
+        }
+        Insert: {
+          agent_name: string
+          context?: Json | null
+          id?: string
+          mentioned_at?: string | null
+          message_id?: string | null
+          resolved?: boolean | null
+          thread_id?: string | null
+        }
+        Update: {
+          agent_name?: string
+          context?: Json | null
+          id?: string
+          mentioned_at?: string | null
+          message_id?: string | null
+          resolved?: boolean | null
+          thread_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_mentions_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "thread_messages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_mentions_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      collaboration_metrics: {
+        Row: {
+          agent_name: string
+          details: Json | null
+          id: string
+          metric_type: string
+          recorded_at: string | null
+          value: number
+          workflow_id: string | null
+        }
+        Insert: {
+          agent_name: string
+          details?: Json | null
+          id?: string
+          metric_type: string
+          recorded_at?: string | null
+          value: number
+          workflow_id?: string | null
+        }
+        Update: {
+          agent_name?: string
+          details?: Json | null
+          id?: string
+          metric_type?: string
+          recorded_at?: string | null
+          value?: number
+          workflow_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "collaboration_metrics_workflow_id_fkey"
+            columns: ["workflow_id"]
+            isOneToOne: false
+            referencedRelation: "workflows"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       content_blocks: {
         Row: {
           age_range: unknown
@@ -172,6 +293,44 @@ export type Database = {
           translated_content?: string
         }
         Relationships: []
+      }
+      context_memory: {
+        Row: {
+          agent_name: string
+          conversation_history: Json | null
+          id: string
+          last_updated: string | null
+          project_details: Json | null
+          thread_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          agent_name: string
+          conversation_history?: Json | null
+          id?: string
+          last_updated?: string | null
+          project_details?: Json | null
+          thread_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          agent_name?: string
+          conversation_history?: Json | null
+          id?: string
+          last_updated?: string | null
+          project_details?: Json | null
+          thread_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "context_memory_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "threads"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       conversation_follow_ups: {
         Row: {
@@ -344,6 +503,44 @@ export type Database = {
         }
         Relationships: []
       }
+      notifications: {
+        Row: {
+          content: string
+          id: string
+          read: boolean | null
+          sender: string
+          thread_id: string | null
+          timestamp: string
+          type: string
+        }
+        Insert: {
+          content: string
+          id?: string
+          read?: boolean | null
+          sender: string
+          thread_id?: string | null
+          timestamp?: string
+          type: string
+        }
+        Update: {
+          content?: string
+          id?: string
+          read?: boolean | null
+          sender?: string
+          thread_id?: string | null
+          timestamp?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       onboarding_state: {
         Row: {
           communication_preferences: Json | null
@@ -479,6 +676,112 @@ export type Database = {
         }
         Relationships: []
       }
+      tasks: {
+        Row: {
+          agent_name: string
+          created_at: string | null
+          created_by: string
+          dependencies: Json | null
+          description: string
+          id: string
+          last_updated: string | null
+          project_id: string | null
+          status: string | null
+        }
+        Insert: {
+          agent_name: string
+          created_at?: string | null
+          created_by: string
+          dependencies?: Json | null
+          description: string
+          id?: string
+          last_updated?: string | null
+          project_id?: string | null
+          status?: string | null
+        }
+        Update: {
+          agent_name?: string
+          created_at?: string | null
+          created_by?: string
+          dependencies?: Json | null
+          description?: string
+          id?: string
+          last_updated?: string | null
+          project_id?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tasks_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      thread_messages: {
+        Row: {
+          content: string
+          id: string
+          sender: string
+          thread_id: string | null
+          timestamp: string
+        }
+        Insert: {
+          content: string
+          id?: string
+          sender: string
+          thread_id?: string | null
+          timestamp?: string
+        }
+        Update: {
+          content?: string
+          id?: string
+          sender?: string
+          thread_id?: string | null
+          timestamp?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "thread_messages_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      threads: {
+        Row: {
+          created_at: string
+          id: string
+          last_message: string | null
+          last_message_at: string | null
+          participants: string[]
+          title: string
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_message?: string | null
+          last_message_at?: string | null
+          participants: string[]
+          title: string
+          type?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_message?: string | null
+          last_message_at?: string | null
+          participants?: string[]
+          title?: string
+          type?: string
+        }
+        Relationships: []
+      }
       user_goals: {
         Row: {
           category: string
@@ -610,6 +913,150 @@ export type Database = {
           week_start_date?: string
         }
         Relationships: []
+      }
+      workflow_assignments: {
+        Row: {
+          agent_name: string
+          created_at: string | null
+          expertise: Json | null
+          id: string
+          role: string | null
+          workflow_id: string | null
+        }
+        Insert: {
+          agent_name: string
+          created_at?: string | null
+          expertise?: Json | null
+          id?: string
+          role?: string | null
+          workflow_id?: string | null
+        }
+        Update: {
+          agent_name?: string
+          created_at?: string | null
+          expertise?: Json | null
+          id?: string
+          role?: string | null
+          workflow_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workflow_assignments_workflow_id_fkey"
+            columns: ["workflow_id"]
+            isOneToOne: false
+            referencedRelation: "workflows"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workflow_dependencies: {
+        Row: {
+          created_at: string | null
+          dependent_workflow_id: string | null
+          id: string
+          workflow_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          dependent_workflow_id?: string | null
+          id?: string
+          workflow_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          dependent_workflow_id?: string | null
+          id?: string
+          workflow_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workflow_dependencies_dependent_workflow_id_fkey"
+            columns: ["dependent_workflow_id"]
+            isOneToOne: false
+            referencedRelation: "workflows"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "workflow_dependencies_workflow_id_fkey"
+            columns: ["workflow_id"]
+            isOneToOne: false
+            referencedRelation: "workflows"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workflow_updates: {
+        Row: {
+          agent_name: string
+          content: string
+          created_at: string | null
+          id: string
+          update_type: string
+          workflow_id: string | null
+        }
+        Insert: {
+          agent_name: string
+          content: string
+          created_at?: string | null
+          id?: string
+          update_type: string
+          workflow_id?: string | null
+        }
+        Update: {
+          agent_name?: string
+          content?: string
+          created_at?: string | null
+          id?: string
+          update_type?: string
+          workflow_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workflow_updates_workflow_id_fkey"
+            columns: ["workflow_id"]
+            isOneToOne: false
+            referencedRelation: "workflows"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      workflows: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          name: string
+          project_id: string | null
+          status: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          project_id?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          project_id?: string | null
+          status?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "workflows_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "threads"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
