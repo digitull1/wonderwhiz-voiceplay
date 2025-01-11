@@ -3,6 +3,7 @@ import { Clock } from "lucide-react";
 import { motion } from "framer-motion";
 import { TimeTrackerRing } from "./TimeTrackerRing";
 import { supabase } from "@/integrations/supabase/client";
+import { useToast } from "@/hooks/use-toast";
 
 interface TimeSpent {
   today: number;
@@ -12,6 +13,7 @@ interface TimeSpent {
 export const TimeTracker = () => {
   const [timeSpent, setTimeSpent] = useState<TimeSpent>({ today: 0, week: 0 });
   const [isLoading, setIsLoading] = useState(true);
+  const { toast } = useToast();
 
   useEffect(() => {
     const fetchTimeSpent = async () => {
@@ -26,29 +28,41 @@ export const TimeTracker = () => {
         const weekAgo = new Date();
         weekAgo.setDate(weekAgo.getDate() - 7);
         
-        // Fetch today's time - handle case where no entry exists
+        // Fetch today's time
         const { data: todayData, error: todayError } = await supabase
           .from('learning_time')
           .select('minutes_spent')
           .eq('user_id', user.id)
-          .eq('date', today);
+          .eq('date', today)
+          .single();
 
-        if (todayError) {
+        if (todayError && todayError.code !== 'PGRST116') {
           console.error('Error fetching today\'s learning time:', todayError);
+          toast({
+            title: "Error",
+            description: "Failed to fetch today's learning time",
+            variant: "destructive"
+          });
         }
 
         // Fetch week's time
         const { data: weekData, error: weekError } = await supabase
           .from('learning_time')
           .select('minutes_spent')
-          .gte('date', weekAgo.toISOString().split('T')[0]);
+          .gte('date', weekAgo.toISOString().split('T')[0])
+          .eq('user_id', user.id);
 
         if (weekError) {
           console.error('Error fetching week\'s learning time:', weekError);
+          toast({
+            title: "Error",
+            description: "Failed to fetch weekly learning time",
+            variant: "destructive"
+          });
         }
 
-        const todayMinutes = todayData && todayData[0] ? todayData[0].minutes_spent : 0;
-        const weekMinutes = weekData ? weekData.reduce((acc, curr) => acc + (curr.minutes_spent || 0), 0) : 0;
+        const todayMinutes = todayData?.minutes_spent || 0;
+        const weekMinutes = weekData?.reduce((acc, curr) => acc + (curr.minutes_spent || 0), 0) || 0;
 
         setTimeSpent({
           today: todayMinutes,
@@ -58,6 +72,11 @@ export const TimeTracker = () => {
       } catch (error) {
         console.error('Error fetching time spent:', error);
         setIsLoading(false);
+        toast({
+          title: "Error",
+          description: "Failed to fetch learning time",
+          variant: "destructive"
+        });
       }
     };
 
@@ -87,7 +106,7 @@ export const TimeTracker = () => {
       clearInterval(interval);
       timeChannel.unsubscribe();
     };
-  }, []);
+  }, [toast]);
 
   return (
     <motion.div 

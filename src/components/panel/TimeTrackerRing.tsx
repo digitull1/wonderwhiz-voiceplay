@@ -23,7 +23,7 @@ export const TimeTrackerRing = ({
 }: TimeTrackerRingProps) => {
   const radius = (size - strokeWidth) / 2;
   const circumference = radius * 2 * Math.PI;
-  const dash = (percentage * circumference) / 100;
+  const dash = (Math.min(percentage, 100) * circumference) / 100;
 
   return (
     <div className="flex flex-col items-center justify-center">
