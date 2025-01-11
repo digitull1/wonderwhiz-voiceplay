@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { Block, QuizState } from "@/types/chat";
 import { RelatedBlocks } from "./chat/RelatedBlocks";
@@ -79,15 +79,16 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
           "flex w-full",
           isAi ? "bg-gradient-luxury" : "bg-white/5"
         )}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.2 }}
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, y: -20 }}
+        transition={{ duration: 0.3, type: "spring", stiffness: 200, damping: 20 }}
       >
         <div className={cn(
           "w-full max-w-full mx-auto flex flex-col items-start gap-2",
           "px-3 sm:px-4 md:px-6",
-          isAi ? "py-4 sm:py-6" : "py-3 sm:py-4"
+          isAi ? "py-4 sm:py-6" : "py-3 sm:py-4",
+          "relative"
         )}>
           {isAi && isTyping && (
             <motion.div
@@ -96,7 +97,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
               className="flex items-center gap-2 text-primary font-medium px-2"
             >
               <LoaderCircle className="w-4 h-4 animate-spin text-primary" />
-              <span>Wonderwhiz is typing...</span>
+              <span className="text-sm font-display">Wonderwhiz is typing...</span>
             </motion.div>
           )}
 
@@ -104,7 +105,10 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
             className={cn(
               "relative flex-1 w-full group",
               isAi ? "message-bubble-ai" : "message-bubble-user",
-              "rounded-xl p-4 sm:p-6"
+              "rounded-xl sm:rounded-2xl p-4 sm:p-6",
+              "transition-all duration-300 ease-in-out",
+              "hover:shadow-xl hover:scale-[1.01]",
+              isAi ? "bg-gradient-to-br from-primary/95 to-secondary/95" : "bg-gradient-card"
             )}
             layout
           >
