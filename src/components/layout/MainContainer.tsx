@@ -1,11 +1,12 @@
 import React from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { ChatHeader } from "@/components/ChatHeader";
 import { ChatContainer } from "@/components/ChatContainer";
 import { ChatInput } from "@/components/ChatInput";
 import { AuthForm } from "@/components/auth/AuthForm";
 import { CollapsiblePanel } from "@/components/CollapsiblePanel";
 import { UserProgress } from "@/types/chat";
+import { BackgroundDecorations } from "./BackgroundDecorations";
 
 interface MainContainerProps {
   messages: any[];
@@ -47,11 +48,11 @@ export const MainContainer: React.FC<MainContainerProps> = ({
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
     >
-      <div className="absolute inset-0 bg-gradient-luxury opacity-50" />
+      <BackgroundDecorations />
       
-      <div className="relative z-10 w-full h-full flex flex-col">
+      <div className="relative z-10 w-full h-full flex flex-col px-4 md:px-6">
         <motion.div 
-          className="flex-1 flex flex-col h-full relative overflow-hidden"
+          className="flex-1 flex flex-col h-full relative overflow-hidden max-w-5xl mx-auto w-full"
           initial={{ y: 20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ 
@@ -72,27 +73,34 @@ export const MainContainer: React.FC<MainContainerProps> = ({
             onAuthPromptClick={() => setShowAuthForm(true)}
           />
 
-          {showAuthForm && (
-            <motion.div 
-              className="absolute inset-0 bg-white/95 backdrop-blur-xl p-4 
-                flex items-center justify-center z-50"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            >
-              <div className="w-full max-w-md">
-                <button 
-                  onClick={() => setShowAuthForm(false)}
-                  className="absolute top-4 right-4 text-gray-500 hover:text-gray-700
-                    w-8 h-8 flex items-center justify-center rounded-full
-                    hover:bg-gray-100 transition-colors"
+          <AnimatePresence>
+            {showAuthForm && (
+              <motion.div 
+                className="absolute inset-0 bg-white/95 backdrop-blur-xl p-4 
+                  flex items-center justify-center z-50"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+              >
+                <motion.div 
+                  className="w-full max-w-md bg-white rounded-2xl shadow-2xl p-6 relative"
+                  initial={{ scale: 0.9, y: 20 }}
+                  animate={{ scale: 1, y: 0 }}
+                  exit={{ scale: 0.9, y: 20 }}
                 >
-                  ✕
-                </button>
-                <AuthForm onComplete={() => setShowAuthForm(false)} />
-              </div>
-            </motion.div>
-          )}
+                  <button 
+                    onClick={() => setShowAuthForm(false)}
+                    className="absolute top-4 right-4 text-gray-500 hover:text-gray-700
+                      w-8 h-8 flex items-center justify-center rounded-full
+                      hover:bg-gray-100 transition-colors"
+                  >
+                    ✕
+                  </button>
+                  <AuthForm onComplete={() => setShowAuthForm(false)} />
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           <ChatInput 
             input={input}

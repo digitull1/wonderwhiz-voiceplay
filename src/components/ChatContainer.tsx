@@ -4,6 +4,7 @@ import { Block, QuizState } from "@/types/chat";
 import { Button } from "./ui/button";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { cn } from "@/lib/utils";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface Message {
   text: string;
@@ -68,43 +69,61 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
   }, [messages, quizState?.currentQuestion]);
 
   return (
-    <div 
+    <motion.div 
       ref={containerRef}
       className={cn(
-        "flex-1 overflow-y-auto space-y-3 chat-container w-full",
+        "flex-1 overflow-y-auto space-y-4 chat-container w-full",
         "pb-[80px] md:pb-[100px]", // Account for fixed chat input
-        isMobile ? "px-2" : "px-4"
+        isMobile ? "px-2" : "px-6"
       )}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.3 }}
     >
-      {messages.map((message, index) => (
-        <React.Fragment key={index}>
-          <ChatMessage
-            message={message.text}
-            isAi={message.isAi}
-            onListen={() => handleListen(message.text)}
-            blocks={message.blocks}
-            onBlockClick={onBlockClick}
-            imageUrl={message.imageUrl}
-            quizState={message.quizState}
-            onQuizAnswer={onQuizAnswer}
-            onQuizGenerated={onQuizGenerated}
-            messageIndex={index}
-            onPanelOpen={onPanelOpen}
-            onImageAnalyzed={onImageAnalyzed}
-          />
-          {message.showAuthPrompt && (
-            <div className="flex justify-center gap-2 my-2">
-              <Button 
-                onClick={onAuthPromptClick}
-                className="bg-primary hover:bg-primary/90 text-white"
+      <AnimatePresence mode="popLayout">
+        {messages.map((message, index) => (
+          <motion.div
+            key={index}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            transition={{ duration: 0.3, delay: index * 0.1 }}
+          >
+            <ChatMessage
+              message={message.text}
+              isAi={message.isAi}
+              onListen={() => handleListen(message.text)}
+              blocks={message.blocks}
+              onBlockClick={onBlockClick}
+              imageUrl={message.imageUrl}
+              quizState={message.quizState}
+              onQuizAnswer={onQuizAnswer}
+              onQuizGenerated={onQuizGenerated}
+              messageIndex={index}
+              onPanelOpen={onPanelOpen}
+              onImageAnalyzed={onImageAnalyzed}
+            />
+            {message.showAuthPrompt && (
+              <motion.div 
+                className="flex justify-center gap-2 my-4"
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ duration: 0.2 }}
               >
-                Sign Up / Log In
-              </Button>
-            </div>
-          )}
-        </React.Fragment>
-      ))}
+                <Button 
+                  onClick={onAuthPromptClick}
+                  className="bg-gradient-to-r from-primary via-secondary to-accent 
+                    text-white font-medium px-8 py-3 rounded-xl shadow-xl
+                    hover:shadow-2xl hover:-translate-y-1 transition-all duration-300"
+                >
+                  Sign Up / Log In
+                </Button>
+              </motion.div>
+            )}
+          </motion.div>
+        ))}
+      </AnimatePresence>
       <div ref={messagesEndRef} className="h-4" />
-    </div>
+    </motion.div>
   );
 };
