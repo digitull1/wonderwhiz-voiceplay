@@ -91,6 +91,13 @@ async function generateWithOpenAI(prompt: string, minAge: number) {
   if (!response.ok) {
     const error = await response.json();
     console.error('OpenAI API error:', error);
+    
+    // Check for billing-related errors
+    if (error.error?.message?.toLowerCase().includes('billing') || 
+        error.error?.code === 'insufficient_quota') {
+      throw new Error('OpenAI billing limit reached');
+    }
+    
     throw new Error(error.error?.message || 'Failed to generate image with OpenAI');
   }
 
@@ -124,17 +131,19 @@ serve(async (req) => {
     let imageUrl;
 
     try {
-      // Try HuggingFace first
-      imageUrl = await generateWithHuggingFace(formattedPrompt);
-    } catch (hfError) {
-      console.error('HuggingFace generation failed:', hfError);
-      console.log('Falling back to OpenAI...');
-      
-      // Extract minAge for style selection
+      // Try OpenAI first
       const [minAge] = age_group.split('-').map(Number);
-      
-      // Fallback to OpenAI
       imageUrl = await generateWithOpenAI(formattedPrompt, minAge);
+    } catch (openaiError) {
+      console.error('OpenAI generation failed:', openaiError);
+      
+      if (openaiError.message.includes('billing')) {
+        console.log('OpenAI billing limit reached, falling back to HuggingFace...');
+        // Fall back to HuggingFace
+        imageUrl = await generateWithHuggingFace(formattedPrompt);
+      } else {
+        throw openaiError;
+      }
     }
 
     return new Response(
