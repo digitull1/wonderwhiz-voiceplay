@@ -34,9 +34,9 @@ export const TimeTracker = () => {
           .select('minutes_spent')
           .eq('user_id', user.id)
           .eq('date', today)
-          .single();
+          .maybeSingle();
 
-        if (todayError && todayError.code !== 'PGRST116') {
+        if (todayError) {
           console.error('Error fetching today\'s learning time:', todayError);
           toast({
             title: "Error",
