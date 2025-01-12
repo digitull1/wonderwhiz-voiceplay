@@ -72,9 +72,8 @@ export const ChatContainer: React.FC<ChatContainerProps> = ({
     <motion.div 
       ref={containerRef}
       className={cn(
-        "flex-1 overflow-y-auto space-y-4 chat-container w-full",
-        "pb-[80px] md:pb-[100px]", // Account for fixed chat input
-        isMobile ? "px-2" : "px-6"
+        "flex-1 overflow-y-auto chat-container",
+        "pb-[80px] md:pb-[100px]" // Account for fixed chat input
       )}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}

@@ -70,6 +70,8 @@
     radial-gradient(circle at 0% 0%, rgba(51,195,240,0.15) 0%, transparent 50%);
   overscroll-behavior-y: contain;
   -webkit-overflow-scrolling: touch;
+  display: flex;
+  flex-direction: column;
 }
 
 /* Luxury Message Bubbles */
@@ -80,15 +82,16 @@
     rgba(155, 135, 245, 0.98) 0%,
     rgba(51, 195, 240, 0.98) 100%
   );
-  box-shadow: 
-    0 12px 36px rgba(0,0,0,0.1),
-    inset 0 0 32px rgba(255,255,255,0.15);
-  margin: 0;
-  padding: 1rem;
-  border-radius: 0;
+  box-shadow: inset 0px 0px 4px rgba(0, 0, 0, 0.1);
+  margin: 4px 0;
+  padding: 12px 15px;
+  border-radius: 10px;
+  width: 95%;
+  max-width: 700px;
+  align-self: flex-start;
+  text-align: left;
   line-height: 1.7;
   letter-spacing: 0.02em;
-  width: 100%;
 }
 
 .message-bubble-user {
@@ -98,14 +101,27 @@
     rgba(245, 245, 247, 0.98) 0%,
     rgba(255, 255, 255, 0.98) 100%
   );
-  box-shadow: 
-    0 8px 24px rgba(0,0,0,0.05),
-    inset 0 0 32px rgba(255,255,255,0.5);
-  margin: 0;
-  padding: 1rem;
-  border-radius: 0;
+  box-shadow: inset 0px 0px 4px rgba(0, 0, 0, 0.1);
+  margin: 4px 0;
+  padding: 12px 15px;
+  border-radius: 10px;
+  width: 95%;
+  max-width: 700px;
+  align-self: flex-end;
+  text-align: left;
   line-height: 1.6;
-  width: 100%;
+}
+
+/* Consecutive messages from the same sender */
+.message-bubble-ai + .message-bubble-ai,
+.message-bubble-user + .message-bubble-user {
+  margin-top: 4px;
+}
+
+/* Different sender messages */
+.message-bubble-ai + .message-bubble-user,
+.message-bubble-user + .message-bubble-ai {
+  margin-top: 8px;
 }
 
 /* Mobile Optimizations */
@@ -120,15 +136,31 @@
   
   .chat-container {
     margin-bottom: env(safe-area-inset-bottom);
+    padding: 0 5px;
   }
   
   .message-bubble-ai,
   .message-bubble-user {
-    margin: 0;
-    padding: 1rem;
-    border-radius: 0;
+    width: 95%;
+    margin: 4px 0;
+    padding: 10px 12px;
     font-size: 16px;
     line-height: 1.6;
-    width: 100vw;
+  }
+}
+
+/* Tablet Optimizations */
+@media (min-width: 641px) and (max-width: 1024px) {
+  .message-bubble-ai,
+  .message-bubble-user {
+    width: 85%;
+  }
+}
+
+/* Desktop Optimizations */
+@media (min-width: 1025px) {
+  .message-bubble-ai,
+  .message-bubble-user {
+    width: 70%;
   }
 }
