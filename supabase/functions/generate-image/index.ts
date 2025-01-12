@@ -10,35 +10,11 @@ function getAgeSpecificInstructions(ageGroup: string): string {
   const [minAge] = ageGroup.split('-').map(Number);
   
   if (minAge <= 7) {
-    return `
-      Create a cute, friendly cartoon-style illustration that is:
-      - Simple and colorful with clear shapes
-      - Playful and magical in appearance
-      - Safe and gentle for young children
-      - Includes fun, happy elements
-      - Uses bright, cheerful colors
-      - Avoids any scary or complex elements
-    `;
+    return "Create a cute, friendly cartoon-style illustration that is simple, colorful, and safe for young children.";
   } else if (minAge <= 11) {
-    return `
-      Create a colorful, engaging illustration that is:
-      - Detailed but still fun and approachable
-      - Educational with interesting details
-      - Uses relatable comparisons
-      - Includes elements of wonder and discovery
-      - Maintains scientific accuracy while being engaging
-      - Safe and appropriate for curious minds
-    `;
+    return "Create a colorful, engaging illustration that is detailed but still fun and educational.";
   } else {
-    return `
-      Create a detailed educational illustration that is:
-      - More sophisticated in style
-      - Scientifically accurate
-      - Shows real-world relevance
-      - Includes interesting technical details
-      - Maintains engagement while being informative
-      - Age-appropriate for young teens
-    `;
+    return "Create a detailed educational illustration that is sophisticated yet engaging.";
   }
 }
 
@@ -91,13 +67,6 @@ async function generateWithOpenAI(prompt: string, minAge: number) {
   if (!response.ok) {
     const error = await response.json();
     console.error('OpenAI API error:', error);
-    
-    // Check for billing-related errors
-    if (error.error?.message?.toLowerCase().includes('billing') || 
-        error.error?.code === 'insufficient_quota') {
-      throw new Error('OpenAI billing limit reached');
-    }
-    
     throw new Error(error.error?.message || 'Failed to generate image with OpenAI');
   }
 
@@ -137,13 +106,9 @@ serve(async (req) => {
     } catch (openaiError) {
       console.error('OpenAI generation failed:', openaiError);
       
-      if (openaiError.message.includes('billing')) {
-        console.log('OpenAI billing limit reached, falling back to HuggingFace...');
-        // Fall back to HuggingFace
-        imageUrl = await generateWithHuggingFace(formattedPrompt);
-      } else {
-        throw openaiError;
-      }
+      // Fall back to HuggingFace
+      console.log('Falling back to HuggingFace...');
+      imageUrl = await generateWithHuggingFace(formattedPrompt);
     }
 
     return new Response(
@@ -156,19 +121,10 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error generating image:', error);
     
-    // Provide more specific error messages
-    let errorMessage = 'Failed to generate image';
-    let errorDetails = error.message;
-    
-    if (error.message.includes('billing')) {
-      errorMessage = 'Service temporarily unavailable';
-      errorDetails = 'Please try again in a few minutes';
-    }
-    
     return new Response(
       JSON.stringify({ 
-        error: errorMessage, 
-        details: errorDetails,
+        error: 'Failed to generate image', 
+        details: error.message,
         success: false
       }),
       { 
