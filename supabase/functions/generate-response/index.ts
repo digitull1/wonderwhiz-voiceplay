@@ -23,7 +23,6 @@ async function retryWithBackoff<T>(
       console.error(`Attempt ${i + 1} failed:`, error);
       
       if (error.message?.includes('Rate limit reached')) {
-        // Extract wait time from error message
         const waitTime = parseFloat(error.message.match(/try again in (\d+\.?\d*)s/)?.[1] || '1') * 1000;
         console.log(`Rate limit hit, waiting for ${waitTime}ms before retry ${i + 1}`);
         await wait(waitTime);
@@ -38,14 +37,24 @@ async function retryWithBackoff<T>(
   throw lastError;
 }
 
+function getAgeAppropriatePrompt(age: number, prompt: string) {
+  if (age <= 8) {
+    return `Imagine you're talking to a ${age}-year-old child. Use simple words, fun examples, and a friendly tone. Add emojis to make it engaging! Here's their question: ${prompt}`;
+  } else if (age <= 12) {
+    return `You're explaining this to a ${age}-year-old. Use clear examples and interesting facts, but keep it fun and engaging. Include some emojis! The question is: ${prompt}`;
+  } else {
+    return `You're talking to a ${age}-year-old teen. Use age-appropriate examples and interesting details. Keep it engaging but not too childish. The question is: ${prompt}`;
+  }
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
 
   try {
-    const { prompt, max_words = 100 } = await req.json()
-    console.log('Generating response for prompt:', prompt, 'with max words:', max_words)
+    const { prompt, max_words = 300, age = 10, conversation_history = [] } = await req.json()
+    console.log('Generating response for prompt:', prompt, 'with max words:', max_words, 'for age:', age)
 
     const apiKey = Deno.env.get('GROQ_API_KEY')
     if (!apiKey) {
@@ -54,6 +63,12 @@ serve(async (req) => {
     }
 
     const makeRequest = async () => {
+      const contextPrompt = conversation_history.length > 0 
+        ? `Previous context: ${conversation_history.join(" -> ")}\n\nCurrent question: ${prompt}`
+        : prompt;
+
+      const ageAppropriatePrompt = getAgeAppropriatePrompt(age, contextPrompt);
+
       const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
         method: 'POST',
         headers: {
@@ -66,23 +81,29 @@ serve(async (req) => {
             {
               role: "system",
               content: `You are WonderWhiz, an exciting AI tutor that makes learning fun for kids!
-              Keep your responses:
-              1. Under ${max_words} words
-              2. Educational and engaging
-              3. Simple enough for children
-              4. Limited to ONE emoji at the end of the response (not in the middle)
-              5. With proper spacing (no double line breaks)
-              6. Never include undefined or null in your responses
+              Structure your responses in three clear paragraphs:
+              1. Start with a direct, engaging answer
+              2. Add interesting details, examples, or fun facts
+              3. End with a summary and an engaging question to keep the conversation going
+
+              Guidelines:
+              1. Keep each paragraph clear and focused
+              2. Use age-appropriate language and examples
+              3. Include emojis naturally throughout the response
+              4. Maintain conversation context when relevant
+              5. Stay under ${max_words} words total
+              6. Never include undefined or null
               7. Double-check spelling and grammar
-              8. Always capitalize the first letter of every sentence`
+              8. Always capitalize the first letter of every sentence
+              9. End with an engaging question related to the topic`
             },
             {
               role: "user",
-              content: prompt
+              content: ageAppropriatePrompt
             }
           ],
           temperature: 0.7,
-          max_tokens: 300,
+          max_tokens: 1000,
         })
       });
 
