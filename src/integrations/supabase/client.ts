@@ -9,23 +9,39 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: true,
-    storage: window.localStorage,
-    storageKey: 'sb-tyyucvvapqwzjkqcgjwb-auth-token'
-  }
+    storage: typeof window !== 'undefined' ? window.localStorage : undefined,
+    storageKey: 'sb-tyyucvvapqwzjkqcgjwb-auth-token',
+    flowType: 'pkce',
+  },
+  global: {
+    headers: {
+      'X-Client-Info': 'wonderwhiz-app',
+    },
+  },
 });
 
-// Listen to auth state changes for debugging
+// Add better error logging for debugging auth issues
 supabase.auth.onAuthStateChange((event, session) => {
   console.log('Supabase auth event:', event);
-  console.log('Session:', session);
+  if (session) {
+    console.log('Session user:', session.user.id);
+  } else {
+    console.log('No active session');
+  }
 });
 
 // Validate session on initialization
 (async () => {
-  const { data: { session }, error } = await supabase.auth.getSession();
-  if (error) {
-    console.error('Error getting session:', error);
-  } else if (session) {
-    console.log('Initial session:', session);
+  try {
+    const { data: { session }, error } = await supabase.auth.getSession();
+    if (error) {
+      console.error('Error getting session:', error);
+    } else if (session) {
+      console.log('Initial session:', session.user.id);
+    } else {
+      console.log('No initial session found');
+    }
+  } catch (err) {
+    console.error('Error initializing Supabase client:', err);
   }
 })();
