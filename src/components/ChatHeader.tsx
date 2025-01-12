@@ -1,6 +1,6 @@
 import React from "react";
 import { motion } from "framer-motion";
-import { Sparkles } from "lucide-react";
+import { Sparkles, Wand2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export const ChatHeader = () => {
@@ -53,52 +53,75 @@ export const ChatHeader = () => {
         ))}
       </div>
 
-      <div className="relative flex items-center gap-4">
-        {/* Logo Container */}
+      <div className="relative flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          {/* Logo Container with enhanced glow */}
+          <motion.div
+            className={cn(
+              "w-10 h-10 sm:w-12 sm:h-12 rounded-xl",
+              "bg-gradient-to-br from-primary via-secondary to-accent",
+              "flex items-center justify-center",
+              "shadow-[0_0_15px_rgba(155,135,245,0.5)]",
+              "hover:shadow-[0_0_25px_rgba(155,135,245,0.7)]",
+              "hover:scale-105",
+              "transition-all duration-300"
+            )}
+            whileHover={{ 
+              rotate: [0, -5, 5, 0],
+              scale: 1.1,
+            }}
+            transition={{ duration: 0.5 }}
+          >
+            <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-white relative z-10 animate-sparkle" />
+          </motion.div>
+          
+          {/* Title and Subtitle with reduced spacing */}
+          <div className="flex flex-col items-start -space-y-0.5">
+            <motion.h1 
+              className={cn(
+                "text-xl sm:text-2xl font-bold",
+                "tracking-tight leading-none"
+              )}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3 }}
+            >
+              <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">Wonder</span>
+              <span className="text-primary">Whiz</span>
+            </motion.h1>
+            <motion.p
+              className={cn(
+                "text-xs sm:text-sm text-gray-600",
+                "flex items-center gap-1",
+                "font-medium"
+              )}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4 }}
+            >
+              Your Magical Learning Friend 
+              <span className="inline-block animate-bounce-subtle">✨</span>
+            </motion.p>
+          </div>
+        </div>
+
+        {/* Magical Menu Icon */}
         <motion.div
           className={cn(
-            "w-10 h-10 sm:w-12 sm:h-12 rounded-xl",
-            "bg-gradient-to-br from-primary via-secondary to-accent",
-            "flex items-center justify-center shadow-xl",
-            "hover:shadow-2xl hover:scale-105",
-            "transition-all duration-300"
+            "w-9 h-9 rounded-lg",
+            "bg-gradient-to-br from-primary/10 to-secondary/10",
+            "flex items-center justify-center",
+            "hover:shadow-[0_0_15px_rgba(155,135,245,0.3)]",
+            "cursor-pointer"
           )}
-          whileHover={{ rotate: [0, -5, 5, 0] }}
-          transition={{ duration: 0.5 }}
+          whileHover={{ 
+            scale: 1.05,
+            rotate: [0, 5, -5, 0]
+          }}
+          transition={{ duration: 0.3 }}
         >
-          <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-white relative z-10" />
+          <Wand2 className="w-5 h-5 text-primary rotate-45" />
         </motion.div>
-        
-        {/* Title and Subtitle */}
-        <div className="flex flex-col items-start">
-          <motion.h1 
-            className={cn(
-              "text-xl sm:text-2xl font-bold",
-              "bg-gradient-to-r from-primary via-secondary to-accent",
-              "bg-clip-text text-transparent",
-              "tracking-tight leading-none"
-            )}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.3 }}
-          >
-            <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">Wonder</span>
-            <span className="text-primary">Whiz</span>
-          </motion.h1>
-          <motion.p
-            className={cn(
-              "text-xs sm:text-sm text-gray-600",
-              "flex items-center gap-1.5",
-              "mt-0.5 font-medium"
-            )}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4 }}
-          >
-            Your Magical Learning Friend 
-            <span className="inline-block animate-bounce-subtle">✨</span>
-          </motion.p>
-        </div>
       </div>
     </motion.div>
   );
