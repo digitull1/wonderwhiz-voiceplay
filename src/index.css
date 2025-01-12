@@ -38,7 +38,10 @@
   h2 { @apply text-subtitle mb-4; }
   h3 { @apply text-block-title mb-3; }
 
-  p { @apply text-body mb-4 leading-relaxed; }
+  p { 
+    @apply text-body mb-4 leading-relaxed;
+    max-width: 65ch; /* Improve readability */
+  }
 
   ::selection {
     @apply bg-primary/30 text-app-text-dark;
@@ -73,7 +76,7 @@
 
 /* Luxury Message Bubbles */
 .message-bubble-ai {
-  @apply backdrop-blur-xl shadow-luxury border border-white/30 animate-pop;
+  @apply backdrop-blur-xl shadow-luxury border-y sm:border border-white/30 animate-pop;
   background: linear-gradient(
     135deg,
     rgba(155, 135, 245, 0.98) 0%,
@@ -82,15 +85,15 @@
   box-shadow: 
     0 12px 36px rgba(0,0,0,0.1),
     inset 0 0 32px rgba(255,255,255,0.15);
-  margin: 1rem 0;
+  margin: 0.5rem 0;
   padding: 1.5rem;
-  border-radius: 1.25rem;
+  border-radius: 0;
   line-height: 1.7;
   letter-spacing: 0.02em;
 }
 
 .message-bubble-user {
-  @apply backdrop-blur-lg shadow-card border border-white/20;
+  @apply backdrop-blur-lg shadow-card border-y sm:border border-white/20;
   background: linear-gradient(
     135deg,
     rgba(245, 245, 247, 0.98) 0%,
@@ -99,9 +102,9 @@
   box-shadow: 
     0 8px 24px rgba(0,0,0,0.05),
     inset 0 0 32px rgba(255,255,255,0.5);
-  margin: 1rem 0;
+  margin: 0.5rem 0;
   padding: 1.5rem;
-  border-radius: 1.25rem;
+  border-radius: 0;
   line-height: 1.6;
 }
 
@@ -121,11 +124,12 @@
   
   .message-bubble-ai,
   .message-bubble-user {
-    margin: 0.75rem 0;
+    margin: 0;
     padding: 1.25rem;
-    border-radius: 1rem;
+    border-radius: 0;
     font-size: 16px;
     line-height: 1.6;
+    width: 100vw;
   }
 
   /* Edge-to-edge on mobile */

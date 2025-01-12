@@ -102,7 +102,7 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
         
         <div className={cn(
           "w-full max-w-full mx-auto flex flex-col items-start gap-2",
-          "px-3 sm:px-4 md:px-6",
+          "px-0 sm:px-4 md:px-6", // Remove padding on mobile
           isAi ? "py-4 sm:py-6" : "py-3 sm:py-4",
           "relative"
         )}>
@@ -121,11 +121,11 @@ const ChatMessage: React.FC<ChatMessageProps> = ({
             className={cn(
               "relative flex-1 w-full group backdrop-blur-sm",
               isAi ? "message-bubble-ai" : "message-bubble-user",
-              "rounded-xl sm:rounded-2xl p-4 sm:p-6",
+              "sm:rounded-2xl p-4 sm:p-6", // Remove border radius on mobile
               "transition-all duration-300 ease-in-out",
               "hover:shadow-xl hover:scale-[1.01]",
               isAi ? "bg-gradient-to-br from-primary/95 to-secondary/95" : "bg-gradient-card",
-              "border border-white/20"
+              "border-y sm:border border-white/20" // Only show top/bottom borders on mobile
             )}
             layout
           >
