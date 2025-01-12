@@ -9,7 +9,9 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     persistSession: true,
     detectSessionInUrl: true,
     flowType: 'pkce',
-    debug: true // Enable debug logs to help identify auth issues
+    debug: true,
+    storage: window.localStorage,
+    storageKey: 'sb-tyyucvvapqwzjkqcgjwb-auth-token'
   },
   global: {
     headers: {
@@ -28,4 +30,9 @@ supabase.auth.onAuthStateChange((event, session) => {
   } else if (event === 'USER_UPDATED') {
     console.log('User updated');
   }
+});
+
+// Add error handling for auth errors
+supabase.auth.onError((error) => {
+  console.error('Supabase auth error:', error);
 });
