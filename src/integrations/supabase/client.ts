@@ -20,7 +20,7 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   }
 });
 
-// Add error event listener to help debug connection issues
+// Add auth state change listener for debugging
 supabase.auth.onAuthStateChange((event, session) => {
   console.log('Supabase auth event:', event);
   if (event === 'SIGNED_OUT') {
@@ -32,7 +32,13 @@ supabase.auth.onAuthStateChange((event, session) => {
   }
 });
 
-// Add error handling for auth errors
-supabase.auth.onError((error) => {
-  console.error('Supabase auth error:', error);
+// Add error event listener to help debug connection issues
+supabase.auth.getSession().then(({ data: { session }, error }) => {
+  if (error) {
+    console.error('Error getting session:', error);
+  } else if (session) {
+    console.log('Initial session:', session);
+  } else {
+    console.log('No active session');
+  }
 });
