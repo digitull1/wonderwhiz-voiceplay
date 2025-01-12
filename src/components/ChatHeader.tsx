@@ -9,7 +9,7 @@ export const ChatHeader = () => {
       className={cn(
         "relative overflow-hidden",
         "bg-gradient-to-r from-primary/5 via-secondary/5 to-accent/5",
-        "backdrop-blur-sm p-4 sm:p-6",
+        "backdrop-blur-sm p-4",
         "border-b border-white/10"
       )}
       initial={{ opacity: 0, y: -20 }}
@@ -75,12 +75,12 @@ export const ChatHeader = () => {
             <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 text-white relative z-10 animate-sparkle" />
           </motion.div>
           
-          {/* Title and Subtitle with reduced spacing */}
-          <div className="flex flex-col items-start -space-y-0.5">
+          {/* Title and Subtitle with adjusted spacing */}
+          <div className="flex flex-col items-start justify-center h-full">
             <motion.h1 
               className={cn(
                 "text-xl sm:text-2xl font-bold",
-                "tracking-tight leading-none"
+                "tracking-tight leading-none mb-1"
               )}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -93,7 +93,7 @@ export const ChatHeader = () => {
               className={cn(
                 "text-xs sm:text-sm text-gray-600",
                 "flex items-center gap-1",
-                "font-medium"
+                "font-medium leading-none"
               )}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
@@ -104,24 +104,6 @@ export const ChatHeader = () => {
             </motion.p>
           </div>
         </div>
-
-        {/* Magical Menu Icon */}
-        <motion.div
-          className={cn(
-            "w-9 h-9 rounded-lg",
-            "bg-gradient-to-br from-primary/10 to-secondary/10",
-            "flex items-center justify-center",
-            "hover:shadow-[0_0_15px_rgba(155,135,245,0.3)]",
-            "cursor-pointer"
-          )}
-          whileHover={{ 
-            scale: 1.05,
-            rotate: [0, 5, -5, 0]
-          }}
-          transition={{ duration: 0.3 }}
-        >
-          <Wand2 className="w-5 h-5 text-primary rotate-45" />
-        </motion.div>
       </div>
     </motion.div>
   );
