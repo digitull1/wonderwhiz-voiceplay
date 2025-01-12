@@ -37,14 +37,17 @@ export const MessageContent: React.FC<MessageContentProps> = ({
     }
   }, [message, isTyping, onTypingComplete]);
 
+  // Split message into paragraphs and filter out empty ones
+  const paragraphs = displayedText.split('\n').filter(p => p.trim().length > 0);
+
   return (
     <div className="relative">
       <AnimatePresence mode="wait">
         <motion.div 
           className={cn(
-            "prose max-w-none whitespace-pre-line",
+            "prose max-w-none",
             isAi ? "text-white" : "text-app-text-dark",
-            "relative z-10"
+            "relative z-10 space-y-4"
           )}
           initial={{ opacity: 0, y: 5 }}
           animate={{ opacity: 1, y: 0 }}
@@ -70,7 +73,18 @@ export const MessageContent: React.FC<MessageContentProps> = ({
             }}
           />
 
-          {displayedText}
+          {paragraphs.map((paragraph, index) => (
+            <p 
+              key={index}
+              className={cn(
+                "text-base md:text-lg leading-relaxed",
+                "font-display tracking-wide",
+                isAi ? "text-white/90" : "text-app-text-dark/90"
+              )}
+            >
+              {paragraph}
+            </p>
+          ))}
 
           {imageUrl && (
             <motion.div
