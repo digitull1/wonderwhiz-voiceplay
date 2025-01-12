@@ -28,8 +28,6 @@ supabase.auth.onAuthStateChange((event, session) => {
     console.log('User signed out');
   } else if (event === 'SIGNED_IN') {
     console.log('User signed in:', session?.user?.id);
-  } else if (event === 'USER_DELETED') {
-    console.log('User deleted');
   } else if (event === 'USER_UPDATED') {
     console.log('User updated');
   }
