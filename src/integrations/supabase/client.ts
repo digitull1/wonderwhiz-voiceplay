@@ -7,6 +7,30 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     autoRefreshToken: true,
     persistSession: true,
-    detectSessionInUrl: true
+    detectSessionInUrl: true,
+    flowType: 'pkce',
+    debug: true // Enable debug logs to help identify auth issues
+  },
+  global: {
+    headers: {
+      'x-client-info': 'wonderwhiz-web'
+    }
+  },
+  db: {
+    schema: 'public'
+  }
+});
+
+// Add error event listener to help debug connection issues
+supabase.auth.onAuthStateChange((event, session) => {
+  console.log('Supabase auth event:', event);
+  if (event === 'SIGNED_OUT') {
+    console.log('User signed out');
+  } else if (event === 'SIGNED_IN') {
+    console.log('User signed in:', session?.user?.id);
+  } else if (event === 'USER_DELETED') {
+    console.log('User deleted');
+  } else if (event === 'USER_UPDATED') {
+    console.log('User updated');
   }
 });
