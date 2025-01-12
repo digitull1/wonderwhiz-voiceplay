@@ -8,16 +8,12 @@ export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
     autoRefreshToken: true,
     persistSession: true,
     detectSessionInUrl: true,
-    flowType: 'pkce',
-    debug: true // Enable debug logs to help identify auth issues
+    flowType: 'pkce'
   },
   global: {
     headers: {
       'x-client-info': 'wonderwhiz-web'
     }
-  },
-  db: {
-    schema: 'public'
   }
 });
 
