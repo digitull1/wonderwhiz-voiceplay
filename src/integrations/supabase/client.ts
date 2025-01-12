@@ -8,9 +8,10 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
   auth: {
     autoRefreshToken: true,
     persistSession: true,
-    detectSessionInUrl: true
-  },
-  debug: true
+    detectSessionInUrl: true,
+    storage: window.localStorage,
+    storageKey: 'sb-tyyucvvapqwzjkqcgjwb-auth-token'
+  }
 });
 
 // Listen to auth state changes for debugging
