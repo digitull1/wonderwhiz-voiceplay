@@ -25,40 +25,40 @@ export default {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: {
-          DEFAULT: "#9b87f5",
-          hover: "#7E69AB",
-          foreground: "#1A1F2C",
-          soft: "#E5DEFF",
+          DEFAULT: "#8B5CF6", // Vibrant purple that's engaging but not overwhelming
+          hover: "#7C3AED",
+          foreground: "#FFFFFF",
+          soft: "#EDE9FE",
         },
         secondary: {
-          DEFAULT: "#33C3F0",
-          foreground: "#1A1F2C",
-          soft: "#D3E4FD",
+          DEFAULT: "#0EA5E9", // Friendly blue that suggests trust and calmness
+          foreground: "#FFFFFF",
+          soft: "#E0F2FE",
         },
         accent: {
-          DEFAULT: "#FEC6A1",
-          foreground: "#1A1F2C",
-          soft: "#FDE1D3",
+          DEFAULT: "#F97316", // Energetic orange for important elements
+          foreground: "#FFFFFF",
+          soft: "#FFEDD5",
         },
         chat: {
           user: "rgba(255, 255, 255, 0.98)",
-          ai: "rgba(155, 135, 245, 0.98)",
+          ai: "rgba(139, 92, 246, 0.98)", // Using primary color for consistency
         },
         block: {
-          orange: "#FEC6A1",
-          blue: "#33C3F0",
-          purple: "#9b87f5",
-          green: "#F2FCE2",
-          yellow: "#FEF7CD",
-          pink: "#FFDEE2",
+          orange: "#F97316", // Energetic
+          blue: "#0EA5E9",   // Calming
+          purple: "#8B5CF6", // Playful
+          green: "#10B981",  // Growth
+          yellow: "#FBBF24", // Joy
+          pink: "#EC4899",   // Fun
         },
         app: {
-          background: "#F5F5F7",
-          accent: "#9b87f5",
-          cta: "#FEC6A1",
+          background: "#F8FAFC", // Softer background that's easier on the eyes
+          accent: "#8B5CF6",
+          cta: "#F97316",
           text: {
-            dark: "#1A1F2C",
-            light: "#F6F6F7",
+            dark: "#1E293B",  // Softer than pure black
+            light: "#F8FAFC", // Optimized for readability
           }
         }
       },
@@ -67,25 +67,25 @@ export default {
         display: ['SF Pro Display', 'system-ui', 'sans-serif'],
       },
       fontSize: {
-        'title': ['32px', { lineHeight: '1.2', letterSpacing: '-0.02em' }],
-        'subtitle': ['26px', { lineHeight: '1.3', letterSpacing: '-0.01em' }],
-        'body': ['18px', { lineHeight: '1.6', letterSpacing: '0.01em' }],
-        'small': ['16px', { lineHeight: '1.5', letterSpacing: '0.02em' }],
-        'block-title': ['20px', { lineHeight: '1.4', letterSpacing: '0' }],
-        'block-desc': ['16px', { lineHeight: '1.6', letterSpacing: '0.01em' }],
-        'cta': ['18px', { lineHeight: '1.4', letterSpacing: '0.02em' }],
+        'title': ['2.5rem', { lineHeight: '1.2', letterSpacing: '-0.02em' }],
+        'subtitle': ['1.75rem', { lineHeight: '1.3', letterSpacing: '-0.01em' }],
+        'body': ['1.125rem', { lineHeight: '1.6', letterSpacing: '0.01em' }],
+        'small': ['1rem', { lineHeight: '1.5', letterSpacing: '0.02em' }],
+        'block-title': ['1.25rem', { lineHeight: '1.4', letterSpacing: '0' }],
+        'block-desc': ['1rem', { lineHeight: '1.6', letterSpacing: '0.01em' }],
+        'cta': ['1.125rem', { lineHeight: '1.4', letterSpacing: '0.02em' }],
       },
       backgroundImage: {
-        'gradient-luxury': 'linear-gradient(135deg, #F5F5F7 0%, #E5E5E7 100%)',
+        'gradient-luxury': 'linear-gradient(135deg, #F8FAFC 0%, #EDE9FE 100%)',
         'gradient-card': 'linear-gradient(135deg, rgba(255,255,255,0.98) 0%, rgba(255,255,255,0.95) 100%)',
-        'gradient-block': 'linear-gradient(135deg, rgba(155,135,245,0.98) 0%, rgba(51,195,240,0.98) 100%)',
-        'gradient-fun': 'linear-gradient(135deg, #FEC6A1 0%, #9b87f5 50%, #33C3F0 100%)',
+        'gradient-block': 'linear-gradient(135deg, rgba(139,92,246,0.98) 0%, rgba(14,165,233,0.98) 100%)',
+        'gradient-fun': 'linear-gradient(135deg, #F97316 0%, #8B5CF6 50%, #0EA5E9 100%)',
       },
       boxShadow: {
-        'luxury': '0 12px 36px -4px rgba(0, 0, 0, 0.1)',
-        'card': '0 8px 16px rgba(0, 0, 0, 0.05)',
-        'block': '0 12px 32px rgba(0, 0, 0, 0.1)',
-        'input': '0 4px 12px rgba(0, 0, 0, 0.05)',
+        'luxury': '0 12px 36px -4px rgba(139, 92, 246, 0.15)',
+        'card': '0 8px 16px rgba(139, 92, 246, 0.08)',
+        'block': '0 12px 32px rgba(139, 92, 246, 0.12)',
+        'input': '0 4px 12px rgba(139, 92, 246, 0.08)',
       },
       keyframes: {
         'sparkle': {
